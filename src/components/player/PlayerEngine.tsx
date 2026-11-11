@@ -1,4 +1,4 @@
-import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useEffect, useState } from 'react';
 import { mediaUrl } from '../../api/catalog';
 import { getPlayLink } from '../../api/studio';
@@ -25,6 +25,12 @@ export function PlayerEngine() {
 
   const audio = useAudioPlayer(audioUrl ? { uri: audioUrl } : null);
   const { currentTime, didJustFinish } = useAudioPlayerStatus(audio);
+
+  // A music app should play with the iPhone's silent switch on, keep going when the screen locks,
+  // and pause other apps' audio (as Spotify does).
+  useEffect(() => {
+    setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: true, interruptionMode: 'doNotMix' }).catch(() => {});
+  }, []);
 
   // Owned song with a real recording: ask for a play link. If that fails, it falls back to simulated playback.
   useEffect(() => {
