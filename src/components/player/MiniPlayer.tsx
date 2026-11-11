@@ -1,5 +1,7 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getRelease } from '../../api';
 import { colors, radius, space, type, withAlpha } from '../../lib/theme';
 import { useLikes } from '../../store/likes';
@@ -7,7 +9,10 @@ import { usePlayer } from '../../store/player';
 import { Art } from '../Art';
 import { IconButton } from '../ui';
 
-/** Bar that floats above the tab bar (and at the foot of detail screens). Hidden when nothing is queued. */
+/**
+ * Bar above the tab bar, or docked at the foot of detail screens (which have no tab bar): there the page
+ * fades to black behind it, so it doesn't hang over the content. Hidden when nothing is queued.
+ */
 export function MiniPlayer({ floating }: { floating?: boolean }) {
   const track = usePlayer((s) => s.current());
   const isPlaying = usePlayer((s) => s.isPlaying);
@@ -17,12 +22,13 @@ export function MiniPlayer({ floating }: { floating?: boolean }) {
   const limit = usePlayer((s) => s.limitSec());
   const liked = useLikes((s) => (track ? s.liked.includes(track.id) : false));
   const toggleLike = useLikes((s) => s.toggleLike);
+  const insets = useSafeAreaInsets();
   const release = track ? getRelease(track.releaseId) : undefined;
   if (!track || !release) return null;
   const progress = limit ? Math.min(1, positionSec / limit) : 0;
 
-  return (
-    <Pressable onPress={() => router.push('/player')} accessibilityLabel={`Now playing ${track.title}. Open player`} style={[styles.bar, floating && styles.floating]}>
+  const bar = (
+    <Pressable onPress={() => router.push('/player')} accessibilityLabel={`Now playing ${track.title}. Open player`} style={styles.bar}>
       <View style={styles.row}>
         <Art seed={release.id} colors={release.colors} size={40} />
         <View style={styles.flex}>
@@ -37,11 +43,19 @@ export function MiniPlayer({ floating }: { floating?: boolean }) {
       </View>
     </Pressable>
   );
+  if (!floating) return bar;
+  return (
+    <View pointerEvents="box-none" style={[styles.dock, { paddingBottom: insets.bottom + space.sm }]}>
+      <LinearGradient pointerEvents="none" colors={[withAlpha(colors.bg, 0), withAlpha(colors.bg, 0.92), colors.bg]} locations={[0, 0.35, 1]}
+        style={StyleSheet.absoluteFill} />
+      {bar}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
   bar: { marginHorizontal: space.sm, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.surfaceRaised, paddingBottom: 2 },
-  floating: { position: 'absolute', left: 0, right: 0, bottom: space.xl },
+  dock: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingTop: space.xxl },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.sm + 2, padding: space.sm },
   flex: { flex: 1 },
   title: { fontSize: 14 },
