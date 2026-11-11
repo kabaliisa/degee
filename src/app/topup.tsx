@@ -1,8 +1,8 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { ResultState } from '../components/checkout/ResultState';
-import { Button } from '../components/ui';
+import { Button, FormScrollView } from '../components/ui';
 import { TERMS, formatUGX } from '../lib/money';
 import { newIdempotencyKey } from '../lib/ids';
 import { formatPhone, guessProvider, normalizeUgPhone, type Provider } from '../lib/phone';
@@ -80,7 +80,7 @@ export default function TopUp() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <FormScrollView contentContainerStyle={styles.content}>
       <View>
         <Text style={[type.smallBold, styles.label]}>Amount</Text>
         <View style={styles.amountField}>
@@ -120,7 +120,7 @@ export default function TopUp() {
       {error ? <Text style={[type.body, styles.error]}>{error}</Text> : null}
       <Button label={`Add ${formatUGX(value)}`} onPress={submit} disabled={!value} />
       <Text style={[type.small, styles.centered]}>You’ll get a prompt on your phone to approve with your PIN.</Text>
-    </ScrollView>
+    </FormScrollView>
   );
 }
 

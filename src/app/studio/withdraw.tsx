@@ -1,11 +1,11 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { getEarnings, withdraw, type Earnings, type Withdrawal } from '../../api/studio';
 import { ResultState } from '../../components/checkout/ResultState';
 import { ErrorText, Field, SectionTitle, digits } from '../../components/studio/Form';
 import { StatusPill } from '../../components/studio/StatusPill';
-import { Button, EmptyState } from '../../components/ui';
+import { Button, EmptyState, FormScrollView } from '../../components/ui';
 import { useLoad } from '../../hooks/useLoad';
 import { newIdempotencyKey } from '../../lib/ids';
 import { formatUGX } from '../../lib/money';
@@ -55,7 +55,7 @@ function WithdrawForm({ earnings }: { earnings: Earnings }) {
   const tooSmall = value < earnings.minWithdrawalUgx;
   const tooBig = value > earnings.availableUgx;
   return (
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <FormScrollView contentContainerStyle={styles.content}>
       <View>
         <Text style={type.small}>Ready to withdraw</Text>
         <Text style={type.display}>{formatUGX(earnings.availableUgx)}</Text>
@@ -86,7 +86,7 @@ function WithdrawForm({ earnings }: { earnings: Earnings }) {
           ))}
         </>
       ) : null}
-    </ScrollView>
+    </FormScrollView>
   );
 }
 

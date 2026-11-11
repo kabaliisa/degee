@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { getMyArtist, applyAsArtist, type ArtistProfile } from '../../api/studio';
 import type { Genre } from '../../api/types';
 import { ErrorText, Field } from '../../components/studio/Form';
-import { Button, Chip } from '../../components/ui';
+import { Button, Chip, FormScrollView } from '../../components/ui';
 import { useLoad } from '../../hooks/useLoad';
 import { formatPhone } from '../../lib/phone';
 import { colors, space, type } from '../../lib/theme';
@@ -48,7 +48,7 @@ function ApplyForm({ existing }: { existing: ArtistProfile | null }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <FormScrollView contentContainerStyle={styles.content}>
       <Text style={type.display}>{existing ? 'Update your application' : 'Sell your music on Deegee'}</Text>
       <Text style={[type.body, styles.muted]}>
         Fans buy your songs and pay you straight to mobile money. We check every new artist before their music goes live, usually within two days.
@@ -70,7 +70,7 @@ function ApplyForm({ existing }: { existing: ArtistProfile | null }) {
       <ErrorText message={error} />
       <Button label={existing ? 'Send again' : 'Apply'} onPress={send} loading={busy} disabled={!name.trim() || !city.trim() || genres.length === 0} />
       <Text style={[type.small, styles.centered]}>By applying you agree that you own or control the music you upload.</Text>
-    </ScrollView>
+    </FormScrollView>
   );
 }
 

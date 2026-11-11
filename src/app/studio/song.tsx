@@ -2,13 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { PickedFile } from '../../api/client';
 import {
   addTrack, deleteTrack, editTrack, getMyRelease, uploadAudio, type Society, type StudioRelease, type WriterInput,
 } from '../../api/studio';
 import { Choice, ErrorText, Field, SectionTitle, digits } from '../../components/studio/Form';
-import { Button, EmptyState } from '../../components/ui';
+import { Button, EmptyState, FormScrollView } from '../../components/ui';
 import { useLoad } from '../../hooks/useLoad';
 import { formatDuration } from '../../lib/format';
 import { colors, font, radius, space, type } from '../../lib/theme';
@@ -107,7 +107,7 @@ function SongForm({ release, trackId }: { release: StudioRelease; trackId?: stri
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <FormScrollView contentContainerStyle={styles.content}>
       <Stack.Screen options={{ title: track ? 'Edit song' : 'Add song' }} />
       <Field label="Song title" value={title} onChangeText={setTitle} maxLength={120} />
       <Field label="Price for this song" prefix="UGX" value={price} onChangeText={(v) => setPrice(digits(v))} keyboardType="number-pad" />
@@ -155,7 +155,7 @@ function SongForm({ release, trackId }: { release: StudioRelease; trackId?: stri
       {progress ? <Text style={[type.small, styles.muted]}>{progress}</Text> : null}
       <Button label={savedId ? 'Save song' : 'Add song'} onPress={save} loading={busy === 'save'} disabled={!title.trim() || total !== 100} />
       {track ? <Button variant="ghost" label={confirmDelete ? 'Tap again to remove this song' : 'Remove song'} onPress={remove} loading={busy === 'delete'} /> : null}
-    </ScrollView>
+    </FormScrollView>
   );
 }
 

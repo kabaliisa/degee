@@ -1,11 +1,11 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { getArtist } from '../api';
 import { Art } from '../components/Art';
 import { AmountRow, Receipt } from '../components/checkout/Receipt';
 import { ResultState } from '../components/checkout/ResultState';
-import { Button, EmptyState } from '../components/ui';
+import { Button, EmptyState, FormScrollView } from '../components/ui';
 import { TERMS, formatUGX, splitGift } from '../lib/money';
 import { newIdempotencyKey } from '../lib/ids';
 import { colors, font, radius, space, type } from '../lib/theme';
@@ -53,7 +53,7 @@ export default function Gift() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <FormScrollView contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Art seed={artist.id} colors={artist.colors} size={88} round />
         <Text style={type.title}>{artist.name}</Text>
@@ -102,7 +102,7 @@ export default function Gift() {
       ) : (
         <Button label={split ? `Send ${formatUGX(value)} gift` : 'Send gift'} icon="gift" disabled={!split} loading={sending} onPress={send} />
       )}
-    </ScrollView>
+    </FormScrollView>
   );
 }
 

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { mediaUrl } from '../../../api/catalog';
 import {
   deleteRelease, editRelease, getMyRelease, releaseTypeOf, submitRelease, uploadCover, type Declaration, type StudioRelease,
@@ -11,7 +11,7 @@ import { Art } from '../../../components/Art';
 import { AudioPreview } from '../../../components/studio/AudioPreview';
 import { ErrorText, Field, SectionTitle, digits } from '../../../components/studio/Form';
 import { StatusPill } from '../../../components/studio/StatusPill';
-import { Button, EmptyState } from '../../../components/ui';
+import { Button, EmptyState, FormScrollView } from '../../../components/ui';
 import { useLoad } from '../../../hooks/useLoad';
 import { formatDuration } from '../../../lib/format';
 import { formatUGX } from '../../../lib/money';
@@ -81,7 +81,7 @@ function Editor({ release, onChange }: { release: StudioRelease; onChange: (r: S
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <FormScrollView contentContainerStyle={styles.content}>
       <Stack.Screen options={{ title: release.type }} />
       <View style={styles.top}>
         <Pressable onPress={editable ? pickCover : undefined} disabled={!editable} accessibilityRole="button" accessibilityLabel="Change cover">
@@ -165,7 +165,7 @@ function Editor({ release, onChange }: { release: StudioRelease; onChange: (r: S
           <Button variant="ghost" label={confirmDelete ? 'Tap again to delete this release' : 'Delete release'} onPress={remove} loading={busy === 'delete'} />
         </>
       ) : <ErrorText message={error} />}
-    </ScrollView>
+    </FormScrollView>
   );
 }
 

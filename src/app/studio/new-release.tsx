@@ -1,9 +1,9 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import { createRelease, type ReleaseType } from '../../api/studio';
 import { Choice, ErrorText, Field, digits } from '../../components/studio/Form';
-import { Button } from '../../components/ui';
+import { Button, FormScrollView } from '../../components/ui';
 import { colors, space, type } from '../../lib/theme';
 
 const TYPES: { value: ReleaseType; label: string }[] = [
@@ -43,7 +43,7 @@ export default function NewRelease() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <FormScrollView contentContainerStyle={styles.content}>
       <Field label="Title" value={title} onChangeText={setTitle} maxLength={120} placeholder="Release title" />
       <Choice label="What is it?" options={TYPES} value={kind} onChange={pickType} hint={HINTS[kind]} />
       <Field label="Price for the whole release" prefix="UGX" value={price} onChangeText={(v) => setPrice(digits(v))} keyboardType="number-pad"
@@ -51,7 +51,7 @@ export default function NewRelease() {
       <ErrorText message={error} />
       <Button label="Create release" onPress={create} loading={busy} disabled={!title.trim()} />
       <Text style={[type.small, styles.faint]}>Nothing is public until Deegee approves it.</Text>
-    </ScrollView>
+    </FormScrollView>
   );
 }
 

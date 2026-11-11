@@ -2,11 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { PickedFile } from '../../api/client';
 import { declareRights, getMyRelease, uploadLabelLetter, type LabelDeal, type StudioRelease } from '../../api/studio';
 import { CheckRow, Choice, ErrorText, Field } from '../../components/studio/Form';
-import { Button, EmptyState } from '../../components/ui';
+import { Button, EmptyState, FormScrollView } from '../../components/ui';
 import { useLoad } from '../../hooks/useLoad';
 import { colors, radius, space, type } from '../../lib/theme';
 
@@ -65,7 +65,7 @@ function RightsForm({ release }: { release: StudioRelease }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <FormScrollView contentContainerStyle={styles.content}>
       <Text style={[type.body, styles.muted]}>
         Three questions about “{release.title}”. They make sure music only goes up with the permission of whoever owns it.
       </Text>
@@ -119,7 +119,7 @@ function RightsForm({ release }: { release: StudioRelease }) {
 
       <ErrorText message={error} />
       <Button label="Save answers" onPress={save} loading={busy} disabled={!confirmed} />
-    </ScrollView>
+    </FormScrollView>
   );
 }
 

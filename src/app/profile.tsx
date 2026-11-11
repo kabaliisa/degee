@@ -1,11 +1,11 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { getTrack } from '../api';
 import { updateMe } from '../api/account';
 import { Avatar } from '../components/profile/Avatar';
 import { SettingsGroup, SettingsRow } from '../components/profile/SettingsRow';
-import { Button } from '../components/ui';
+import { Button, FormScrollView } from '../components/ui';
 import { formatUGX } from '../lib/money';
 import { colors, font, radius, space, type } from '../lib/theme';
 import { useLikes } from '../store/likes';
@@ -51,7 +51,7 @@ export default function Profile() {
   const goToTab = (path: '/(tabs)/wallet' | '/(tabs)/library') => { router.back(); router.push(path); };
 
   return (
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <FormScrollView contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Avatar size={96} />
         {editing ? (
@@ -98,7 +98,7 @@ export default function Profile() {
       </SettingsGroup>
 
       <Text style={[type.smallBold, styles.version]}>Deegee 0.1 · test payments</Text>
-    </ScrollView>
+    </FormScrollView>
   );
 }
 
