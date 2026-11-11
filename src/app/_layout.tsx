@@ -12,16 +12,24 @@ import { Button } from '../components/ui';
 import { colors, font, space, type } from '../lib/theme';
 import { getMe } from '../api/account';
 import { useSession, useSessionHydrated, useSignedIn } from '../store/session';
+import { useLikes } from '../store/likes';
+import { usePlayer } from '../store/player';
 import { useWallet } from '../store/wallet';
 
 /**
  * Keeps account data fresh: loads the wallet and the user (name, roles) when someone signs in and when the
- * app comes back to the front, and clears the wallet on sign-out.
+ * app comes back to the front. On sign-out it stops playback and clears the wallet and likes.
  */
 function AccountSync({ signedIn }: { signedIn: boolean }) {
   useEffect(() => {
     const { refresh, reset } = useWallet.getState();
-    if (!signedIn) return reset();
+    if (!signedIn) {
+      // Signing out stops the music and clears what belonged to that account.
+      reset();
+      usePlayer.getState().stop();
+      useLikes.getState().clear();
+      return;
+    }
     const load = () => {
       refresh().catch(() => {}); // screens show the last known values if this fails
       getMe().then(useSession.getState().setUser).catch(() => {});
