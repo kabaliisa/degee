@@ -55,6 +55,7 @@ export default function RootLayout() {
   });
   const hydrated = useSessionHydrated();
   const signedIn = useSignedIn();
+  const hasName = useSession((s) => Boolean(s.user?.name?.trim()));
   const catalog = useCatalog((s) => s.status);
   const catalogError = useCatalog((s) => s.error);
 
@@ -81,7 +82,10 @@ export default function RootLayout() {
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="sign-in" options={{ headerShown: false, animation: 'fade' }} />
         </Stack.Protected>
-        <Stack.Protected guard={signedIn}>
+        <Stack.Protected guard={signedIn && !hasName}>
+          <Stack.Screen name="welcome" options={{ headerShown: false, animation: 'fade' }} />
+        </Stack.Protected>
+        <Stack.Protected guard={signedIn && hasName}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="artist/[id]" options={{ headerTransparent: true, title: '', headerStyle: { backgroundColor: 'transparent' } }} />
           <Stack.Screen name="release/[id]" options={{ headerTransparent: true, title: '', headerStyle: { backgroundColor: 'transparent' } }} />
