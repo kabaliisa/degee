@@ -8,8 +8,7 @@ import { Avatar } from '../../components/profile/Avatar';
 import { FeaturedDrop } from '../../components/home/FeaturedDrop';
 import { QuickPickGrid } from '../../components/home/QuickPickGrid';
 import { ArtistCard, Chip, ReleaseCard, Shelf } from '../../components/ui';
-import { formatUGX } from '../../lib/money';
-import { colors, font, layout, radius, space, withAlpha } from '../../lib/theme';
+import { colors, font, layout, space, withAlpha } from '../../lib/theme';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
 
@@ -19,7 +18,6 @@ type Filter = (typeof FILTERS)[number];
 export default function Home() {
   const insets = useSafeAreaInsets();
   const [filter, setFilter] = useState<Filter>('All');
-  const balance = useWallet((s) => s.balance);
   const owned = useWallet((s) => s.ownedTracks);
   const owns = useWallet((s) => s.owns);
   const playQueue = usePlayer((s) => s.playQueue);
@@ -48,9 +46,6 @@ export default function Home() {
       <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + space.md }]}>
         <View style={styles.header}>
           <Text accessibilityRole="header" style={styles.wordmark}>Deegee</Text>
-          <Pressable onPress={() => router.push('/(tabs)/wallet')} accessibilityLabel={`Wallet balance ${formatUGX(balance)}`} style={styles.balance}>
-            <Text style={styles.balanceText}>{formatUGX(balance)}</Text>
-          </Pressable>
           <Pressable onPress={() => router.push('/profile')} accessibilityRole="button" accessibilityLabel="Your profile and settings" hitSlop={6}>
             <Avatar />
           </Pressable>
@@ -90,7 +85,5 @@ const styles = StyleSheet.create({
   content: { paddingBottom: layout.tabScreenBottom },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.lg, gap: space.md },
   wordmark: { flex: 1, fontFamily: font.display, fontSize: 30, letterSpacing: -1, color: colors.text },
-  balance: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised },
-  balanceText: { fontFamily: font.bold, color: colors.text, fontSize: 13 },
   chips: { gap: space.sm, paddingHorizontal: space.lg, marginTop: space.lg },
 });
