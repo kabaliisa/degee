@@ -1,39 +1,7 @@
-// Mock catalogue. All artists, releases and songs are invented placeholders.
-import type { Songwriter } from '../lib/money';
-
-export type Genre = 'Afrobeat' | 'Kadongo Kamu' | 'Dancehall' | 'Gospel' | 'Zouk' | 'Hip Hop';
-
-export type Artist = {
-  id: string;
-  name: string;
-  city: string;
-  bio: string;
-  genres: Genre[];
-  verified: boolean;
-  colors: [string, string];
-};
-
-export type Track = {
-  id: string;
-  releaseId: string;
-  artistId: string;
-  title: string;
-  durationSec: number;
-  priceUGX: number;
-  writers: Songwriter[];
-  audioUrl?: string; // real audio comes from the API later; mock playback when absent
-};
-
-export type Release = {
-  id: string;
-  artistId: string;
-  title: string;
-  type: 'Single' | 'EP' | 'Album';
-  year: number;
-  priceUGX: number; // whole-release price
-  colors: [string, string];
-  exclusive?: boolean;
-};
+// Mock catalogue: every artist, release and song here is an invented placeholder.
+// Only src/api/catalog.ts reads this file; screens never import it directly.
+import type { Songwriter } from '../../lib/money';
+import type { Artist, Release, Track } from '../types';
 
 export const artists: Artist[] = [
   { id: 'a1', name: 'Nalu Kizza', city: 'Kampala', genres: ['Afrobeat', 'Zouk'], verified: true, colors: ['#2F7BFF', '#0A1A38'],
@@ -79,42 +47,3 @@ export const tracks: Track[] = [
     writers: [{ name: 'Mukasa the MC', sharePct: 70, society: 'UPRS' }, { name: 'Lil Juma', sharePct: 30, society: 'FOREIGN' }] },
   { id: 't16', releaseId: 'r6', artistId: 'a5', title: 'Kikuubo Hustle', durationSec: 215, priceUGX: 1500, writers: solo('Mukasa the MC', 'UPRS') },
 ];
-
-export const getArtist = (id: string) => artists.find((a) => a.id === id);
-export const getRelease = (id: string) => releases.find((r) => r.id === id);
-export const getTrack = (id: string) => tracks.find((t) => t.id === id);
-export const releasesByArtist = (artistId: string) => releases.filter((r) => r.artistId === artistId);
-export const tracksForRelease = (releaseId: string) => tracks.filter((t) => t.releaseId === releaseId);
-
-export function search(q: string) {
-  const s = q.trim().toLowerCase();
-  if (!s) return { artists: [], releases: [], tracks: [] };
-  return {
-    artists: artists.filter((a) => a.name.toLowerCase().includes(s) || a.genres.some((g) => g.toLowerCase().includes(s))),
-    releases: releases.filter((r) => r.title.toLowerCase().includes(s)),
-    tracks: tracks.filter((t) => t.title.toLowerCase().includes(s)),
-  };
-}
-
-export const formatDuration = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
-export const PREVIEW_SEC = 30;
-
-// Mock social proof: fans who have bought from an artist / a track. Stable per id.
-const seeded = (id: string, min: number, span: number) => {
-  let h = 7;
-  for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 100003;
-  return min + (h % span);
-};
-export const supportersFor = (artistId: string) => seeded(artistId, 1200, 9000);
-export const buyersFor = (trackId: string) => seeded(trackId, 80, 2400);
-export const totalDuration = (list: Track[]) => list.reduce((s, t) => s + t.durationSec, 0);
-
-/**
- * Mock photos for covers and artists until artists upload their own.
- * Free colour stock photos from picsum.photos, fixed per id via the seed.
- * Replace with each release's real cover URL from the API.
- */
-export const photoUrl = (id: string, size: number) => {
-  const px = size <= 64 ? 160 : size <= 160 ? 400 : 800;
-  return `https://picsum.photos/seed/deegee-${id}/${px}/${px}`;
-};

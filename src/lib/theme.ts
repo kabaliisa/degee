@@ -52,3 +52,9 @@ export function shade(hex: string, amount: number) {
 export function withAlpha(hex: string, alpha: number) {
   return `${hex}${Math.round(alpha * 255).toString(16).padStart(2, '0')}`;
 }
+
+/** Shared layout measurements. */
+export const layout = {
+  tabScreenBottom: 170, // room for the floating mini player + tab bar on tab screens
+  detailScreenBottom: 140, // room for the floating mini player on detail screens
+};

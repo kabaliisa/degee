@@ -1,16 +1,19 @@
-import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { getArtist, getRelease, getTrack, tracksForRelease } from '../api';
 import { Art } from '../components/Art';
+import { AmountRow, Receipt, ReceiptDivider } from '../components/checkout/Receipt';
+import { ResultState } from '../components/checkout/ResultState';
 import { Button, EmptyState } from '../components/ui';
-import { getArtist, getRelease, getTrack, tracksForRelease } from '../data/catalog';
-import { formatUGX, splitSale, type SaleSplit } from '../lib/money';
-import { colors, font, radius, space, type } from '../lib/theme';
-import { useWallet } from '../store/wallet';
+import { TERMS, formatUGX, splitRelease, splitSale } from '../lib/money';
+import { colors, space, type } from '../lib/theme';
+import { useWallet, type PurchaseResult } from '../store/wallet';
 
-function addSplits(a: SaleSplit, b: SaleSplit): SaleSplit {
-  return { total: a.total + b.total, uprs: a.uprs + b.uprs, songwritersDirect: a.songwritersDirect + b.songwritersDirect, artist: a.artist + b.artist, platform: a.platform + b.platform };
+function errorMessage(res: Exclude<PurchaseResult, { ok: true }>) {
+  if (res.reason === 'INSUFFICIENT_FUNDS') return `You need ${formatUGX(res.shortBy ?? 0)} more.`;
+  if (res.reason === 'ALREADY_OWNED') return 'You already own this.';
+  return 'The payment did not go through. Try again.';
 }
 
 export default function Buy() {
@@ -23,90 +26,75 @@ export default function Buy() {
 
   const track = kind === 'track' ? getTrack(id) : undefined;
   const release = getRelease(kind === 'release' ? id : track?.releaseId ?? '');
-  if (!release || (kind === 'track' && !track)) return <EmptyState icon="alert-circle-outline" title="Item not found" body="Go back and try again." />;
+  const artist = release ? getArtist(release.artistId) : undefined;
+  if (!release || !artist || (kind === 'track' && !track)) {
+    return <EmptyState icon="alert-circle-outline" title="Item not found" body="Go back and try again." />;
+  }
 
-  const artist = getArtist(release.artistId)!;
   const price = track ? track.priceUGX : release.priceUGX;
   const title = track ? track.title : `${release.title} (${release.type})`;
-
-  // Show where the money goes. For a release, spread its price across tracks by their list prices.
-  let split: SaleSplit;
-  if (track) split = splitSale(price, track.writers);
-  else {
-    const list = tracksForRelease(release.id);
-    const listTotal = list.reduce((s, t) => s + t.priceUGX, 0);
-    let remaining = price;
-    split = list.reduce<SaleSplit>((acc, t, i) => {
-      const part = i === list.length - 1 ? remaining : Math.floor((price * t.priceUGX) / listTotal);
-      remaining -= part;
-      return addSplits(acc, splitSale(part, t.writers));
-    }, { total: 0, uprs: 0, songwritersDirect: 0, artist: 0, platform: 0 });
-  }
-  const songwriters = split.uprs + split.songwritersDirect;
+  const split = track ? splitSale(price, track.writers) : splitRelease(price, tracksForRelease(release.id));
   const shortBy = Math.max(0, price - balance);
+  const topUpAmount = Math.max(shortBy, TERMS.minTopUp);
 
-  const confirm = () => {
+  const pay = () => {
     const res = track ? buyTrack(track.id) : buyRelease(release.id);
     if (res.ok) setDone(true);
-    else if (res.reason === 'INSUFFICIENT_FUNDS') setError(`You need ${formatUGX(res.shortBy ?? 0)} more.`);
-    else if (res.reason === 'ALREADY_OWNED') setError('You already own this.');
-    else setError('Something went wrong. Try again.');
+    else setError(errorMessage(res));
   };
 
   if (done) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xl, gap: space.md }}>
-        <Ionicons name="checkmark-circle" size={64} color={colors.success} />
-        <Text style={type.title}>It's yours</Text>
-        <Text style={[type.body, { color: colors.textMuted, textAlign: 'center' }]}>
-          {title} is in your library. {formatUGX(split.artist)} went to {artist.name}.
-        </Text>
-        <Button label="Go to library" onPress={() => { router.dismissAll(); router.push('/(tabs)/library'); }} style={{ alignSelf: 'stretch', marginTop: space.lg }} />
+      <ResultState icon="checkmark-circle" title="It’s yours" body={`${title} is in your library. ${formatUGX(split.artist)} went to ${artist.name}.`}>
+        <Button label="Go to your music" onPress={() => { router.dismissAll(); router.push('/(tabs)/library'); }} />
         <Button label="Keep browsing" variant="ghost" onPress={() => router.back()} />
-      </View>
+      </ResultState>
     );
   }
 
-  const Row = ({ label, value, strong }: { label: string; value: number; strong?: boolean }) => (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
-      <Text style={[type.body, { color: strong ? colors.text : colors.textMuted, fontFamily: strong ? font.bold : font.regular }]}>{label}</Text>
-      <Text style={[type.body, { fontFamily: strong ? font.bold : font.medium }]}>{formatUGX(value)}</Text>
-    </View>
-  );
-
   return (
-    <ScrollView contentContainerStyle={{ padding: space.lg, gap: space.lg }}>
-      <View style={{ flexDirection: 'row', gap: space.md, alignItems: 'center' }}>
+    <ScrollView contentContainerStyle={styles.content}>
+      <View style={styles.item}>
         <Art seed={release.id} colors={release.colors} size={72} />
-        <View style={{ flex: 1 }}>
+        <View style={styles.flex}>
           <Text style={type.heading} numberOfLines={2}>{title}</Text>
           <Text style={type.small}>{artist.name}</Text>
         </View>
-        <Text style={[type.heading, { color: colors.accent }]}>{formatUGX(price)}</Text>
+        <Text style={[type.heading, styles.price]}>{formatUGX(price)}</Text>
       </View>
 
-      <View style={{ backgroundColor: colors.surface, borderRadius: radius.md, padding: space.lg }}>
-        <Text style={[type.smallBold, { marginBottom: space.sm }]}>Where your money goes</Text>
-        <Row label={artist.name} value={split.artist} />
-        <Row label="Songwriters (incl. UPRS)" value={songwriters} />
-        <Row label="Deegee" value={split.platform} />
-        <View style={{ height: 1, backgroundColor: colors.border, marginVertical: space.sm }} />
-        <Row label="Total" value={price} strong />
-      </View>
+      <Receipt title="Where your money goes">
+        <AmountRow label={artist.name} value={split.artist} />
+        <AmountRow label="Songwriters (incl. UPRS)" value={split.uprs + split.songwritersDirect} />
+        <AmountRow label="Deegee" value={split.platform} />
+        <ReceiptDivider />
+        <AmountRow label="Total" value={price} strong />
+      </Receipt>
 
-      <View style={{ backgroundColor: colors.surface, borderRadius: radius.md, padding: space.lg }}>
-        <Row label="Wallet balance" value={balance} />
-        {shortBy > 0 ? <Text style={[type.small, { color: colors.danger, marginTop: space.xs }]}>You need {formatUGX(shortBy)} more. Add money with mobile money first.</Text> : <Row label="After purchase" value={balance - price} />}
-      </View>
+      <Receipt>
+        <AmountRow label="Wallet balance" value={balance} />
+        {shortBy > 0
+          ? <Text style={[type.small, styles.error]}>You need {formatUGX(shortBy)} more. Add money with mobile money first.</Text>
+          : <AmountRow label="After purchase" value={balance - price} />}
+      </Receipt>
 
-      {error ? <Text style={{ color: colors.danger }}>{error}</Text> : null}
+      {error ? <Text style={[type.body, styles.error]}>{error}</Text> : null}
 
       {shortBy > 0 ? (
-        <Button label={`Add ${formatUGX(Math.max(shortBy, 1000))}`} icon="add" onPress={() => router.push({ pathname: '/topup', params: { amount: String(Math.max(shortBy, 1000)) } })} />
+        <Button label={`Add ${formatUGX(topUpAmount)}`} icon="add" onPress={() => router.push({ pathname: '/topup', params: { amount: String(topUpAmount) } })} />
       ) : (
-        <Button label={`Pay ${formatUGX(price)}`} icon="lock-closed" onPress={confirm} />
+        <Button label={`Pay ${formatUGX(price)}`} icon="lock-closed" onPress={pay} />
       )}
-      <Text style={[type.small, { textAlign: 'center' }]}>Buy once, keep forever. Play in full any time in your library.</Text>
+      <Text style={[type.small, styles.centered]}>Buy once, keep forever. Play in full any time in your library.</Text>
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { padding: space.lg, gap: space.lg },
+  item: { flexDirection: 'row', gap: space.md, alignItems: 'center' },
+  flex: { flex: 1 },
+  price: { color: colors.accent },
+  error: { color: colors.danger, marginTop: space.xs },
+  centered: { textAlign: 'center' },
+});

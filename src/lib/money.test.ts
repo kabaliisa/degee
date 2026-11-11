@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatUGX, splitGift, splitSale } from './money.ts';
+import { formatUGX, splitGift, splitRelease, splitSale } from './money.ts';
 
 const sum = (s: ReturnType<typeof splitSale>) => s.uprs + s.songwritersDirect + s.artist + s.platform;
 
@@ -62,4 +62,16 @@ test('gift: artist gets 95%, no songwriter share, nothing lost', () => {
   const odd = splitGift(1999);
   assert.equal(odd.artist + odd.platform, 1999);
   assert.throws(() => splitGift(100));
+});
+
+test('release: price shared across songs, nothing lost, writers respected', () => {
+  const songs = [
+    { priceUGX: 2000, writers: [{ name: 'A', sharePct: 100, society: 'UPRS' as const }] },
+    { priceUGX: 2000, writers: [{ name: 'B', sharePct: 100, society: null }] },
+    { priceUGX: 2000, writers: [{ name: 'A', sharePct: 100, society: 'UPRS' as const }] },
+  ];
+  const r = splitRelease(5000, songs);
+  assert.equal(r.total, 5000);
+  assert.equal(r.uprs + r.songwritersDirect + r.artist + r.platform, 5000);
+  assert.ok(r.uprs > 0 && r.songwritersDirect > 0);
 });

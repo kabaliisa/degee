@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { PREVIEW_SEC, getTrack, type Track } from '../data/catalog';
+import { getTrack, type Track } from '../api';
+import { PREVIEW_SEC } from '../lib/format';
 
 type PlayerState = {
   queue: string[];

@@ -1,15 +1,17 @@
-import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { getArtist } from '../api';
 import { Art } from '../components/Art';
+import { AmountRow, Receipt } from '../components/checkout/Receipt';
+import { ResultState } from '../components/checkout/ResultState';
 import { Button, EmptyState } from '../components/ui';
-import { getArtist } from '../data/catalog';
 import { TERMS, formatUGX, splitGift } from '../lib/money';
 import { colors, font, radius, space, type } from '../lib/theme';
 import { useWallet } from '../store/wallet';
 
 const PRESETS = [1000, 2000, 5000, 10000];
+const MAX_NOTE = 140;
 
 export default function Gift() {
   const { artistId } = useLocalSearchParams<{ artistId: string }>();
@@ -23,9 +25,9 @@ export default function Gift() {
   if (!artist) return <EmptyState icon="person-outline" title="Artist not found" body="Go back and try again." />;
 
   const value = parseInt(amount || '0', 10);
-  const valid = value >= TERMS.minGift;
-  const split = valid ? splitGift(value) : null;
+  const split = value >= TERMS.minGift ? splitGift(value) : null;
   const shortBy = Math.max(0, value - balance);
+  const topUpAmount = Math.max(shortBy, TERMS.minTopUp);
 
   const send = () => {
     setError(null);
@@ -38,76 +40,80 @@ export default function Gift() {
 
   if (sent && split) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xl, gap: space.md }}>
-        <Ionicons name="gift" size={60} color={colors.accent} />
-        <Text style={type.title}>Gift sent</Text>
-        <Text style={[type.body, { color: colors.textMuted, textAlign: 'center' }]}>
-          {formatUGX(split.artist)} is on its way to {artist.name}.{note.trim() ? ' They’ll see your message too.' : ''}
-        </Text>
-        <Button label="Done" onPress={() => router.back()} style={{ alignSelf: 'stretch', marginTop: space.lg }} />
-      </View>
+      <ResultState icon="gift" title="Gift sent"
+        body={`${formatUGX(split.artist)} is on its way to ${artist.name}.${note.trim() ? ' They’ll see your message too.' : ''}`}>
+        <Button label="Done" onPress={() => router.back()} />
+      </ResultState>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={{ padding: space.lg, gap: space.xl }} keyboardShouldPersistTaps="handled">
-      <View style={{ alignItems: 'center', gap: space.sm }}>
+    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <View style={styles.header}>
         <Art seed={artist.id} colors={artist.colors} size={88} round />
         <Text style={type.title}>{artist.name}</Text>
-        <Text style={[type.small, { textAlign: 'center' }]}>A gift is a thank-you, separate from buying music.</Text>
+        <Text style={[type.small, styles.centered]}>A gift is a thank-you, separate from buying music.</Text>
       </View>
 
       <View>
-        <Text style={[type.smallBold, { marginBottom: space.sm }]}>Amount</Text>
-        <View style={{ flexDirection: 'row', gap: space.sm }}>
-          {PRESETS.map((p) => {
-            const on = value === p;
-            return (
-              <Pressable key={p} onPress={() => setAmount(String(p))} accessibilityState={{ selected: on }}
-                style={{ flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: radius.md, backgroundColor: on ? colors.accent : colors.surfaceRaised }}>
-                <Text style={{ fontFamily: font.bold, color: colors.text }}>{(p / 1000).toString()}k</Text>
-              </Pressable>
-            );
-          })}
+        <Text style={[type.smallBold, styles.label]}>Amount</Text>
+        <View style={styles.presets}>
+          {PRESETS.map((p) => (
+            <Pressable key={p} onPress={() => setAmount(String(p))} accessibilityRole="button" accessibilityState={{ selected: value === p }}
+              style={[styles.preset, value === p && styles.presetActive]}>
+              <Text style={styles.presetLabel}>{p / 1000}k</Text>
+            </Pressable>
+          ))}
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: space.sm, backgroundColor: colors.surface, borderRadius: radius.md, paddingHorizontal: space.lg }}>
-          <Text style={[type.body, { color: colors.textMuted, marginRight: 6 }]}>UGX</Text>
-          <TextInput value={amount} onChangeText={(v) => setAmount(v.replace(/\D/g, ''))} keyboardType="number-pad" accessibilityLabel="Other amount in Ugandan shillings"
-            style={{ flex: 1, color: colors.text, fontFamily: font.bold, fontSize: 18, paddingVertical: 12 }} />
+        <View style={styles.amountField}>
+          <Text style={[type.body, styles.currency]}>UGX</Text>
+          <TextInput value={amount} onChangeText={(v) => setAmount(v.replace(/\D/g, ''))} keyboardType="number-pad"
+            accessibilityLabel="Other amount in Ugandan shillings" style={styles.amountInput} />
         </View>
       </View>
 
       <View>
-        <Text style={[type.smallBold, { marginBottom: space.sm }]}>Message (optional)</Text>
-        <TextInput value={note} onChangeText={setNote} maxLength={140} multiline placeholder={`Say something to ${artist.name}`} placeholderTextColor={colors.textFaint}
-          style={{ minHeight: 80, textAlignVertical: 'top', backgroundColor: colors.surface, borderRadius: radius.md, padding: space.lg, color: colors.text, fontFamily: font.regular, fontSize: 15 }} />
-        <Text style={[type.tiny, { textAlign: 'right', marginTop: 4, color: colors.textFaint }]}>{note.length}/140</Text>
+        <Text style={[type.smallBold, styles.label]}>Message (optional)</Text>
+        <TextInput value={note} onChangeText={setNote} maxLength={MAX_NOTE} multiline placeholder={`Say something to ${artist.name}`}
+          placeholderTextColor={colors.textFaint} style={styles.note} accessibilityLabel="Message to the artist" />
+        <Text style={[type.tiny, styles.counter]}>{note.length}/{MAX_NOTE}</Text>
       </View>
 
       {split ? (
-        <View style={{ backgroundColor: colors.surface, borderRadius: radius.md, padding: space.lg, gap: 6 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={type.body}>{artist.name} gets</Text><Text style={type.bodyBold}>{formatUGX(split.artist)}</Text>
-          </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={[type.body, { color: colors.textMuted }]}>Deegee fee ({TERMS.giftPlatformPct}%)</Text><Text style={[type.body, { color: colors.textMuted }]}>{formatUGX(split.platform)}</Text>
-          </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={[type.body, { color: colors.textMuted }]}>Wallet balance</Text><Text style={[type.body, { color: colors.textMuted }]}>{formatUGX(balance)}</Text>
-          </View>
-        </View>
+        <Receipt>
+          <AmountRow label={`${artist.name} gets`} value={split.artist} strong />
+          <AmountRow label={`Deegee fee (${TERMS.giftPlatformPct}%)`} value={split.platform} muted />
+          <AmountRow label="Wallet balance" value={balance} muted />
+        </Receipt>
       ) : (
         <Text style={type.small}>The smallest gift is {formatUGX(TERMS.minGift)}.</Text>
       )}
 
-      {error ? <Text style={{ color: colors.danger, fontFamily: font.medium }}>{error}</Text> : null}
+      {error ? <Text style={[type.body, styles.error]}>{error}</Text> : null}
 
-      {valid && shortBy > 0 ? (
-        <Button label={`Add ${formatUGX(Math.max(shortBy, TERMS.minTopUp))} to wallet`} icon="add"
-          onPress={() => router.push({ pathname: '/topup', params: { amount: String(Math.max(shortBy, TERMS.minTopUp)) } })} />
+      {split && shortBy > 0 ? (
+        <Button label={`Add ${formatUGX(topUpAmount)} to wallet`} icon="add"
+          onPress={() => router.push({ pathname: '/topup', params: { amount: String(topUpAmount) } })} />
       ) : (
-        <Button label={valid ? `Send ${formatUGX(value)} gift` : 'Send gift'} icon="gift" disabled={!valid} onPress={send} />
+        <Button label={split ? `Send ${formatUGX(value)} gift` : 'Send gift'} icon="gift" disabled={!split} onPress={send} />
       )}
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { padding: space.lg, gap: space.xl },
+  header: { alignItems: 'center', gap: space.sm },
+  centered: { textAlign: 'center' },
+  label: { marginBottom: space.sm },
+  presets: { flexDirection: 'row', gap: space.sm },
+  preset: { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: radius.md, backgroundColor: colors.surfaceRaised },
+  presetActive: { backgroundColor: colors.accent },
+  presetLabel: { fontFamily: font.bold, color: colors.text },
+  amountField: { flexDirection: 'row', alignItems: 'center', marginTop: space.sm, backgroundColor: colors.surface, borderRadius: radius.md, paddingHorizontal: space.lg },
+  currency: { color: colors.textMuted, marginRight: 6 },
+  amountInput: { flex: 1, color: colors.text, fontFamily: font.bold, fontSize: 18, paddingVertical: 12 },
+  note: { minHeight: 80, textAlignVertical: 'top', backgroundColor: colors.surface, borderRadius: radius.md, padding: space.lg, color: colors.text, fontFamily: font.regular, fontSize: 15 },
+  counter: { textAlign: 'right', marginTop: 4, color: colors.textFaint },
+  error: { color: colors.danger },
+});

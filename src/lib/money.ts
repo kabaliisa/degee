@@ -64,3 +64,28 @@ export function splitGift(total: number, terms = TERMS): GiftSplit {
   const platform = Math.floor((total * terms.giftPlatformPct) / 100);
   return { total, artist: total - platform, platform };
 }
+
+const ZERO: SaleSplit = { total: 0, uprs: 0, songwritersDirect: 0, artist: 0, platform: 0 };
+const addSplits = (a: SaleSplit, b: SaleSplit): SaleSplit => ({
+  total: a.total + b.total,
+  uprs: a.uprs + b.uprs,
+  songwritersDirect: a.songwritersDirect + b.songwritersDirect,
+  artist: a.artist + b.artist,
+  platform: a.platform + b.platform,
+});
+
+/**
+ * Split a whole-release sale. The release price is shared across its songs in proportion
+ * to their single prices (the last song takes the rounding remainder), then each song's
+ * share is split by its own songwriters.
+ */
+export function splitRelease(price: number, songs: { priceUGX: number; writers: Songwriter[] }[], terms = TERMS): SaleSplit {
+  if (songs.length === 0) return splitSale(price, [], terms);
+  const listTotal = songs.reduce((s, t) => s + t.priceUGX, 0);
+  let remaining = price;
+  return songs.reduce<SaleSplit>((acc, t, i) => {
+    const part = i === songs.length - 1 ? remaining : Math.floor((price * t.priceUGX) / listTotal);
+    remaining -= part;
+    return addSplits(acc, splitSale(part, t.writers, terms));
+  }, ZERO);
+}

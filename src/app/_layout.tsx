@@ -3,18 +3,18 @@ import {
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View } from 'react-native';
-import { PlayerEngine } from '../components/PlayerEngine';
+import { StyleSheet, View } from 'react-native';
+import { PlayerEngine } from '../components/player/PlayerEngine';
 import { colors, font } from '../lib/theme';
 
 export default function RootLayout() {
   const [loaded] = useFonts({
     PlusJakartaSans_400Regular, PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold,
   });
-  if (!loaded) return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
+  if (!loaded) return <View style={styles.root} />;
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+    <View style={styles.root}>
       <StatusBar style="light" />
       <PlayerEngine />
       <Stack
@@ -39,3 +39,7 @@ export default function RootLayout() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.bg },
+});

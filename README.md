@@ -1,62 +1,72 @@
 # Deegee
 
-Buy music straight from Ugandan artists, paying in UGX with MTN MoMo or Airtel Money.
+Buy music straight from Ugandan artists, paying in UGX with MTN MoMo or Airtel Money. Think Bandcamp for Uganda.
 
-This is the React Native (Expo) app, running on **mock data**: no backend yet. Payments are simulated.
-
-## What works
-
-- **Discover:** exclusive release banner, new releases, genres, artists, fresh tracks
-- **Search** by artist, song or genre
-- **Artist and release pages**, with a share link for artists to post on WhatsApp/TikTok
-- **30-second previews** for songs you don't own; full playback for songs you do
-- **Checkout** showing where the money goes (artist / songwriters incl. UPRS / Deegee)
-- **Wallet:** top up via a simulated MoMo/Airtel PIN prompt, with history
-- **Library** of owned songs, persisted on the device
-- Mini player + full-screen player
+This is the React Native app (Expo, TypeScript). It runs on a **mock catalogue** with **simulated payments**; there is no backend yet.
 
 ## Run it
 
 ```bash
 npm install
-npx expo start        # press a (Android), i (iOS) or w (web)
+npx expo start        # scan the QR code with Expo Go, or press w for the browser
 ```
 
-Audio playback uses `expo-audio`, which runs in Expo Go. Mock tracks have no audio files, so the player simulates progress; give a track an `audioUrl` in `src/data/catalog.ts` to hear real audio.
-
-## Checks
+## Checks (run all three before every commit)
 
 ```bash
-npm test              # money split + phone number tests
-npm run typecheck
+npm run lint          # ESLint with Expo's rules
+npm run typecheck     # TypeScript, strict mode
+npm test              # money split and phone number tests
 ```
 
-## Structure
+## Folder structure
 
 ```
-src/app/            screens (Expo Router: every file is a route)
-  (tabs)/           Discover, Search, Library, Wallet
-  artist/[id]       artist page
-  release/[id]      single / EP / album page
-  buy               checkout
-  topup             mobile money top-up
-  player            full-screen player
-src/components/     UI pieces, mini player, playback engine
-src/data/catalog.ts mock artists, releases, songs (all invented)
-src/lib/money.ts    UGX formatting and the sale split (UPRS per songwriter)
-src/lib/phone.ts    Ugandan number parsing, MTN/Airtel detection
-src/store/          wallet + player state (Zustand)
+src/
+  app/                 Screens. Expo Router: every file is a route.
+    (tabs)/            Home, Search, Your music, Wallet + the tab bar layout
+    artist/[id].tsx    Artist page
+    release/[id].tsx   Single / EP / album page
+    player.tsx         Full-screen player
+    buy.tsx            Checkout
+    topup.tsx          Add money (mobile money)
+    gift.tsx           Send an artist a gift
+    profile.tsx        Profile
+    settings.tsx       Settings
+  api/                 The only way screens get catalogue data
+    catalog.ts         Catalogue service (swap point for the real API)
+    types.ts           Artist, Release, Track …
+    mock/              Invented sample data; only catalog.ts reads it
+  components/
+    ui/                Shared building blocks: buttons, cards, rows, empty state
+    home/ artist/ player/ checkout/ wallet/ profile/   Pieces used by one area
+    Art.tsx            Cover/artist image with pattern fallback
+  lib/                 Pure logic, no React: money, phone numbers, formatting, theme
+  store/               App state (Zustand, saved on the device): wallet, player, likes, profile
 ```
 
-## Money rules
+### Conventions
 
-- All amounts are whole shillings (integers). No floating point.
-- Per sale: a song share (placeholder 10%) goes to songwriters, split per writer: UPRS members and foreign-society writers via UPRS, writers in no society paid directly. Of the rest, Deegee keeps a placeholder 20%; the artist gets the remainder, including rounding.
-- Placeholders live in `TERMS` in `src/lib/money.ts` until the UPRS licence and artist terms are signed.
+- **Screens stay thin.** A screen wires data and state together; reusable or self-contained UI goes in `components/`.
+- **Data goes through `src/api`.** Never import `src/api/mock` from a screen or component.
+- **Styles live in `StyleSheet.create`** at the bottom of each file. Only values computed at runtime (sizes, insets, progress) are inline.
+- **Design tokens only.** Colours, fonts, spacing and radii come from `src/lib/theme.ts`; no hard-coded values in screens.
+- **Money is whole Ugandan shillings** (integers). All split rules live in `src/lib/money.ts` and are tested; rounding always favours the artist and never loses a shilling.
+- **Pure logic gets tests** next to it (`*.test.ts`).
 
-## Next
+## Money rules (placeholders until contracts are signed)
 
-1. Spring Boot API (catalog, wallet ledger, purchases) and swap mock data for it
-2. Real mobile money via the chosen aggregator
-3. Artist upload with rights declaration and label approval
-4. Encrypted offline downloads
+Set in `TERMS` in `src/lib/money.ts`:
+
+- **Sales:** 10% of each sale is the song share, split per songwriter: UPRS members and foreign-society writers through UPRS, writers in no society paid directly. Of the rest, Deegee keeps 20% and the artist gets the remainder.
+- **Gifts:** the artist gets 95% and Deegee keeps 5%. Gifts are not song sales, so there's no songwriter share.
+
+## Before connecting the backend
+
+1. Replace the mock in `src/api/catalog.ts` with API calls, and wrap them in TanStack Query hooks so screens get loading and error states.
+2. Move wallet balances, purchases and gifts to the server. `src/store/wallet.ts` currently changes money on the phone, which is only acceptable for a demo.
+3. Move UI text into translation files so the Luganda setting can work.
+
+## Known placeholders
+
+Shuffle, repeat, Help and support, "Sell on Deegee" and Terms do nothing yet. Audio is simulated for songs without an `audioUrl`.

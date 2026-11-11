@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Image, View, type ViewStyle } from 'react-native';
-import { photoUrl } from '../data/catalog';
+import { Image, StyleSheet, View, type ViewStyle } from 'react-native';
+import { photoUrl } from '../api';
 import Svg, { Circle, Defs, G, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 /**
@@ -88,7 +88,7 @@ export function Art({ seed, colors: [a, b], size, round, style, photo = true }: 
       </Svg>
       {uri ? (
         <Image source={{ uri }} onError={() => setPhotoFailed(true)} accessibilityIgnoresInvertColors
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} resizeMode="cover" />
+          style={StyleSheet.absoluteFill} resizeMode="cover" />
       ) : null}
     </View>
   );

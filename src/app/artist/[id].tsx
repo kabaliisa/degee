@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router, useLocalSearchParams } from 'expo-router';
-import { Pressable, ScrollView, Share, Text, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
+import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { buyersFor, getArtist, releasesByArtist, supportersFor, tracksByArtist } from '../../api';
 import { Art } from '../../components/Art';
-import { MiniPlayer } from '../../components/MiniPlayer';
+import { GiftButton, SupportCard } from '../../components/artist/GiftEntryPoints';
+import { MiniPlayer } from '../../components/player/MiniPlayer';
 import { Button, EmptyState, IconButton, PlayButton, ReleaseCard, Shelf, TrackRow } from '../../components/ui';
-import { buyersFor, getArtist, releasesByArtist, supportersFor, tracks } from '../../data/catalog';
-import { colors, font, space, type, withAlpha } from '../../lib/theme';
+import { colors, font, layout, radius, space, type, withAlpha } from '../../lib/theme';
 import { useLikes } from '../../store/likes';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
@@ -23,73 +24,58 @@ export default function ArtistScreen() {
   const toggleFollow = useLikes((s) => s.toggleFollow);
   if (!artist) return <EmptyState icon="person-outline" title="Artist not found" body="This page may have moved." />;
 
-  const own = releasesByArtist(artist.id).sort((a, b) => b.year - a.year);
-  const popular = tracks.filter((t) => t.artistId === artist.id).sort((a, b) => buyersFor(b.id) - buyersFor(a.id)).slice(0, 5);
+  const ownReleases = releasesByArtist(artist.id).sort((a, b) => b.year - a.year);
+  const popular = tracksByArtist(artist.id).sort((a, b) => buyersFor(b.id) - buyersFor(a.id)).slice(0, 5);
   const link = `deegee.app/${artist.name.toLowerCase().replace(/\s+/g, '')}`;
+  const share = () => Share.share({ message: `Support ${artist.name} on Deegee: https://${link}` });
   const play = () => (currentArtist === artist.id ? toggle() : playQueue(popular.map((t) => t.id), 0, owns));
 
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 140 }}>
+    <View style={styles.screen}>
+      <ScrollView contentContainerStyle={styles.content}>
         {/* Full-bleed hero: the artist's art fills the top, name set large over a fade. */}
-        <View style={{ height: 340, overflow: 'hidden' }}>
-          <Art seed={artist.id} colors={artist.colors} size={600} style={{ position: 'absolute', top: -130, left: -100, borderRadius: 0 }} />
-          <LinearGradient colors={[withAlpha(colors.bg, 0.1), withAlpha(colors.bg, 0.6), colors.bg]} locations={[0, 0.6, 1]}
-            style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }} />
-          <View style={{ position: 'absolute', left: space.lg, right: space.lg, bottom: space.md }}>
+        <View style={styles.hero}>
+          <Art seed={artist.id} colors={artist.colors} size={600} style={styles.heroArt} />
+          <LinearGradient colors={[withAlpha(colors.bg, 0.1), withAlpha(colors.bg, 0.6), colors.bg]} locations={[0, 0.6, 1]} style={StyleSheet.absoluteFill} />
+          <View style={styles.heroText}>
             {artist.verified ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+              <View style={styles.verified}>
                 <Ionicons name="checkmark-circle" size={18} color={colors.accent} />
-                <Text style={[type.smallBold, { color: colors.text }]}>Verified artist</Text>
+                <Text style={[type.smallBold, styles.verifiedText]}>Verified artist</Text>
               </View>
             ) : null}
             <Text style={type.hero} numberOfLines={2} adjustsFontSizeToFit>{artist.name}</Text>
           </View>
         </View>
 
-        <View style={{ paddingHorizontal: space.lg }}>
+        <View style={styles.padded}>
           <Text style={type.small}>{supportersFor(artist.id).toLocaleString('en-US')} supporters · {artist.city}</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.md }}>
+          <View style={styles.actions}>
             <Button small variant="outline" label={following ? 'Following' : 'Follow'} onPress={() => toggleFollow(artist.id)} />
-            <Pressable onPress={() => router.push({ pathname: '/gift', params: { artistId: artist.id } })} accessibilityRole="button" accessibilityLabel={`Send ${artist.name} a gift`}
-              style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 999,
-                backgroundColor: pressed ? colors.surfacePress : colors.surfaceRaised, borderWidth: 1, borderColor: colors.accent })}>
-              <Ionicons name="gift" size={16} color={colors.accent} />
-              <Text style={{ fontFamily: font.bold, fontSize: 13, color: colors.text }}>Send a gift</Text>
-            </Pressable>
-            <IconButton name="share-outline" label="Share artist page" onPress={() => Share.share({ message: `Support ${artist.name} on Deegee: https://${link}` })} />
-            <View style={{ flex: 1 }} />
+            <GiftButton artist={artist} />
+            <IconButton name="share-outline" label="Share artist page" onPress={share} />
+            <View style={styles.flex} />
             <PlayButton playing={currentArtist === artist.id && isPlaying} onPress={play} />
           </View>
         </View>
 
-        <Text style={[type.heading, { paddingHorizontal: space.lg, marginTop: space.xl, marginBottom: space.sm }]}>Popular</Text>
+        <Text style={[type.heading, styles.sectionTitle]}>Popular</Text>
         {popular.map((t, i) => (
-          <View key={t.id}>
-            <TrackRow track={t} onPlay={() => playQueue(popular.map((x) => x.id), i, owns)} />
-          </View>
+          <TrackRow key={t.id} track={t} onPlay={() => playQueue(popular.map((x) => x.id), i, owns)} />
         ))}
 
-        <Pressable onPress={() => router.push({ pathname: '/gift', params: { artistId: artist.id } })}
-          style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: space.md, margin: space.lg, marginBottom: 0, padding: space.lg, borderRadius: 16, backgroundColor: pressed ? colors.surfacePress : colors.surface })}>
-          <Ionicons name="gift" size={26} color={colors.accent} />
-          <View style={{ flex: 1 }}>
-            <Text style={type.bodyBold}>Support {artist.name} directly</Text>
-            <Text style={type.small}>Send a gift from your wallet. 95% goes straight to them.</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
-        </Pressable>
+        <SupportCard artist={artist} />
 
         <Shelf title="Releases">
-          {own.map((r) => <ReleaseCard key={r.id} release={r} size={140} subtitle={`${r.year} · ${r.type}`} />)}
+          {ownReleases.map((r) => <ReleaseCard key={r.id} release={r} size={140} subtitle={`${r.year} · ${r.type}`} />)}
         </Shelf>
 
-        <View style={{ margin: space.lg, marginTop: space.xl, padding: space.lg, borderRadius: 16, backgroundColor: colors.surface }}>
+        <View style={styles.about}>
           <Text style={type.heading}>About</Text>
-          <Text style={[type.body, { color: colors.textMuted, marginTop: space.sm, fontFamily: font.regular }]}>{artist.bio}</Text>
-          <Text style={[type.small, { marginTop: space.md }]}>{artist.genres.join(', ')}</Text>
-          <Pressable onPress={() => Share.share({ message: `https://${link}` })} style={{ marginTop: space.md }}>
-            <Text style={[type.smallBold, { color: colors.accent }]}>{link}</Text>
+          <Text style={[type.body, styles.bio]}>{artist.bio}</Text>
+          <Text style={[type.small, styles.aboutMeta]}>{artist.genres.join(', ')}</Text>
+          <Pressable onPress={share} accessibilityRole="link" style={styles.aboutMeta}>
+            <Text style={[type.smallBold, styles.link]}>{link}</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -97,3 +83,21 @@ export default function ArtistScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: { flex: 1 },
+  content: { paddingBottom: layout.detailScreenBottom },
+  hero: { height: 340, overflow: 'hidden' },
+  heroArt: { position: 'absolute', top: -130, left: -100, borderRadius: 0 },
+  heroText: { position: 'absolute', left: space.lg, right: space.lg, bottom: space.md },
+  verified: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 },
+  verifiedText: { color: colors.text },
+  padded: { paddingHorizontal: space.lg },
+  actions: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.md },
+  flex: { flex: 1 },
+  sectionTitle: { paddingHorizontal: space.lg, marginTop: space.xl, marginBottom: space.sm },
+  about: { margin: space.lg, marginTop: space.xl, padding: space.lg, borderRadius: radius.lg, backgroundColor: colors.surface },
+  bio: { color: colors.textMuted, marginTop: space.sm, fontFamily: font.regular },
+  aboutMeta: { marginTop: space.md },
+  link: { color: colors.accent },
+});

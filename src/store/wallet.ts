@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { getArtist, getRelease, getTrack, tracksForRelease } from '../data/catalog';
+import { getArtist, getRelease, getTrack, tracksForRelease } from '../api';
 import { TERMS, splitGift, splitSale } from '../lib/money';
 
 import type { Provider } from '../lib/phone';
@@ -12,7 +12,8 @@ export type WalletTx = {
   at: number;
   kind: 'TOPUP' | 'PURCHASE' | 'GIFT';
   amount: number; // + for top-up, − for purchase or gift
-  note?: string;
+  note?: string; // gift message
+  provider?: Provider; // top-ups only
   label: string;
   status: 'PENDING' | 'COMPLETED' | 'FAILED';
 };
@@ -48,7 +49,7 @@ export const useWallet = create<WalletState>()(
         if (!Number.isInteger(amount) || amount < TERMS.minTopUp || amount > TERMS.maxTopUp) {
           throw new Error(`Top up between UGX ${TERMS.minTopUp} and UGX ${TERMS.maxTopUp.toLocaleString('en-US')}`);
         }
-        const tx: WalletTx = { id: newId(), at: Date.now(), kind: 'TOPUP', amount, label: `${provider} · ${phone}`, status: 'PENDING' };
+        const tx: WalletTx = { id: newId(), at: Date.now(), kind: 'TOPUP', amount, label: phone, provider, status: 'PENDING' };
         set((s) => ({ txs: [tx, ...s.txs] }));
         const approved = await mockMobileMoneyApproval();
         const status = approved ? 'COMPLETED' : 'FAILED';
@@ -115,3 +116,7 @@ export const useWallet = create<WalletState>()(
     },
   ),
 );
+
+/** Total spent on music and gifts: money that went to artists, songwriters and Deegee. */
+export const sentToArtists = (txs: WalletTx[]) =>
+  txs.filter((t) => t.kind !== 'TOPUP' && t.status === 'COMPLETED').reduce((sum, t) => sum - t.amount, 0);
