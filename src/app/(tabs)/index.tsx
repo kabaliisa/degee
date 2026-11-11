@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Art } from '../../components/Art';
-import { ArtistCard, Chip, Equalizer, IconButton, PlayButton, ReleaseCard, Shelf } from '../../components/ui';
+import { Avatar } from '../../components/Avatar';
+import { ArtistCard, Chip, Equalizer, PlayButton, ReleaseCard, Shelf } from '../../components/ui';
 import { artists, getArtist, releases, tracksForRelease, type Genre } from '../../data/catalog';
 import { formatUGX } from '../../lib/money';
 import { colors, font, radius, space, type, withAlpha } from '../../lib/theme';
@@ -48,12 +49,14 @@ export default function Home() {
       <LinearGradient colors={[withAlpha(colors.accent, 0.22), colors.bg]} style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 360 }} />
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + space.md, paddingBottom: 170 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.lg, gap: space.md }}>
-          <Text style={[type.display, { flex: 1 }]}>{greeting()}</Text>
+          <Pressable onPress={() => router.push('/profile')} accessibilityRole="button" accessibilityLabel="Your profile and settings" hitSlop={6}>
+            <Avatar />
+          </Pressable>
+          <Text style={[type.title, { flex: 1 }]} numberOfLines={1}>{greeting()}</Text>
           <Pressable onPress={() => router.push('/(tabs)/wallet')} accessibilityLabel={`Wallet balance ${formatUGX(balance)}`}
             style={{ paddingVertical: 6, paddingHorizontal: 12, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised }}>
             <Text style={{ fontFamily: font.bold, color: colors.text, fontSize: 13 }}>{formatUGX(balance)}</Text>
           </Pressable>
-          <IconButton name="notifications-outline" color={colors.text} onPress={() => {}} label="Notifications" />
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.sm, paddingHorizontal: space.lg, marginTop: space.lg }}>

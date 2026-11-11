@@ -31,6 +31,8 @@ export default function RootLayout() {
         <Stack.Screen name="release/[id]" options={{ headerTransparent: true, title: '', headerStyle: { backgroundColor: 'transparent' } }} />
         <Stack.Screen name="player" options={{ presentation: 'fullScreenModal', headerShown: false, animation: 'slide_from_bottom' }} />
         <Stack.Screen name="buy" options={{ presentation: 'modal', title: 'Checkout' }} />
+        <Stack.Screen name="profile" options={{ title: 'Profile' }} />
+        <Stack.Screen name="settings" options={{ title: 'Settings' }} />
         <Stack.Screen name="gift" options={{ presentation: 'modal', title: 'Send a gift' }} />
         <Stack.Screen name="topup" options={{ presentation: 'modal', title: 'Add money' }} />
       </Stack>

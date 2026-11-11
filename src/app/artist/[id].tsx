@@ -49,10 +49,14 @@ export default function ArtistScreen() {
 
         <View style={{ paddingHorizontal: space.lg }}>
           <Text style={type.small}>{supportersFor(artist.id).toLocaleString('en-US')} supporters · {artist.city}</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.lg, marginTop: space.md }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.md }}>
             <Button small variant="outline" label={following ? 'Following' : 'Follow'} onPress={() => toggleFollow(artist.id)} />
-            <Button small variant="outline" icon="gift-outline" label="Gift"
-              onPress={() => router.push({ pathname: '/gift', params: { artistId: artist.id } })} />
+            <Pressable onPress={() => router.push({ pathname: '/gift', params: { artistId: artist.id } })} accessibilityRole="button" accessibilityLabel={`Send ${artist.name} a gift`}
+              style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 999,
+                backgroundColor: pressed ? colors.surfacePress : colors.surfaceRaised, borderWidth: 1, borderColor: colors.accent })}>
+              <Ionicons name="gift" size={16} color={colors.accent} />
+              <Text style={{ fontFamily: font.bold, fontSize: 13, color: colors.text }}>Send a gift</Text>
+            </Pressable>
             <IconButton name="share-outline" label="Share artist page" onPress={() => Share.share({ message: `Support ${artist.name} on Deegee: https://${link}` })} />
             <View style={{ flex: 1 }} />
             <PlayButton playing={currentArtist === artist.id && isPlaying} onPress={play} />
