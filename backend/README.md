@@ -50,6 +50,7 @@ curl -X POST $B/v1/gifts -H "Authorization: Bearer $T" -H 'content-type: applica
 | Sign in | `POST /v1/auth/verify` `{phone, code}` → access + refresh token | no |
 | New tokens | `POST /v1/auth/refresh` `{refreshToken}` | no |
 | Me | `GET /v1/me`, `PATCH /v1/me` `{name}` | yes |
+| Whole catalogue | `GET /v1/catalog` → artists, releases, tracks (what the app loads at startup) | no |
 | Catalogue | `GET /v1/catalog/artists`, `/artists/{id}`, `/releases`, `/releases/{id}`, `/tracks?ids=`, `/search?q=` | no |
 | Wallet | `GET /v1/wallet` → balance and activity | yes |
 | Add money | `POST /v1/wallet/topups` `{amountUgx, provider, phone}`, then poll `GET /v1/wallet/topups/{id}` | yes |
@@ -93,5 +94,6 @@ src/main/resources/db/migration/   Flyway SQL (V4 is the demo catalogue)
 | `DEEGEE_DB_URL` / `DEEGEE_DB_USER` / `DEEGEE_DB_PASSWORD` | local `deegee` database |
 | `DEEGEE_JWT_SECRET` | a dev secret; set a random 32+ character value anywhere real |
 | `DEEGEE_WEBHOOK_SECRET` | a dev secret; set one per environment |
+| `DEEGEE_CORS_ORIGINS` | `http://localhost:8081,http://localhost:19006` (the Expo web dev server) |
 
 Not built yet: real SMS, real MTN/Airtel collections, artist uploads and payouts, audio streaming.

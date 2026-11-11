@@ -3,6 +3,8 @@ package app.deegee.api.wallet;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -14,6 +16,29 @@ class CatalogApiTest extends ApiTestSupport {
     void listsTheSeededCatalogue() throws Exception {
         mvc.perform(get("/v1/catalog/artists")).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(5)));
         mvc.perform(get("/v1/catalog/releases")).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(6)));
+    }
+
+    @Test
+    void snapshotHasEverythingInOneCall() throws Exception {
+        mvc.perform(get("/v1/catalog"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.artists", hasSize(5)))
+                .andExpect(jsonPath("$.releases", hasSize(6)))
+                .andExpect(jsonPath("$.tracks", hasSize(16)))
+                .andExpect(jsonPath("$.tracks[0].id").value("t1"));
+    }
+
+    @Test
+    void theWebAppMayCallTheApi() throws Exception {
+        mvc.perform(options("/v1/catalog")
+                        .header("Origin", "http://localhost:8081")
+                        .header("Access-Control-Request-Method", "GET"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:8081"));
+        mvc.perform(options("/v1/catalog")
+                        .header("Origin", "https://evil.example")
+                        .header("Access-Control-Request-Method", "GET"))
+                .andExpect(status().isForbidden());
     }
 
     @Test

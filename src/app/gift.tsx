@@ -7,6 +7,7 @@ import { AmountRow, Receipt } from '../components/checkout/Receipt';
 import { ResultState } from '../components/checkout/ResultState';
 import { Button, EmptyState } from '../components/ui';
 import { TERMS, formatUGX, splitGift } from '../lib/money';
+import { newIdempotencyKey } from '../lib/ids';
 import { colors, font, radius, space, type } from '../lib/theme';
 import { useWallet } from '../store/wallet';
 
@@ -20,6 +21,8 @@ export default function Gift() {
   const sendGift = useWallet((s) => s.sendGift);
   const [amount, setAmount] = useState('2000');
   const [note, setNote] = useState('');
+  const [idempotencyKey] = useState(newIdempotencyKey);
+  const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   if (!artist) return <EmptyState icon="person-outline" title="Artist not found" body="Go back and try again." />;
@@ -29,13 +32,15 @@ export default function Gift() {
   const shortBy = Math.max(0, value - balance);
   const topUpAmount = Math.max(shortBy, TERMS.minTopUp);
 
-  const send = () => {
+  const send = async () => {
     setError(null);
-    const res = sendGift(artist.id, value, note);
+    setSending(true);
+    const res = await sendGift(artist.id, value, note, idempotencyKey);
+    setSending(false);
     if (res.ok) setSent(true);
     else if (res.reason === 'TOO_SMALL') setError(`The smallest gift is ${formatUGX(TERMS.minGift)}.`);
     else if (res.reason === 'INSUFFICIENT_FUNDS') setError(`You need ${formatUGX(res.shortBy ?? 0)} more in your wallet.`);
-    else setError('The gift was not sent. Try again.');
+    else setError(res.message);
   };
 
   if (sent && split) {
@@ -95,7 +100,7 @@ export default function Gift() {
         <Button label={`Add ${formatUGX(topUpAmount)} to wallet`} icon="add"
           onPress={() => router.push({ pathname: '/topup', params: { amount: String(topUpAmount) } })} />
       ) : (
-        <Button label={split ? `Send ${formatUGX(value)} gift` : 'Send gift'} icon="gift" disabled={!split} onPress={send} />
+        <Button label={split ? `Send ${formatUGX(value)} gift` : 'Send gift'} icon="gift" disabled={!split} loading={sending} onPress={send} />
       )}
     </ScrollView>
   );

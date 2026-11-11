@@ -4,8 +4,10 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { ResultState } from '../components/checkout/ResultState';
 import { Button } from '../components/ui';
 import { TERMS, formatUGX } from '../lib/money';
-import { guessProvider, normalizeUgPhone, type Provider } from '../lib/phone';
+import { newIdempotencyKey } from '../lib/ids';
+import { formatPhone, guessProvider, normalizeUgPhone, type Provider } from '../lib/phone';
 import { colors, font, radius, space, type } from '../lib/theme';
+import { useSession } from '../store/session';
 import { useWallet } from '../store/wallet';
 
 const PRESETS = [2000, 5000, 10000, 20000];
@@ -14,14 +16,17 @@ const PROVIDERS: { name: Provider; color: string }[] = [
   { name: 'Airtel Money', color: colors.airtel },
 ];
 
-type Stage = 'form' | 'waiting' | 'done';
+type Stage = 'form' | 'waiting' | 'done' | 'slow';
 
 export default function TopUp() {
   const params = useLocalSearchParams<{ amount?: string }>();
   const topUp = useWallet((s) => s.topUp);
   const [amount, setAmount] = useState(params.amount ?? '5000');
-  const [phone, setPhone] = useState('');
-  const [provider, setProvider] = useState<Provider>('MTN MoMo');
+  // Start with the number they signed in with; most people top up from their own phone.
+  const myPhone = useSession((s) => s.user?.phone);
+  const [phone, setPhone] = useState(() => (myPhone ? formatPhone(myPhone) : ''));
+  const [provider, setProvider] = useState<Provider>(() => (myPhone && guessProvider(myPhone)) || 'MTN MoMo');
+  const [idempotencyKey, setIdempotencyKey] = useState(newIdempotencyKey);
   const [stage, setStage] = useState<Stage>('form');
   const [error, setError] = useState<string | null>(null);
 
@@ -41,9 +46,12 @@ export default function TopUp() {
     if (value < TERMS.minTopUp) return setError(`The smallest amount is ${formatUGX(TERMS.minTopUp)}.`);
     setStage('waiting');
     try {
-      const tx = await topUp(value, provider, e164);
-      setStage(tx.status === 'COMPLETED' ? 'done' : 'form');
-      if (tx.status !== 'COMPLETED') setError('The payment was not approved. Try again.');
+      const outcome = await topUp(value, provider, e164, idempotencyKey);
+      if (outcome === 'COMPLETED') return setStage('done');
+      if (outcome === 'PENDING') return setStage('slow');
+      setStage('form');
+      setIdempotencyKey(newIdempotencyKey()); // a declined top-up is finished; trying again is a new one
+      setError('The payment was not approved. Try again.');
     } catch (e) {
       setStage('form');
       setError((e as Error).message);
@@ -51,13 +59,21 @@ export default function TopUp() {
   };
 
   if (stage === 'waiting') {
-    return <ResultState icon="phone-portrait-outline" title="Check your phone" footnote="Demo mode: payments are simulated."
+    return <ResultState icon="phone-portrait-outline" title="Check your phone" footnote="Test mode: no real money moves."
       body={`Approve the ${provider} prompt for ${formatUGX(value)} on ${e164} by entering your PIN.`} />;
+  }
+  if (stage === 'slow') {
+    return (
+      <ResultState icon="time-outline" title="Still waiting" footnote="Test mode: no real money moves."
+        body={`We haven’t heard back from ${provider} yet. If you approve the prompt, ${formatUGX(value)} will show in your wallet.`}>
+        <Button label="Done" onPress={() => router.back()} />
+      </ResultState>
+    );
   }
   if (stage === 'done') {
     return (
       <ResultState icon="checkmark-circle" iconColor={colors.success} title="Money added" body={`${formatUGX(value)} was added to your wallet.`}
-        footnote="Demo mode: payments are simulated.">
+        footnote="Test mode: no real money moves.">
         <Button label="Done" onPress={() => router.back()} />
       </ResultState>
     );

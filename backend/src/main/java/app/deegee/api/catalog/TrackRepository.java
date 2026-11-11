@@ -11,6 +11,8 @@ public interface TrackRepository extends JpaRepository<Track, String> {
 
     List<Track> findByArtistId(String artistId);
 
+    List<Track> findAllByOrderByReleaseIdAscTrackNoAsc();
+
     List<Track> findByIdIn(Collection<String> ids);
 
     @Query("select t from Track t where lower(t.title) like lower(concat('%', :q, '%')) order by t.title")

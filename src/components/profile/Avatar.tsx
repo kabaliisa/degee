@@ -1,13 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { colors, font } from '../../lib/theme';
-import { initials, useProfile } from '../../store/profile';
+import { initials } from '../../lib/format';
+import { useSession } from '../../store/session';
 
 /** The signed-in user's avatar: their initials on Deegee blue. */
 export function Avatar({ size = 34 }: { size?: number }) {
-  const name = useProfile((s) => s.name);
+  const name = useSession((s) => s.user?.name) ?? '';
   return (
     <View style={[styles.circle, { width: size, height: size, borderRadius: size / 2 }]}>
-      <Text style={[styles.initials, { fontSize: size * 0.4 }]}>{initials(name)}</Text>
+      <Text style={[styles.initials, { fontSize: size * 0.4 }]}>{name ? initials(name) : '♪'}</Text>
     </View>
   );
 }

@@ -12,3 +12,7 @@ export function guessProvider(e164: string): Provider | null {
   if (['70', '74', '75'].includes(p)) return 'Airtel Money';
   return null;
 }
+
+/** +256772123456 → 0772 123456, the way Ugandans write their numbers. */
+export const formatPhone = (e164: string) =>
+  e164.startsWith('+256') && e164.length === 13 ? `0${e164.slice(4, 7)} ${e164.slice(7)}` : e164;

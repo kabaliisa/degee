@@ -38,5 +38,8 @@ public final class CatalogViews {
 
     public record ReleasePage(ReleaseView release, ArtistView artist, List<TrackView> tracks) {}
 
+    /** The whole catalogue in one response, while it is small enough for that. */
+    public record CatalogSnapshot(List<ArtistView> artists, List<ReleaseView> releases, List<TrackView> tracks) {}
+
     public record SearchResults(List<ArtistView> artists, List<ReleaseView> releases, List<TrackView> tracks) {}
 }

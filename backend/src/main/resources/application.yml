@@ -24,6 +24,9 @@ management:
         include: health
 
 deegee:
+  cors:
+    # Browsers that may call the API: the Expo web dev server. Phones don't need this.
+    allowed-origins: ${DEEGEE_CORS_ORIGINS:http://localhost:8081,http://localhost:19006}
   security:
     # Signs access tokens. MUST be overridden in every real environment (at least 32 bytes).
     jwt-secret: ${DEEGEE_JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}

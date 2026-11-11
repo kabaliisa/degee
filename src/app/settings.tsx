@@ -2,26 +2,29 @@ import { router } from 'expo-router';
 import { ScrollView, StyleSheet, Text } from 'react-native';
 import { SettingsGroup, SettingsRow } from '../components/profile/SettingsRow';
 import { colors, space, type } from '../lib/theme';
-import { formatPhone, useProfile, type Language, type Quality } from '../store/profile';
+import { formatPhone } from '../lib/phone';
+import { displayName, useSession } from '../store/session';
+import { useSettings, type Language, type Quality } from '../store/settings';
 
 const QUALITIES: Quality[] = ['Low', 'Normal', 'High'];
 const LANGUAGES: Language[] = ['English', 'Luganda'];
 const cycle = <T,>(list: T[], current: T) => list[(list.indexOf(current) + 1) % list.length];
 
 export default function Settings() {
-  const p = useProfile();
+  const p = useSettings();
+  const user = useSession((s) => s.user);
 
   const signOut = () => {
-    p.signOut();
-    router.dismissAll();
+    if (router.canDismiss()) router.dismissAll();
+    useSession.getState().signOut(); // the root layout then shows the sign-in screen
   };
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <SettingsGroup title="Account">
         {/* Name is edited on the Profile screen, one step back. */}
-        <SettingsRow icon="person-outline" label="Name" detail={p.name} onPress={() => router.back()} />
-        <SettingsRow icon="phone-portrait-outline" label="Mobile money number" detail={formatPhone(p.phone)} last />
+        <SettingsRow icon="person-outline" label="Name" detail={displayName(user)} onPress={() => router.back()} />
+        <SettingsRow icon="phone-portrait-outline" label="Mobile money number" detail={user ? formatPhone(user.phone) : ''} last />
       </SettingsGroup>
 
       <SettingsGroup title="Data and audio">

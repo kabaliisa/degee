@@ -7,20 +7,21 @@ import { AmountRow, Receipt, ReceiptDivider } from '../components/checkout/Recei
 import { ResultState } from '../components/checkout/ResultState';
 import { Button, EmptyState } from '../components/ui';
 import { TERMS, formatUGX, splitRelease, splitSale } from '../lib/money';
+import { newIdempotencyKey } from '../lib/ids';
 import { colors, space, type } from '../lib/theme';
 import { useWallet, type PurchaseResult } from '../store/wallet';
 
 function errorMessage(res: Exclude<PurchaseResult, { ok: true }>) {
   if (res.reason === 'INSUFFICIENT_FUNDS') return `You need ${formatUGX(res.shortBy ?? 0)} more.`;
-  if (res.reason === 'ALREADY_OWNED') return 'You already own this.';
-  return 'The payment did not go through. Try again.';
+  return res.message;
 }
 
 export default function Buy() {
   const { kind, id } = useLocalSearchParams<{ kind: 'track' | 'release'; id: string }>();
   const balance = useWallet((s) => s.balance);
-  const buyTrack = useWallet((s) => s.buyTrack);
-  const buyRelease = useWallet((s) => s.buyRelease);
+  const buy = useWallet((s) => s.buy);
+  const [idempotencyKey] = useState(newIdempotencyKey); // one per checkout, so retries never charge twice
+  const [paying, setPaying] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,8 +38,11 @@ export default function Buy() {
   const shortBy = Math.max(0, price - balance);
   const topUpAmount = Math.max(shortBy, TERMS.minTopUp);
 
-  const pay = () => {
-    const res = track ? buyTrack(track.id) : buyRelease(release.id);
+  const pay = async () => {
+    setError(null);
+    setPaying(true);
+    const res = await buy(track ? 'TRACK' : 'RELEASE', track ? track.id : release.id, idempotencyKey);
+    setPaying(false);
     if (res.ok) setDone(true);
     else setError(errorMessage(res));
   };
@@ -83,7 +87,7 @@ export default function Buy() {
       {shortBy > 0 ? (
         <Button label={`Add ${formatUGX(topUpAmount)}`} icon="add" onPress={() => router.push({ pathname: '/topup', params: { amount: String(topUpAmount) } })} />
       ) : (
-        <Button label={`Pay ${formatUGX(price)}`} icon="lock-closed" onPress={pay} />
+        <Button label={`Pay ${formatUGX(price)}`} icon="lock-closed" onPress={pay} loading={paying} />
       )}
       <Text style={[type.small, styles.centered]}>Buy once, keep forever. Play in full any time in your library.</Text>
     </ScrollView>

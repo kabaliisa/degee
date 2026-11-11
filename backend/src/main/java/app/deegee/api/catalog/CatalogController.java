@@ -2,6 +2,7 @@ package app.deegee.api.catalog;
 
 import app.deegee.api.catalog.CatalogViews.ArtistPage;
 import app.deegee.api.catalog.CatalogViews.ArtistView;
+import app.deegee.api.catalog.CatalogViews.CatalogSnapshot;
 import app.deegee.api.catalog.CatalogViews.ReleasePage;
 import app.deegee.api.catalog.CatalogViews.ReleaseView;
 import app.deegee.api.catalog.CatalogViews.SearchResults;
@@ -31,6 +32,18 @@ class CatalogController {
         this.artists = artists;
         this.releases = releases;
         this.tracks = tracks;
+    }
+
+    /**
+     * Everything at once, so the app can browse offline and without a request per screen.
+     * Fine for hundreds of releases; replace with paged endpoints before the catalogue gets large.
+     */
+    @GetMapping
+    CatalogSnapshot all() {
+        return new CatalogSnapshot(
+                artists.findAll().stream().map(ArtistView::of).toList(),
+                releases.findAllByOrderByYearDescIdAsc().stream().map(ReleaseView::of).toList(),
+                tracks.findAllByOrderByReleaseIdAscTrackNoAsc().stream().map(TrackView::of).toList());
     }
 
     @GetMapping("/artists")
