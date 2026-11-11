@@ -11,26 +11,34 @@ public final class CatalogViews {
     private CatalogViews() {}
 
     public record ArtistView(String id, String name, String city, String bio, List<String> genres, boolean verified, List<String> colors) {
-        static ArtistView of(Artist a) {
+        public static ArtistView of(Artist a) {
             return new ArtistView(a.getId(), a.getName(), a.getCity(), a.getBio(), a.getGenres(), a.isVerified(), a.getColors());
         }
     }
 
-    public record ReleaseView(String id, String artistId, String title, String type, int year, long priceUGX, List<String> colors, boolean exclusive) {
-        static ReleaseView of(Release r) {
-            return new ReleaseView(r.getId(), r.getArtistId(), r.getTitle(), r.getType().label(), r.getYear(), r.getPriceUgx(), r.getColors(), r.isExclusive());
+    /** {@code coverUrl} is a path on this API (e.g. /v1/media/covers/…), or null to use the fallback art. */
+    public record ReleaseView(String id, String artistId, String title, String type, int year, long priceUGX, List<String> colors,
+                              boolean exclusive, String coverUrl) {
+        public static ReleaseView of(Release r) {
+            return new ReleaseView(r.getId(), r.getArtistId(), r.getTitle(), r.getType().label(), r.getYear(), r.getPriceUgx(), r.getColors(),
+                    r.isExclusive(), coverPath(r.getCoverKey()));
         }
+    }
+
+    public static String coverPath(String coverKey) {
+        return coverKey == null ? null : "/v1/media/" + coverKey;
     }
 
     public record WriterView(String name, int sharePct, String society) {}
 
+    /** {@code hasAudio}: a real recording was uploaded; ask GET /v1/tracks/{id}/play for a link. */
     public record TrackView(String id, String releaseId, String artistId, String title, int durationSec, long priceUGX,
-                            List<WriterView> writers, String audioUrl) {
-        static TrackView of(Track t) {
+                            List<WriterView> writers, boolean hasAudio) {
+        public static TrackView of(Track t) {
             List<WriterView> writers = t.getWriters().stream()
                     .map(w -> new WriterView(w.getName(), w.getSharePct(), w.getSociety()))
                     .toList();
-            return new TrackView(t.getId(), t.getReleaseId(), t.getArtistId(), t.getTitle(), t.getDurationSec(), t.getPriceUgx(), writers, t.getAudioUrl());
+            return new TrackView(t.getId(), t.getReleaseId(), t.getArtistId(), t.getTitle(), t.getDurationSec(), t.getPriceUgx(), writers, t.hasAudio());
         }
     }
 

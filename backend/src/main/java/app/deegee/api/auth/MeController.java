@@ -21,14 +21,17 @@ class MeController {
     record UpdateMe(@NotBlank @Size(max = 40) String name) {}
 
     private final UserRepository users;
+    private final Roles roles;
 
-    MeController(UserRepository users) {
+    MeController(UserRepository users, Roles roles) {
         this.users = users;
+        this.roles = roles;
     }
 
     @GetMapping
     AuthController.UserView me(@AuthenticationPrincipal Jwt jwt) {
-        return AuthController.UserView.of(load(jwt));
+        User user = load(jwt);
+        return AuthController.UserView.of(user, roles.of(user.getId()));
     }
 
     @PatchMapping
@@ -36,7 +39,7 @@ class MeController {
     AuthController.UserView update(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody UpdateMe req) {
         User user = load(jwt);
         user.setName(req.name().trim());
-        return AuthController.UserView.of(user);
+        return AuthController.UserView.of(user, roles.of(user.getId()));
     }
 
     private User load(Jwt jwt) {

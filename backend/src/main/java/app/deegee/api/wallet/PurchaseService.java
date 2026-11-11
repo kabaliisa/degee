@@ -86,7 +86,7 @@ public class PurchaseService {
     private record Sale(String artistId, long price, SaleSplit split, String description, List<String> grant) {}
 
     private Sale trackSale(String trackId, Set<String> owned) {
-        Track track = tracks.findById(trackId).orElseThrow(() -> ApiException.notFound("Song"));
+        Track track = tracks.findPublishedByIdIn(List.of(trackId)).stream().findFirst().orElseThrow(() -> ApiException.notFound("Song"));
         if (owned.contains(trackId)) throw alreadyOwned();
         SaleSplit split = MoneySplits.splitSale(track.getPriceUgx(), track.songwriters(), terms);
         return new Sale(track.getArtistId(), track.getPriceUgx(), split, track.getTitle(), List.of(trackId));
@@ -94,7 +94,7 @@ public class PurchaseService {
 
     /** The whole release, at the release price, granting the songs not already owned. */
     private Sale releaseSale(String releaseId, Set<String> owned) {
-        Release release = releases.findById(releaseId).orElseThrow(() -> ApiException.notFound("Release"));
+        Release release = releases.findPublishedById(releaseId).orElseThrow(() -> ApiException.notFound("Release"));
         List<Track> songs = tracks.findByReleaseIdOrderByTrackNo(releaseId);
         List<String> missing = songs.stream().map(Track::getId).filter(id -> !owned.contains(id)).toList();
         if (missing.isEmpty()) throw alreadyOwned();

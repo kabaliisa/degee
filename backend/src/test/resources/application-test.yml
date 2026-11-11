@@ -5,5 +5,11 @@ spring:
     password: ""
 
 deegee:
+  admin-phones: "+256700000001"
+  media:
+    dir: ${java.io.tmpdir}/deegee-test-media
   payments:
-    mock-auto-approve: false # tests confirm top-ups through the webhook explicitly
+    mock-auto-approve: false # tests confirm top-ups and payouts through the webhook explicitly
+  payouts:
+    sale-hold: 0s # tests withdraw straight away; EarningsHoldTest covers the holds
+    new-artist-hold: 0s

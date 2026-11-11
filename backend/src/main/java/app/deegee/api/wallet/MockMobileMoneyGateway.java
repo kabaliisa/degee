@@ -37,19 +37,27 @@ class MockMobileMoneyGateway implements MobileMoneyGateway {
     @Override
     public void requestCollection(PaymentIntent intent) {
         log.info("Mock mobile money: PIN prompt for UGX {} sent to {} (ref {})", intent.getAmountUgx(), intent.getMsisdn(), intent.getProviderRef());
+        answerLater(new CollectionResult(intent.getProviderRef(), true));
+    }
+
+    @Override
+    public void requestDisbursement(String providerRef, String msisdn, long amountUgx) {
+        log.info("Mock mobile money: sending UGX {} to {} (ref {})", amountUgx, msisdn, providerRef);
+        answerLater(new DisbursementResult(providerRef, true));
+    }
+
+    /** With auto-approve on, "the provider" says yes after a short delay. Otherwise tests answer through the mock webhook. */
+    private void answerLater(Object result) {
         if (!props.mockAutoApprove()) return;
-        String ref = intent.getProviderRef();
-        Runnable approve = () -> scheduler.schedule(
-                () -> events.publishEvent(new CollectionResult(ref, true)),
-                props.mockApproveDelay().toMillis(), TimeUnit.MILLISECONDS);
-        // Only after the intent is committed; otherwise the approval could arrive before the row exists.
+        Runnable answer = () -> scheduler.schedule(() -> events.publishEvent(result), props.mockApproveDelay().toMillis(), TimeUnit.MILLISECONDS);
+        // Only after the request is committed; otherwise the answer could arrive before the row exists.
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
-                public void afterCommit() { approve.run(); }
+                public void afterCommit() { answer.run(); }
             });
         } else {
-            approve.run();
+            answer.run();
         }
     }
 

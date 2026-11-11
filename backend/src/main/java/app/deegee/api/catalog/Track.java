@@ -31,6 +31,12 @@ public class Track {
 
         protected Writer() {}
 
+        public Writer(String name, int sharePct, String society) {
+            this.name = name;
+            this.sharePct = sharePct;
+            this.society = society;
+        }
+
         public String getName() { return name; }
         public int getSharePct() { return sharePct; }
         public String getSociety() { return society; }
@@ -61,14 +67,37 @@ public class Track {
     @Column(name = "price_ugx", nullable = false)
     private long priceUgx;
 
-    @Column(name = "audio_url", length = 500)
-    private String audioUrl;
+    @Column(name = "audio_key", length = 200)
+    private String audioKey;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "track_writers", joinColumns = @JoinColumn(name = "track_id"))
     private List<Writer> writers = new ArrayList<>();
 
     protected Track() {}
+
+    /** A new song on a draft release; the audio is uploaded separately. */
+    public Track(String id, String releaseId, String artistId, int trackNo, String title, long priceUgx, List<Writer> writers) {
+        this.id = id;
+        this.releaseId = releaseId;
+        this.artistId = artistId;
+        this.trackNo = trackNo;
+        edit(title, priceUgx, writers);
+    }
+
+    public void edit(String title, long priceUgx, List<Writer> writers) {
+        this.title = title;
+        this.priceUgx = priceUgx;
+        this.writers.clear();
+        this.writers.addAll(writers);
+    }
+
+    public void setAudio(String audioKey, int durationSec) {
+        this.audioKey = audioKey;
+        this.durationSec = durationSec;
+    }
+
+    public void setTrackNo(int trackNo) { this.trackNo = trackNo; }
 
     public String getId() { return id; }
     public String getReleaseId() { return releaseId; }
@@ -77,8 +106,9 @@ public class Track {
     public int getTrackNo() { return trackNo; }
     public int getDurationSec() { return durationSec; }
     public long getPriceUgx() { return priceUgx; }
-    public String getAudioUrl() { return audioUrl; }
     public List<Writer> getWriters() { return writers; }
+    public String getAudioKey() { return audioKey; }
+    public boolean hasAudio() { return audioKey != null; }
 
     public List<MoneySplits.Songwriter> songwriters() {
         return writers.stream().map(Writer::toSongwriter).toList();

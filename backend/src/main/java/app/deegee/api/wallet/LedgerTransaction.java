@@ -13,7 +13,15 @@ import java.util.UUID;
 @Table(name = "ledger_transactions")
 public class LedgerTransaction {
 
-    public enum Type { TOPUP, PURCHASE, GIFT }
+    public enum Type {
+        TOPUP, PURCHASE, GIFT,
+        /** An artist asked to withdraw: earnings → payouts in flight. */
+        WITHDRAWAL,
+        /** The provider paid it: payouts in flight → provider. */
+        PAYOUT,
+        /** Declined or failed: payouts in flight → back to earnings. */
+        WITHDRAWAL_RETURNED
+    }
 
     @Id
     private UUID id;

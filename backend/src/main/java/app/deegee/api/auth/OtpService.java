@@ -27,9 +27,10 @@ public class OtpService {
     private final SecurityProperties security;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+    private final Roles roles;
 
     OtpService(OtpChallengeRepository challenges, UserRepository users, TokenService tokens, OtpSender sender,
-               OtpProperties otp, SecurityProperties security, ApplicationEventPublisher events, Clock clock) {
+               OtpProperties otp, SecurityProperties security, ApplicationEventPublisher events, Clock clock, Roles roles) {
         this.challenges = challenges;
         this.users = users;
         this.tokens = tokens;
@@ -38,6 +39,7 @@ public class OtpService {
         this.security = security;
         this.events = events;
         this.clock = clock;
+        this.roles = roles;
     }
 
     @Transactional
@@ -70,8 +72,9 @@ public class OtpService {
 
         User existing = users.findByPhone(phone).orElse(null);
         boolean isNew = existing == null;
-        User user = isNew ? users.save(new User(phone, now)) : existing;
+        User user = isNew ? users.saveAndFlush(new User(phone, now)) : existing; // flushed: roles are written with plain SQL
         if (isNew) events.publishEvent(new UserRegistered(user.getId()));
+        roles.syncAdmin(user);
         return new SignedIn(user, tokens.issue(user.getId()), isNew);
     }
 

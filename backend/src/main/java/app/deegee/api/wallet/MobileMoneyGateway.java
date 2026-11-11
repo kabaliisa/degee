@@ -10,6 +10,12 @@ public interface MobileMoneyGateway {
     /** Asks the provider to collect {@code intent.amountUgx} from {@code intent.msisdn}. */
     void requestCollection(PaymentIntent intent);
 
-    /** The provider's answer, delivered by webhook (or, in development, by the mock). */
+    /** Asks the provider to send {@code amountUgx} to {@code msisdn} (an artist's withdrawal). */
+    void requestDisbursement(String providerRef, String msisdn, long amountUgx);
+
+    /** The provider's answer to a collection, delivered by webhook (or, in development, by the mock). */
     record CollectionResult(String providerRef, boolean approved) {}
+
+    /** The provider's answer to a disbursement: the money arrived, or it didn't. */
+    record DisbursementResult(String providerRef, boolean succeeded) {}
 }

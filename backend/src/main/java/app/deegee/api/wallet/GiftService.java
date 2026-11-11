@@ -45,7 +45,7 @@ public class GiftService {
             return new Result(txId, amount, MoneySplits.splitGift(amount, terms).artist(), balance);
         }
 
-        Artist artist = artists.findById(artistId).orElseThrow(() -> ApiException.notFound("Artist"));
+        Artist artist = artists.findPublicById(artistId).orElseThrow(() -> ApiException.notFound("Artist"));
         if (amountUgx < terms.minGift()) {
             throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "GIFT_TOO_SMALL", "The smallest gift is UGX %,d.".formatted(terms.minGift()));
         }

@@ -3,9 +3,11 @@ package app.deegee.api.wallet;
 import app.deegee.api.common.ApiException;
 import app.deegee.api.common.Hashing;
 import app.deegee.api.wallet.MobileMoneyGateway.CollectionResult;
+import app.deegee.api.wallet.MobileMoneyGateway.DisbursementResult;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,18 +23,23 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/v1/webhooks")
-class WebhookController {
+public class WebhookController {
 
     static final String SIGNATURE_HEADER = "X-Deegee-Signature";
 
     record MockResult(@NotBlank String providerRef, @NotBlank @Pattern(regexp = "SUCCESSFUL|FAILED") String status) {}
 
+    /** Withdrawals use references with this prefix; everything else is a top-up. */
+    public static final String PAYOUT_REF_PREFIX = "MOCKPAY-";
+
     private final TopUpService topUps;
     private final PaymentsProperties props;
+    private final ApplicationEventPublisher events;
 
-    WebhookController(TopUpService topUps, PaymentsProperties props) {
+    WebhookController(TopUpService topUps, PaymentsProperties props, ApplicationEventPublisher events) {
         this.topUps = topUps;
         this.props = props;
+        this.events = events;
     }
 
     /** Signature: HMAC-SHA256 of "{providerRef}:{status}" with the webhook secret, as hex. */
@@ -43,7 +50,12 @@ class WebhookController {
         if (!Hashing.constantTimeEquals(expected, signature)) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "BAD_SIGNATURE", "Webhook signature does not match.");
         }
-        topUps.onCollectionResult(new CollectionResult(body.providerRef(), "SUCCESSFUL".equals(body.status())));
+        boolean ok = "SUCCESSFUL".equals(body.status());
+        if (body.providerRef().startsWith(PAYOUT_REF_PREFIX)) {
+            events.publishEvent(new DisbursementResult(body.providerRef(), ok)); // handled by the payouts module
+        } else {
+            topUps.onCollectionResult(new CollectionResult(body.providerRef(), ok));
+        }
     }
 
     static String sign(String secret, String providerRef, String status) {

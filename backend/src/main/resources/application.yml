@@ -11,6 +11,10 @@ spring:
       ddl-auto: validate # Flyway owns the schema; Hibernate only checks it matches
   flyway:
     locations: classpath:db/migration
+  servlet:
+    multipart:
+      max-file-size: 100MB # a WAV master of a long song
+      max-request-size: 105MB
 
 server:
   port: ${PORT:8080}
@@ -24,6 +28,17 @@ management:
         include: health
 
 deegee:
+  # Phone numbers that get admin rights when they sign in (comma-separated). Empty means no admins.
+  admin-phones: ${DEEGEE_ADMIN_PHONES:}
+  media:
+    # Uploaded audio, covers and documents. A local folder in development; object storage (S3/R2) in production.
+    dir: ${DEEGEE_MEDIA_DIR:./media}
+    signed-url-ttl: 1h
+  payouts:
+    min-withdrawal-ugx: 10000
+    sale-hold: ${DEEGEE_SALE_HOLD:7d} # sales and gifts wait this long before they can be withdrawn (refunds, disputes)
+    new-artist-hold: ${DEEGEE_NEW_ARTIST_HOLD:30d} # longer hold while an artist is new, in case of rights claims
+    new-artist-period: 60d
   cors:
     # Browsers that may call the API: the Expo web dev server. Phones don't need this.
     allowed-origins: ${DEEGEE_CORS_ORIGINS:http://localhost:8081,http://localhost:19006}

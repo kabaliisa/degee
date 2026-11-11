@@ -44,4 +44,13 @@ public final class Hashing {
         for (int i = 0; i < digits; i++) sb.append(RANDOM.nextInt(10));
         return sb.toString();
     }
+
+    private static final String ID_CHARS = "abcdefghijkmnpqrstuvwxyz23456789"; // no 0/o or 1/l, for ids people may read out
+
+    /** A short random id such as {@code ar7kq2m9xw4p}, for new artists, releases and songs. */
+    public static String randomId(String prefix) {
+        StringBuilder id = new StringBuilder(prefix);
+        for (int i = 0; i < 10; i++) id.append(ID_CHARS.charAt(RANDOM.nextInt(ID_CHARS.length())));
+        return id.toString();
+    }
 }

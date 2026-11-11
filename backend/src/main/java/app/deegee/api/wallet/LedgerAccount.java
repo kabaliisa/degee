@@ -15,7 +15,9 @@ import java.util.UUID;
 public class LedgerAccount {
 
     public enum Kind {
-        USER_WALLET, ARTIST_EARNINGS, PLATFORM_REVENUE, UPRS_PAYABLE, SONGWRITERS_PAYABLE, PROVIDER_CLEARING
+        USER_WALLET, ARTIST_EARNINGS, PLATFORM_REVENUE, UPRS_PAYABLE, SONGWRITERS_PAYABLE, PROVIDER_CLEARING,
+        /** Withdrawals taken from an artist's earnings but not yet confirmed paid by the provider. */
+        PAYOUTS_IN_FLIGHT
     }
 
     public static final String SYSTEM = "system";

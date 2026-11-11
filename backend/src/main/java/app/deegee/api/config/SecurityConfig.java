@@ -37,6 +37,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/catalog/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/media/**").permitAll() // covers are public; other files need a signed link
                         .requestMatchers(HttpMethod.POST, "/v1/webhooks/**").permitAll() // verified by signature
                         .requestMatchers("/actuator/health").permitAll()
                         .anyRequest().authenticated())

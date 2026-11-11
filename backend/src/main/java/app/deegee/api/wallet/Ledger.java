@@ -4,6 +4,7 @@ import app.deegee.api.auth.UserRegistered;
 import app.deegee.api.common.ApiException;
 import app.deegee.api.wallet.LedgerAccount.Kind;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,40 @@ public class Ledger {
     void onUserRegistered(UserRegistered event) {
         accounts.save(new LedgerAccount(Kind.USER_WALLET, event.userId().toString(), clock.instant()));
     }
+
+    /** Creates the account if it doesn't exist yet (e.g. a new artist's earnings account). */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void ensureAccount(Kind kind, String ownerRef) {
+        UUID id = LedgerAccount.idFor(kind, ownerRef);
+        if (!accounts.existsById(id)) accounts.save(new LedgerAccount(kind, ownerRef, clock.instant()));
+    }
+
+    /** Locks any account until the surrounding transaction ends and returns its balance. */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public long lockAccount(UUID accountId) {
+        accounts.lockById(accountId).orElseThrow(() -> ApiException.notFound("Account"));
+        return accounts.balanceOf(accountId).orElseThrow();
+    }
+
+    /** Money paid into the account by sales and gifts since {@code since} (used for earnings holds). */
+    @Transactional(readOnly = true)
+    public long earnedSince(UUID accountId, Instant since) {
+        return entries.creditsSince(accountId, EARNING_TYPES, since);
+    }
+
+    /** When the oldest sale or gift since {@code since} was made, or empty if none. */
+    @Transactional(readOnly = true)
+    public Optional<Instant> firstEarningSince(UUID accountId, Instant since) {
+        return Optional.ofNullable(entries.firstCreditSince(accountId, EARNING_TYPES, since));
+    }
+
+    /** Latest movements on any account, newest first. */
+    @Transactional(readOnly = true)
+    public List<WalletLine> history(UUID accountId, int limit) {
+        return entries.history(accountId, Limit.of(limit));
+    }
+
+    private static final List<LedgerTransaction.Type> EARNING_TYPES = List.of(LedgerTransaction.Type.PURCHASE, LedgerTransaction.Type.GIFT);
 
     /** Locks the user's wallet until the surrounding transaction ends and returns its balance. */
     @Transactional(propagation = Propagation.MANDATORY)

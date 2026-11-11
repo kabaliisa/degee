@@ -3,6 +3,7 @@ package app.deegee.api.auth;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,8 +22,9 @@ class AuthController {
 
     record RefreshRequest(@NotBlank String refreshToken) {}
 
-    record UserView(UUID id, String phone, String name) {
-        static UserView of(User u) { return new UserView(u.getId(), u.getPhone(), u.getName()); }
+    /** {@code roles}: e.g. ["ADMIN"]; empty for most users. */
+    record UserView(UUID id, String phone, String name, List<String> roles) {
+        static UserView of(User u, List<String> roles) { return new UserView(u.getId(), u.getPhone(), u.getName(), roles); }
     }
 
     record SessionView(String accessToken, long expiresInSec, String refreshToken, UserView user, boolean isNewUser) {}
@@ -31,10 +33,12 @@ class AuthController {
 
     private final OtpService otp;
     private final TokenService tokens;
+    private final Roles roles;
 
-    AuthController(OtpService otp, TokenService tokens) {
+    AuthController(OtpService otp, TokenService tokens, Roles roles) {
         this.otp = otp;
         this.tokens = tokens;
+        this.roles = roles;
     }
 
     /** Sends a 6-digit code by SMS (logged in development). */
@@ -47,7 +51,7 @@ class AuthController {
     @PostMapping("/verify")
     SessionView verify(@Valid @RequestBody VerifyRequest req) {
         OtpService.SignedIn s = otp.verify(req.phone(), req.code());
-        return new SessionView(s.tokens().accessToken(), s.tokens().expiresInSec(), s.tokens().refreshToken(), UserView.of(s.user()), s.isNewUser());
+        return new SessionView(s.tokens().accessToken(), s.tokens().expiresInSec(), s.tokens().refreshToken(), UserView.of(s.user(), roles.of(s.user().getId())), s.isNewUser());
     }
 
     @PostMapping("/refresh")

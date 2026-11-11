@@ -1,6 +1,8 @@
 package app.deegee.api.wallet;
 
 import jakarta.persistence.LockModeType;
+import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,5 +51,17 @@ final class LedgerRepositories {
                 where e.transactionId = t.id and e.accountId = :accountId
                 order by t.createdAt desc""")
         List<WalletLine> history(UUID accountId, Limit limit);
+
+        @Query("""
+                select coalesce(sum(e.amountUgx), 0) from LedgerEntry e, LedgerTransaction t
+                where e.transactionId = t.id and e.accountId = :accountId and e.amountUgx > 0
+                  and t.type in :types and t.createdAt > :since""")
+        long creditsSince(UUID accountId, Collection<LedgerTransaction.Type> types, Instant since);
+
+        @Query("""
+                select min(t.createdAt) from LedgerEntry e, LedgerTransaction t
+                where e.transactionId = t.id and e.accountId = :accountId and e.amountUgx > 0
+                  and t.type in :types and t.createdAt > :since""")
+        Instant firstCreditSince(UUID accountId, Collection<LedgerTransaction.Type> types, Instant since);
     }
 }

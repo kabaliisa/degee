@@ -41,34 +41,34 @@ class CatalogController {
     @GetMapping
     CatalogSnapshot all() {
         return new CatalogSnapshot(
-                artists.findAll().stream().map(ArtistView::of).toList(),
-                releases.findAllByOrderByYearDescIdAsc().stream().map(ReleaseView::of).toList(),
-                tracks.findAllByOrderByReleaseIdAscTrackNoAsc().stream().map(TrackView::of).toList());
+                artists.findPublic().stream().map(ArtistView::of).toList(),
+                releases.findPublished().stream().map(ReleaseView::of).toList(),
+                tracks.findPublished().stream().map(TrackView::of).toList());
     }
 
     @GetMapping("/artists")
     List<ArtistView> artists() {
-        return artists.findAll().stream().map(ArtistView::of).toList();
+        return artists.findPublic().stream().map(ArtistView::of).toList();
     }
 
     @GetMapping("/artists/{id}")
     ArtistPage artist(@PathVariable String id) {
-        Artist artist = artists.findById(id).orElseThrow(() -> ApiException.notFound("Artist"));
+        Artist artist = artists.findPublicById(id).orElseThrow(() -> ApiException.notFound("Artist"));
         return new ArtistPage(
                 ArtistView.of(artist),
-                releases.findByArtistIdOrderByYearDesc(id).stream().map(ReleaseView::of).toList(),
-                tracks.findByArtistId(id).stream().map(TrackView::of).toList());
+                releases.findPublishedByArtist(id).stream().map(ReleaseView::of).toList(),
+                tracks.findPublishedByArtist(id).stream().map(TrackView::of).toList());
     }
 
     @GetMapping("/releases")
     List<ReleaseView> releases() {
-        return releases.findAllByOrderByYearDescIdAsc().stream().map(ReleaseView::of).toList();
+        return releases.findPublished().stream().map(ReleaseView::of).toList();
     }
 
     @GetMapping("/releases/{id}")
     ReleasePage release(@PathVariable String id) {
-        Release release = releases.findById(id).orElseThrow(() -> ApiException.notFound("Release"));
-        Artist artist = artists.findById(release.getArtistId()).orElseThrow(() -> ApiException.notFound("Artist"));
+        Release release = releases.findPublishedById(id).orElseThrow(() -> ApiException.notFound("Release"));
+        Artist artist = artists.findPublicById(release.getArtistId()).orElseThrow(() -> ApiException.notFound("Artist"));
         return new ReleasePage(
                 ReleaseView.of(release),
                 ArtistView.of(artist),
@@ -79,7 +79,7 @@ class CatalogController {
     @GetMapping("/tracks")
     List<TrackView> tracks(@RequestParam List<String> ids) {
         if (ids.size() > 200) throw ApiException.badRequest("TOO_MANY_IDS", "Ask for at most 200 tracks at a time.");
-        return tracks.findByIdIn(ids).stream().map(TrackView::of).toList();
+        return tracks.findPublishedByIdIn(ids).stream().map(TrackView::of).toList();
     }
 
     @GetMapping("/search")
