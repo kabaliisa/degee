@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getRelease, releasesByArtist, tracksForRelease } from '../../api';
 import { Art } from '../../components/Art';
+import { ArtworkBackdrop } from '../../components/ArtworkBackdrop';
 import { MiniPlayer } from '../../components/player/MiniPlayer';
 import { Button, EmptyState, IconButton, PlayButton, ReleaseCard, Shelf, TrackRow } from '../../components/ui';
 import { PREVIEW_SEC, totalDuration } from '../../lib/format';
@@ -45,7 +45,9 @@ export default function ReleaseScreen() {
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
-        <LinearGradient colors={[colors.surfaceRaised, colors.bg]} locations={[0, 0.8]} style={[styles.header, { paddingTop: insets.top + 56 }]}>
+        {/* Taller than the header so the colour runs down behind the title and fades out there. */}
+        <ArtworkBackdrop seed={release.id} colors={release.colors} height={insets.top + 56 + 240 + 200} fadeAt={1} />
+        <View style={[styles.header, { paddingTop: insets.top + 56 }]}>
           <View style={styles.cover}>
             <Art seed={release.id} colors={release.colors} size={240} />
           </View>
@@ -57,7 +59,7 @@ export default function ReleaseScreen() {
           <Text style={[type.small, styles.meta]}>
             {release.type} · {release.year}{release.exclusive ? ' · Only on Deegee' : ''}
           </Text>
-        </LinearGradient>
+        </View>
 
         <View style={styles.actions}>
           <IconButton name={saved ? 'checkmark-circle' : 'add-circle-outline'} active={saved} size={28}

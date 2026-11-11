@@ -1,9 +1,9 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Pressable, Share, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getRelease } from '../api';
 import { Art } from '../components/Art';
+import { ArtworkBackdrop } from '../components/ArtworkBackdrop';
 import { OwnershipBanner } from '../components/player/OwnershipBanner';
 import { SeekBar } from '../components/player/SeekBar';
 import { Button, EmptyState, IconButton, PlayButton } from '../components/ui';
@@ -36,8 +36,8 @@ export default function Player() {
   const openArtist = () => { router.back(); router.push(`/artist/${artist.id}`); };
 
   return (
-    <LinearGradient colors={[colors.surfaceRaised, colors.bg]} locations={[0, 0.6]}
-      style={[styles.screen, { paddingTop: insets.top + space.sm, paddingBottom: insets.bottom + space.lg }]}>
+    <View style={[styles.screen, { paddingTop: insets.top + space.sm, paddingBottom: insets.bottom + space.lg }]}>
+      <ArtworkBackdrop key={release.id} seed={release.id} colors={release.colors} fadeAt={0.85} />
       <View style={styles.topBar}>
         <IconButton name="chevron-down" color={colors.text} size={28} label="Close player" onPress={() => router.back()} />
         <View style={styles.source}>
@@ -78,12 +78,12 @@ export default function Player() {
       </View>
 
       <OwnershipBanner track={track} artist={artist} isPreview={isPreview} />
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, paddingHorizontal: space.xl },
+  screen: { flex: 1, paddingHorizontal: space.xl, backgroundColor: colors.bg, overflow: 'hidden' },
   topBar: { flexDirection: 'row', alignItems: 'center' },
   source: { flex: 1, alignItems: 'center' },
   sourceLabel: { color: colors.text, opacity: 0.75 },
