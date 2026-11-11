@@ -14,23 +14,23 @@ export class ApiError extends Error {
 }
 
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-type Options = { body?: unknown; form?: FormData; idempotencyKey?: string; auth?: boolean };
+type Options = { body?: unknown; idempotencyKey?: string; auth?: boolean };
 
 const TIMEOUT_MS = 15_000;
 const UPLOAD_TIMEOUT_MS = 5 * 60_000; // a WAV master on a slow connection
 
-async function send(method: Method, path: string, { body, form, idempotencyKey, auth = true }: Options): Promise<Response> {
+async function send(method: Method, path: string, { body, idempotencyKey, auth = true }: Options): Promise<Response> {
   const headers: Record<string, string> = { Accept: 'application/json' };
-  if (body !== undefined) headers['Content-Type'] = 'application/json'; // FormData sets its own multipart header
+  if (body !== undefined) headers['Content-Type'] = 'application/json';
   if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
   const token = useSession.getState().accessToken;
   if (auth && token) headers.Authorization = `Bearer ${token}`;
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), form ? UPLOAD_TIMEOUT_MS : TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
     return await fetch(`${API_URL}${path}`, {
-      method, headers, body: form ?? (body === undefined ? undefined : JSON.stringify(body)), signal: controller.signal,
+      method, headers, body: body === undefined ? undefined : JSON.stringify(body), signal: controller.signal,
     });
   } catch {
     throw new ApiError(0, 'NETWORK', 'Can’t reach Deegee. Check your connection and try again.');
@@ -92,14 +92,40 @@ export async function api<T>(method: Method, path: string, options: Options = {}
 /** A file chosen with expo-document-picker or expo-image-picker. On the web the picker also gives a File. */
 export type PickedFile = { uri: string; name: string; mimeType?: string | null; file?: File | null };
 
-/** Uploads one file as multipart form data (a single part named "file"). */
-export function upload<T>(path: string, picked: PickedFile): Promise<T> {
-  const form = new FormData();
-  if (picked.file) {
-    form.append('file', picked.file, picked.name);
-  } else {
-    // React Native's FormData takes { uri, name, type } and streams the file from disk.
-    form.append('file', { uri: picked.uri, name: picked.name, type: picked.mimeType ?? 'application/octet-stream' } as unknown as Blob);
+/**
+ * Sends one file with XMLHttpRequest. Not fetch: on phones Expo's fetch can't send a file given by
+ * { uri, name, type }, but React Native's XMLHttpRequest streams it straight from disk, and it reports progress.
+ */
+function sendFile(path: string, picked: PickedFile, onProgress?: (fraction: number) => void): Promise<Response> {
+  return new Promise((resolve, reject) => {
+    const form = new FormData();
+    if (picked.file) {
+      form.append('file', picked.file, picked.name); // web
+    } else {
+      form.append('file', { uri: picked.uri, name: picked.name, type: picked.mimeType ?? 'application/octet-stream' } as unknown as Blob);
+    }
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', `${API_URL}${path}`);
+    xhr.setRequestHeader('Accept', 'application/json');
+    const token = useSession.getState().accessToken;
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    xhr.timeout = UPLOAD_TIMEOUT_MS;
+    if (onProgress) xhr.upload.onprogress = (e) => { if (e.lengthComputable) onProgress(e.loaded / e.total); };
+    const failed = () => reject(new ApiError(0, 'NETWORK', 'The upload didn’t get through. Check your connection and try again.'));
+    xhr.onerror = failed;
+    xhr.ontimeout = failed;
+    xhr.onload = () => resolve(new Response(xhr.responseText || null, { status: xhr.status }));
+    xhr.send(form);
+  });
+}
+
+/** Uploads one file as multipart form data (a single part named "file"). `onProgress` gets 0–1. */
+export async function upload<T>(path: string, picked: PickedFile, onProgress?: (fraction: number) => void): Promise<T> {
+  let res = await sendFile(path, picked, onProgress);
+  if (res.status === 401 && useSession.getState().refreshToken) {
+    if (await refreshTokens()) res = await sendFile(path, picked, onProgress);
+    else useSession.getState().signOut();
   }
-  return api<T>('PUT', path, { form });
+  if (!res.ok) throw await toError(res);
+  return (await res.json()) as T;
 }

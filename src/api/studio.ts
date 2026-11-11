@@ -70,8 +70,8 @@ export const addTrack = (id: string, input: TrackInput) => api<StudioRelease>('P
 export const editTrack = (id: string, trackId: string, input: TrackInput) =>
   api<StudioRelease>('PATCH', `${r(id)}/tracks/${encodeURIComponent(trackId)}`, { body: input });
 export const deleteTrack = (id: string, trackId: string) => api<StudioRelease>('DELETE', `${r(id)}/tracks/${encodeURIComponent(trackId)}`);
-export const uploadAudio = (id: string, trackId: string, file: PickedFile) =>
-  upload<StudioRelease>(`${r(id)}/tracks/${encodeURIComponent(trackId)}/audio`, file);
+export const uploadAudio = (id: string, trackId: string, file: PickedFile, onProgress?: (fraction: number) => void) =>
+  upload<StudioRelease>(`${r(id)}/tracks/${encodeURIComponent(trackId)}/audio`, file, onProgress);
 
 export const declareRights = (id: string, input: DeclarationInput) => api<StudioRelease>('PUT', `${r(id)}/declaration`, { body: input });
 export const uploadLabelLetter = (id: string, file: PickedFile) => upload<StudioRelease>(`${r(id)}/label-letter`, file);

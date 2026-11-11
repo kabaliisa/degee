@@ -55,25 +55,42 @@ function SongForm({ release, trackId }: { release: StudioRelease; trackId?: stri
     setFile({ uri: a.uri, name: a.name, mimeType: a.mimeType, file: a.file });
   };
 
+  // Once a new song is saved, later taps edit it rather than adding it again (e.g. when only the upload failed).
+  const [savedId, setSavedId] = useState<string | undefined>(track?.id);
+
   const save = async () => {
     setError(null);
     setBusy('save');
+    let id = savedId;
     try {
       const input = { title, priceUgx: Number(price || 0), writers: rows.map(toWriter) };
       setProgress('Saving…');
-      const saved = track ? await editTrack(release.id, track.id, input) : await addTrack(release.id, input);
-      if (file) {
-        // A new song is added at the end, so it's the one with the highest number.
-        const id = track?.id ?? saved.tracks[saved.tracks.length - 1].id;
-        setProgress('Uploading the recording… keep the app open.');
-        await uploadAudio(release.id, id, file);
+      if (id) {
+        await editTrack(release.id, id, input);
+      } else {
+        const saved = await addTrack(release.id, input);
+        id = saved.tracks[saved.tracks.length - 1].id; // a new song is added at the end
+        setSavedId(id);
       }
-      router.back();
     } catch (e) {
       setError((e as Error).message);
       setProgress(null);
       setBusy(null);
+      return;
     }
+    if (file) {
+      try {
+        setProgress('Uploading the recording… keep the app open.');
+        await uploadAudio(release.id, id, file, (f) =>
+          setProgress(f < 1 ? `Uploading the recording… ${Math.round(f * 100)}%. Keep the app open.` : 'Checking the recording…'));
+      } catch (e) {
+        setError(`The song is saved, but the recording didn’t upload. ${(e as Error).message}`);
+        setProgress(null);
+        setBusy(null);
+        return;
+      }
+    }
+    router.back();
   };
 
   const remove = async () => {
@@ -136,7 +153,7 @@ function SongForm({ release, trackId }: { release: StudioRelease; trackId?: stri
 
       <ErrorText message={error} />
       {progress ? <Text style={[type.small, styles.muted]}>{progress}</Text> : null}
-      <Button label={track ? 'Save song' : 'Add song'} onPress={save} loading={busy === 'save'} disabled={!title.trim() || total !== 100} />
+      <Button label={savedId ? 'Save song' : 'Add song'} onPress={save} loading={busy === 'save'} disabled={!title.trim() || total !== 100} />
       {track ? <Button variant="ghost" label={confirmDelete ? 'Tap again to remove this song' : 'Remove song'} onPress={remove} loading={busy === 'delete'} /> : null}
     </ScrollView>
   );

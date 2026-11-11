@@ -157,7 +157,7 @@ function Editor({ release, onChange }: { release: StudioRelease; onChange: (r: S
           {release.problems.length > 0 ? (
             <View style={styles.notice}>
               <Text style={type.bodyBold}>Before you can submit</Text>
-              {release.problems.map((p) => <Text key={p} style={[type.body, styles.muted]}>• {p}</Text>)}
+              {release.problems.map((p, i) => <Text key={`${i}-${p}`} style={[type.body, styles.muted]}>• {p}</Text>)}
             </View>
           ) : null}
           <ErrorText message={error} />
