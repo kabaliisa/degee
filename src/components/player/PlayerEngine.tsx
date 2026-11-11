@@ -65,6 +65,14 @@ export function PlayerEngine() {
     else audio.pause();
   }, [audio, audioUrl, isPlaying]);
 
+  // Real audio: jump when the seek bar is dragged or "previous" restarts the song.
+  const seekRequest = usePlayer((s) => s.seekRequest);
+  useEffect(() => {
+    if (seekRequest === null) return;
+    if (audioUrl) audio.seekTo(seekRequest).catch(() => {});
+    usePlayer.setState({ seekRequest: null });
+  }, [audio, audioUrl, seekRequest]);
+
   // Real audio: report position and stop at the preview limit or the end of the song.
   useEffect(() => {
     if (!audioUrl || !isPlaying) return;

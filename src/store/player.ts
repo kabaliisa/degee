@@ -8,6 +8,7 @@ type PlayerState = {
   positionSec: number;
   isPlaying: boolean;
   isPreview: boolean; // non-owners hear a 30-second preview
+  seekRequest: number | null; // a jump the real audio player still has to make (see PlayerEngine)
   current: () => Track | undefined;
   limitSec: () => number;
   playQueue: (trackIds: string[], startIndex: number, owned: (id: string) => boolean) => void;
@@ -26,6 +27,7 @@ export const usePlayer = create<PlayerState>()((set, get) => ({
   positionSec: 0,
   isPlaying: false,
   isPreview: false,
+  seekRequest: null,
 
   current: () => getTrack(get().queue[get().index] ?? ''),
   limitSec: () => {
@@ -38,7 +40,10 @@ export const usePlayer = create<PlayerState>()((set, get) => ({
     set({ queue: trackIds, index: startIndex, positionSec: 0, isPlaying: true, isPreview: !owned(trackIds[startIndex]) }),
 
   toggle: () => set((s) => ({ isPlaying: s.queue.length > 0 ? !s.isPlaying : false })),
-  seek: (sec) => set({ positionSec: Math.max(0, Math.min(sec, get().limitSec())) }),
+  seek: (sec) => {
+    const to = Math.max(0, Math.min(sec, get().limitSec()));
+    set({ positionSec: to, seekRequest: to });
+  },
 
   next: (owned) => {
     const { queue, index } = get();
@@ -47,7 +52,7 @@ export const usePlayer = create<PlayerState>()((set, get) => ({
   },
   prev: (owned) => {
     const { queue, index, positionSec } = get();
-    if (positionSec > 3 || index === 0) return set({ positionSec: 0 });
+    if (positionSec > 3 || index === 0) return set({ positionSec: 0, seekRequest: 0 }); // back to the start of this song
     set({ index: index - 1, positionSec: 0, isPreview: !owned(queue[index - 1]) });
   },
 
