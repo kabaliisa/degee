@@ -8,9 +8,7 @@ import { Avatar } from '../../components/Avatar';
 import { ArtistCard, Chip, Equalizer, PlayButton, ReleaseCard, Shelf } from '../../components/ui';
 import { artists, getArtist, releases, tracksForRelease, type Genre } from '../../data/catalog';
 import { formatUGX } from '../../lib/money';
-import { whatsNew } from '../../lib/whatsNew';
 import { colors, font, radius, space, type, withAlpha } from '../../lib/theme';
-import { useLikes } from '../../store/likes';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
 
@@ -27,11 +25,6 @@ export default function Home() {
   const currentRelease = usePlayer((s) => s.current()?.releaseId);
   const isPlaying = usePlayer((s) => s.isPlaying);
 
-  const following = useLikes((s) => s.following);
-  const news = whatsNew(
-    releases.map((r) => ({ id: r.id, artistId: r.artistId, year: r.year, trackIds: tracksForRelease(r.id).map((t) => t.id) })),
-    following, owned, (id) => getArtist(id)?.name ?? '',
-  );
   const featured = releases.find((r) => r.exclusive) ?? releases[0];
   const featuredArtist = getArtist(featured.artistId)!;
   const visible = releases.filter((r) =>
@@ -47,26 +40,20 @@ export default function Home() {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* Art-tinted wash at the top of Home, taken from the featured release. */}
+      {/* Soft blue wash behind the top of Home. */}
       <LinearGradient colors={[withAlpha(colors.accent, 0.22), colors.bg]} style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 360 }} />
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + space.md, paddingBottom: 170 }}>
+        {/* Just the brand: wordmark left, wallet and profile right. */}
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.lg, gap: space.md }}>
-          <Pressable onPress={() => router.push('/profile')} accessibilityRole="button" accessibilityLabel="Your profile and settings" hitSlop={6}>
-            <Avatar />
-          </Pressable>
-          <View style={{ flex: 1 }} />
+          <Text accessibilityRole="header" style={{ flex: 1, fontFamily: font.display, fontSize: 30, letterSpacing: -1, color: colors.text }}>deegee</Text>
           <Pressable onPress={() => router.push('/(tabs)/wallet')} accessibilityLabel={`Wallet balance ${formatUGX(balance)}`}
             style={{ paddingVertical: 6, paddingHorizontal: 12, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised }}>
             <Text style={{ fontFamily: font.bold, color: colors.text, fontSize: 13 }}>{formatUGX(balance)}</Text>
           </Pressable>
+          <Pressable onPress={() => router.push('/profile')} accessibilityRole="button" accessibilityLabel="Your profile and settings" hitSlop={6}>
+            <Avatar />
+          </Pressable>
         </View>
-
-        {/* What's new, in place of a generic greeting. Tapping shows only the new releases. */}
-        <Pressable onPress={() => news.releaseIds.length && setFilter('New')} accessibilityRole="button"
-          accessibilityLabel={`${news.headline}. ${news.detail}`} style={{ paddingHorizontal: space.lg, marginTop: space.lg }}>
-          <Text style={type.display}>{news.headline}</Text>
-          <Text style={[type.small, { fontSize: 14, marginTop: 2 }]}>{news.detail}</Text>
-        </Pressable>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.sm, paddingHorizontal: space.lg, marginTop: space.lg }}>
           {FILTERS.map((f) => <Chip key={f} label={f} active={filter === f} onPress={() => setFilter(f)} />)}
