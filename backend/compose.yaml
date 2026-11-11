@@ -1,0 +1,15 @@
+# Local Postgres for development: `docker compose up -d` from this folder.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: deegee
+      POSTGRES_USER: deegee
+      POSTGRES_PASSWORD: deegee
+    ports:
+      - "5432:5432"
+    volumes:
+      - deegee-db:/var/lib/postgresql/data
+
+volumes:
+  deegee-db:

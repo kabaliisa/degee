@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:deegee;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+
+deegee:
+  payments:
+    mock-auto-approve: false # tests confirm top-ups through the webhook explicitly

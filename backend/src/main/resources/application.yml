@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: deegee-api
+  datasource:
+    url: ${DEEGEE_DB_URL:jdbc:postgresql://localhost:5432/deegee}
+    username: ${DEEGEE_DB_USER:deegee}
+    password: ${DEEGEE_DB_PASSWORD:deegee}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate # Flyway owns the schema; Hibernate only checks it matches
+  flyway:
+    locations: classpath:db/migration
+
+server:
+  port: ${PORT:8080}
+  error:
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+deegee:
+  security:
+    # Signs access tokens. MUST be overridden in every real environment (at least 32 bytes).
+    jwt-secret: ${DEEGEE_JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
+    access-token-ttl: 15m
+    refresh-token-ttl: 30d
+  otp:
+    ttl: 5m
+    max-attempts: 5
+    max-requests-per-hour: 5
+  payments:
+    # Mock mobile money: approves every top-up after a short delay, as if the user entered their PIN.
+    mock-auto-approve: true
+    mock-approve-delay: 2s
+    # Signs mock provider webhooks. MUST be overridden in every real environment.
+    webhook-secret: ${DEEGEE_WEBHOOK_SECRET:dev-only-webhook-secret}
+
+logging:
+  level:
+    app.deegee: INFO
