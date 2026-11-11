@@ -1,6 +1,7 @@
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useEffect, useState } from 'react';
 import { mediaUrl } from '../../api/catalog';
+import { releaseAudioFocus, takeAudioFocus } from '../../lib/audioFocus';
 import { getPlayLink } from '../../api/studio';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
@@ -10,6 +11,8 @@ import { useWallet } from '../../store/wallet';
  * from the API when you may hear them in full (you bought it, or it's your own song). Everything else (previews, and the demo songs with no recording)
  * advances on a timer until the audio pipeline makes real previews. Renders nothing.
  */
+const MAIN_PLAYER = {}; // identity for audio focus
+
 export function PlayerEngine() {
   const owns = useWallet((s) => s.owns);
   const trackId = usePlayer((s) => s.queue[s.index]);
@@ -48,6 +51,12 @@ export function PlayerEngine() {
   useEffect(() => {
     if (trackId) setPreview(!canPlayFull);
   }, [trackId, canPlayFull, setPreview]);
+
+  // One thing plays at a time: starting the main player stops a studio listen-back button, and vice versa.
+  useEffect(() => {
+    if (!isPlaying) return releaseAudioFocus(MAIN_PLAYER);
+    takeAudioFocus(MAIN_PLAYER, () => usePlayer.setState({ isPlaying: false }));
+  }, [isPlaying]);
 
   // Real audio: mirror play/pause.
   useEffect(() => {

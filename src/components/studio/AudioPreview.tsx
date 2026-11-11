@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { mediaUrl } from '../../api/catalog';
+import { releaseAudioFocus, takeAudioFocus } from '../../lib/audioFocus';
 import { colors } from '../../lib/theme';
 import { tap } from '../ui';
 
@@ -9,6 +11,15 @@ import { tap } from '../ui';
 export function AudioPreview({ url, label }: { url: string; label: string }) {
   const player = useAudioPlayer({ uri: mediaUrl(url) });
   const { playing } = useAudioPlayerStatus(player);
+  const [focusId] = useState(() => ({})); // identity for audio focus
+
+  // Starting this stops the main player or any other listen-back button.
+  useEffect(() => {
+    if (!playing) return releaseAudioFocus(focusId);
+    takeAudioFocus(focusId, () => player.pause());
+  }, [playing, player, focusId]);
+  useEffect(() => () => releaseAudioFocus(focusId), [focusId]);
+
   const toggle = () => {
     tap();
     if (playing) player.pause();
