@@ -8,16 +8,13 @@ import { Avatar } from '../../components/Avatar';
 import { ArtistCard, Chip, Equalizer, PlayButton, ReleaseCard, Shelf } from '../../components/ui';
 import { artists, getArtist, releases, tracksForRelease, type Genre } from '../../data/catalog';
 import { formatUGX } from '../../lib/money';
+import { whatsNew } from '../../lib/whatsNew';
 import { colors, font, radius, space, type, withAlpha } from '../../lib/theme';
+import { useLikes } from '../../store/likes';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
 
 const FILTERS = ['All', 'Exclusives', 'New', 'Owned'] as const;
-
-function greeting() {
-  const h = new Date().getHours();
-  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
-}
 
 export default function Home() {
   const insets = useSafeAreaInsets();
@@ -30,6 +27,11 @@ export default function Home() {
   const currentRelease = usePlayer((s) => s.current()?.releaseId);
   const isPlaying = usePlayer((s) => s.isPlaying);
 
+  const following = useLikes((s) => s.following);
+  const news = whatsNew(
+    releases.map((r) => ({ id: r.id, artistId: r.artistId, year: r.year, trackIds: tracksForRelease(r.id).map((t) => t.id) })),
+    following, owned, (id) => getArtist(id)?.name ?? '',
+  );
   const featured = releases.find((r) => r.exclusive) ?? releases[0];
   const featuredArtist = getArtist(featured.artistId)!;
   const visible = releases.filter((r) =>
@@ -52,12 +54,19 @@ export default function Home() {
           <Pressable onPress={() => router.push('/profile')} accessibilityRole="button" accessibilityLabel="Your profile and settings" hitSlop={6}>
             <Avatar />
           </Pressable>
-          <Text style={[type.title, { flex: 1 }]} numberOfLines={1}>{greeting()}</Text>
+          <View style={{ flex: 1 }} />
           <Pressable onPress={() => router.push('/(tabs)/wallet')} accessibilityLabel={`Wallet balance ${formatUGX(balance)}`}
             style={{ paddingVertical: 6, paddingHorizontal: 12, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised }}>
             <Text style={{ fontFamily: font.bold, color: colors.text, fontSize: 13 }}>{formatUGX(balance)}</Text>
           </Pressable>
         </View>
+
+        {/* What's new, in place of a generic greeting. Tapping shows only the new releases. */}
+        <Pressable onPress={() => news.releaseIds.length && setFilter('New')} accessibilityRole="button"
+          accessibilityLabel={`${news.headline}. ${news.detail}`} style={{ paddingHorizontal: space.lg, marginTop: space.lg }}>
+          <Text style={type.display}>{news.headline}</Text>
+          <Text style={[type.small, { fontSize: 14, marginTop: 2 }]}>{news.detail}</Text>
+        </Pressable>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.sm, paddingHorizontal: space.lg, marginTop: space.lg }}>
           {FILTERS.map((f) => <Chip key={f} label={f} active={filter === f} onPress={() => setFilter(f)} />)}
