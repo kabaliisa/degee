@@ -60,9 +60,8 @@ export function PlayerEngine() {
 
   // Real audio: mirror play/pause.
   useEffect(() => {
-    if (!audioUrl) return;
-    if (isPlaying) audio.play();
-    else audio.pause();
+    if (audioUrl && isPlaying) audio.play();
+    else audio.pause(); // also when the queue is cleared, e.g. on sign-out
   }, [audio, audioUrl, isPlaying]);
 
   // Real audio: jump when the seek bar is dragged or "previous" restarts the song.
