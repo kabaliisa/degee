@@ -108,3 +108,13 @@ const seeded = (id: string, min: number, span: number) => {
 export const supportersFor = (artistId: string) => seeded(artistId, 1200, 9000);
 export const buyersFor = (trackId: string) => seeded(trackId, 80, 2400);
 export const totalDuration = (list: Track[]) => list.reduce((s, t) => s + t.durationSec, 0);
+
+/**
+ * Mock photos for covers and artists until artists upload their own.
+ * Free stock photos from picsum.photos, fixed per id via the seed, in black and white
+ * to match the app. Replace with each release's real cover URL from the API.
+ */
+export const photoUrl = (id: string, size: number) => {
+  const px = size <= 64 ? 160 : size <= 160 ? 400 : 800;
+  return `https://picsum.photos/seed/deegee-${id}/${px}/${px}?grayscale`;
+};

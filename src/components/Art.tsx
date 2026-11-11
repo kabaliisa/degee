@@ -1,4 +1,6 @@
-import { View, type ViewStyle } from 'react-native';
+import { useState } from 'react';
+import { Image, View, type ViewStyle } from 'react-native';
+import { photoUrl } from '../data/catalog';
 import Svg, { Circle, Defs, G, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 /**
@@ -19,9 +21,12 @@ function hash(s: string) {
   return Math.abs(h);
 }
 
-export function Art({ seed, colors: [a, b], size, round, style }: {
-  seed: string; colors: [string, string]; size: number; round?: boolean; style?: ViewStyle;
+export function Art({ seed, colors: [a, b], size, round, style, photo = true }: {
+  seed: string; colors: [string, string]; size: number; round?: boolean; style?: ViewStyle; photo?: boolean;
 }) {
+  // Mock photos load from the web on top of the pattern; if offline or a photo fails, the pattern stays.
+  const [photoFailed, setPhotoFailed] = useState(false);
+  const uri = photo && !photoFailed ? photoUrl(seed, size) : null;
   const h = hash(seed);
   const variant = VARIANTS[h % VARIANTS.length];
   const id = `g${h}`;
@@ -81,6 +86,10 @@ export function Art({ seed, colors: [a, b], size, round, style }: {
         <Rect x={0} y={0} width={S} height={S} fill={`url(#${id})`} />
         {body}
       </Svg>
+      {uri ? (
+        <Image source={{ uri }} onError={() => setPhotoFailed(true)} accessibilityIgnoresInvertColors
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} resizeMode="cover" />
+      ) : null}
     </View>
   );
 }
