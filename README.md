@@ -2,7 +2,7 @@
 
 Buy music straight from Ugandan artists, paying in UGX with MTN MoMo or Airtel Money. Think Bandcamp for Uganda.
 
-This is the React Native app (Expo, TypeScript). It runs on a **mock catalogue** with **simulated payments**; there is no backend yet.
+This is the React Native app (Expo, TypeScript). It still runs on a **mock catalogue** with **simulated payments**; the API it will switch to lives in [`backend/`](backend/README.md).
 
 ## Run it
 
