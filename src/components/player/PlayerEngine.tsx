@@ -6,8 +6,8 @@ import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
 
 /**
- * Drives playback. Songs you own that have a real recording play it through expo-audio, using a
- * short-lived link from the API. Everything else (previews, and the demo songs with no recording)
+ * Drives playback. Songs with a real recording play through expo-audio, using a short-lived link
+ * from the API when you may hear them in full (you bought it, or it's your own song). Everything else (previews, and the demo songs with no recording)
  * advances on a timer until the audio pipeline makes real previews. Renders nothing.
  */
 export function PlayerEngine() {
@@ -32,20 +32,22 @@ export function PlayerEngine() {
     setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: true, interruptionMode: 'doNotMix' }).catch(() => {});
   }, []);
 
-  // Owned song with a real recording: ask for a play link. If that fails, it falls back to simulated playback.
+  // A song with a real recording: ask the server for a play link. It decides who may hear it in full
+  // (buyers, the song's own artist, admins); anyone else gets a refusal and hears the simulated preview.
   useEffect(() => {
-    if (!trackId || !hasAudio || !isOwned) return;
+    if (!trackId || !hasAudio) return;
     let cancelled = false;
     getPlayLink(trackId)
       .then(({ url }) => { if (!cancelled) setLink({ trackId, url: mediaUrl(url) }); })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, [trackId, hasAudio, isOwned]);
+  }, [trackId, hasAudio, isOwned]); // isOwned: buying mid-preview asks again and unlocks the full song
 
-  // Buying the playing track mid-preview unlocks the full song immediately.
+  // Full song if you own it or the server gave a link (e.g. you're the artist); otherwise a preview.
+  const canPlayFull = isOwned || audioUrl !== undefined;
   useEffect(() => {
-    if (trackId) setPreview(!isOwned);
-  }, [trackId, isOwned, setPreview]);
+    if (trackId) setPreview(!canPlayFull);
+  }, [trackId, canPlayFull, setPreview]);
 
   // Real audio: mirror play/pause.
   useEffect(() => {

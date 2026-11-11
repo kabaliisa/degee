@@ -160,6 +160,13 @@ class StudioApiTest extends StudioTestSupport {
         mvc.perform(get(link)).andExpect(status().isOk());
         call(get("/v1/tracks/" + trackId + "/play"), artist).andExpect(status().isOk());
 
+        // Artists hear their own songs without buying them, and can't buy or gift to themselves.
+        topUp(artist, phone, 5000);
+        buy(artist, "RELEASE", id, newKey()).andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("OWN_MUSIC"));
+        String artistId = JsonPath.read(call(get("/v1/artist/me"), artist).andReturn().getResponse().getContentAsString(), "$.id");
+        call(post("/v1/gifts").header("Idempotency-Key", newKey()).content(json("{'artistId':'%s','amountUgx':1000}", artistId)), artist)
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("OWN_MUSIC"));
+
         // 2,500 sale: 250 song share (60% UPRS = 150, 40% direct = 100), Deegee 450, artist 1,800.
         call(get("/v1/artist/earnings"), artist)
                 .andExpect(jsonPath("$.balanceUgx").value(1800))

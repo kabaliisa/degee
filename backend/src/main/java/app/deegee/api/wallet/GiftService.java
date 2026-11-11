@@ -46,6 +46,7 @@ public class GiftService {
         }
 
         Artist artist = artists.findPublicById(artistId).orElseThrow(() -> ApiException.notFound("Artist"));
+        if (userId.equals(artist.getOwnerUserId())) throw PurchaseService.ownMusic("You can't send a gift to yourself.");
         if (amountUgx < terms.minGift()) {
             throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "GIFT_TOO_SMALL", "The smallest gift is UGX %,d.".formatted(terms.minGift()));
         }

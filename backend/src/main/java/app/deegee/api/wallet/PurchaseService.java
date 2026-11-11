@@ -1,5 +1,7 @@
 package app.deegee.api.wallet;
 
+import app.deegee.api.catalog.Artist;
+import app.deegee.api.catalog.ArtistRepository;
 import app.deegee.api.catalog.Release;
 import app.deegee.api.catalog.ReleaseRepository;
 import app.deegee.api.catalog.Track;
@@ -27,14 +29,17 @@ public class PurchaseService {
     public record Result(UUID transactionId, long chargedUgx, long balanceUgx, List<String> trackIds) {}
 
     private final TrackRepository tracks;
+    private final ArtistRepository artists;
     private final ReleaseRepository releases;
     private final EntitlementRepository entitlements;
     private final Ledger ledger;
     private final Clock clock;
     private final MoneySplits.Terms terms = MoneySplits.Terms.DEFAULT;
 
-    PurchaseService(TrackRepository tracks, ReleaseRepository releases, EntitlementRepository entitlements, Ledger ledger, Clock clock) {
+    PurchaseService(TrackRepository tracks, ArtistRepository artists, ReleaseRepository releases, EntitlementRepository entitlements,
+                    Ledger ledger, Clock clock) {
         this.tracks = tracks;
+        this.artists = artists;
         this.releases = releases;
         this.entitlements = entitlements;
         this.ledger = ledger;
@@ -59,6 +64,7 @@ public class PurchaseService {
 
         Set<String> owned = new HashSet<>(entitlements.trackIdsOwnedBy(userId));
         Sale sale = kind == ItemKind.TRACK ? trackSale(itemId, owned) : releaseSale(itemId, owned);
+        if (isOwnMusic(sale.artistId(), userId)) throw ownMusic("You can already play your own music in full.");
 
         if (balance < sale.price()) {
             throw new ApiException(HttpStatus.CONFLICT, "INSUFFICIENT_FUNDS", "Add money to your wallet first.",
@@ -102,6 +108,15 @@ public class PurchaseService {
         SaleSplit split = MoneySplits.splitRelease(release.getPriceUgx(), priced, terms);
         String description = release.getTitle() + " (" + release.getType().label() + ")";
         return new Sale(release.getArtistId(), release.getPriceUgx(), split, description, missing);
+    }
+
+    /** Artists can't buy or gift to themselves: it would only move money in a circle and inflate their sales. */
+    boolean isOwnMusic(String artistId, UUID userId) {
+        return artists.findById(artistId).map(Artist::getOwnerUserId).map(userId::equals).orElse(false);
+    }
+
+    static ApiException ownMusic(String message) {
+        return new ApiException(HttpStatus.CONFLICT, "OWN_MUSIC", message);
     }
 
     private long chargedBy(LedgerTransaction tx, UUID userId) {
