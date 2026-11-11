@@ -111,10 +111,10 @@ export const totalDuration = (list: Track[]) => list.reduce((s, t) => s + t.dura
 
 /**
  * Mock photos for covers and artists until artists upload their own.
- * Free stock photos from picsum.photos, fixed per id via the seed, in black and white
- * to match the app. Replace with each release's real cover URL from the API.
+ * Free colour stock photos from picsum.photos, fixed per id via the seed.
+ * Replace with each release's real cover URL from the API.
  */
 export const photoUrl = (id: string, size: number) => {
   const px = size <= 64 ? 160 : size <= 160 ? 400 : 800;
-  return `https://picsum.photos/seed/deegee-${id}/${px}/${px}?grayscale`;
+  return `https://picsum.photos/seed/deegee-${id}/${px}/${px}`;
 };
