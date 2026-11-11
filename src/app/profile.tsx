@@ -10,7 +10,7 @@ import { formatUGX } from '../lib/money';
 import { colors, font, radius, space, type } from '../lib/theme';
 import { useLikes } from '../store/likes';
 import { formatPhone } from '../lib/phone';
-import { displayName, useSession } from '../store/session';
+import { displayName, isAdmin, useSession } from '../store/session';
 import { sentToArtists, useWallet } from '../store/wallet';
 
 const MAX_NAME = 40;
@@ -87,10 +87,14 @@ export default function Profile() {
         <SettingsRow icon="settings-outline" label="Settings" onPress={() => router.push('/settings')} last />
       </SettingsGroup>
 
-      {/* Placeholders until help and artist sign-up exist. */}
       <SettingsGroup>
-        <SettingsRow icon="help-circle-outline" label="Help and support" onPress={() => {}} />
-        <SettingsRow icon="musical-notes-outline" label="Are you an artist? Sell on Deegee" onPress={() => {}} last />
+        <SettingsRow icon="musical-notes-outline" label="Artist studio" detail="Sell your music on Deegee" onPress={() => router.push('/studio')} last={!isAdmin(user)} />
+        {isAdmin(user) ? <SettingsRow icon="shield-checkmark-outline" label="Review queue" onPress={() => router.push('/admin')} last /> : null}
+      </SettingsGroup>
+
+      {/* Placeholder until help exists. */}
+      <SettingsGroup>
+        <SettingsRow icon="help-circle-outline" label="Help and support" onPress={() => {}} last />
       </SettingsGroup>
 
       <Text style={[type.smallBold, styles.version]}>Deegee 0.1 · test payments</Text>

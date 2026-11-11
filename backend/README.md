@@ -57,11 +57,36 @@ curl -X POST $B/v1/gifts -H "Authorization: Bearer $T" -H 'content-type: applica
 | Buy | `POST /v1/purchases` `{kind: TRACK or RELEASE, id}` | yes |
 | Gift | `POST /v1/gifts` `{artistId, amountUgx, note?}` | yes |
 | Library | `GET /v1/me/library` → owned track IDs | yes |
-| Provider result | `POST /v1/webhooks/mock-mobile-money` (signed) | signature |
+| Play a recording | `GET /v1/tracks/{id}/play` → short-lived link (buyers, the artist, admins) | yes |
+| Files | `GET /v1/media/covers/…` public; `/v1/media/audio/…` and `/letters/…` only by signed link | link |
+| Artist profile | `GET /v1/artist/me`, `POST /v1/artist/application` `{name, city, bio, genres, payoutPhone}` | yes |
+| Releases | `GET/POST /v1/artist/releases`, `GET/PATCH/DELETE /v1/artist/releases/{id}` | yes |
+| Uploads (multipart, part `file`) | `PUT …/releases/{id}/cover`, `PUT …/tracks/{trackId}/audio`, `PUT …/releases/{id}/label-letter` | yes |
+| Songs | `POST …/releases/{id}/tracks` `{title, priceUgx, writers}`, `PATCH/DELETE …/tracks/{trackId}` | yes |
+| Rights | `PUT …/releases/{id}/declaration`, then `POST …/releases/{id}/submit` | yes |
+| Earnings | `GET /v1/artist/earnings`, `POST /v1/artist/withdrawals` `{amountUgx}` | yes |
+| Review (admins) | `GET /v1/admin/queue`; `POST /v1/admin/{artists,releases,withdrawals}/{id}/approve` or `/reject` `{note}` | admin |
+| Provider result | `POST /v1/webhooks/mock-mobile-money` (signed; `MOCKPAY-` references are withdrawals) | signature |
 
 Every request that moves money needs an `Idempotency-Key` header (8–100 letters, digits, `-` or `_`). Sending the same key again returns the first result and never charges twice.
 
 Errors are JSON with a machine-readable `code`, e.g. `INSUFFICIENT_FUNDS` (with `shortBy`), `ALREADY_OWNED`, `GIFT_TOO_SMALL`, `WRONG_CODE`, `TOO_MANY_CODES`, `AMOUNT_OUT_OF_RANGE`, `WRONG_NETWORK`.
+
+## The artist side
+
+1. **Apply.** A signed-in user applies with a stage name, city, genres and the mobile money number they want to be paid on. An admin approves (they get the verified badge) or sends it back with a note. Names are unique, so nobody can sign up as an artist who's already here.
+2. **Prepare a release.** Single (1–3 songs), EP (2–8) or album (5+). Each song needs a recording (MP3, M4A, WAV or FLAC that really decodes, 30 seconds to 20 minutes; its length is read from the file) and songwriters whose shares add up to 100%. The whole release can't cost more than its songs bought separately.
+3. **Declare the rights.** Signed to a label? Then a signed permission letter from the label is required. Not sure? Allowed, but flagged for the reviewer. Released before? The reviewer sees where. Covers and samples are refused for now. The artist confirms they own or control the recordings; who confirmed and when is stored.
+4. **Review.** Submitting moves the release to `IN_REVIEW`. The admin queue shows flags (label deal, released before, first release), lets the reviewer listen to each song and open the letter, then publish or send back with a note. Only `PUBLISHED` releases by `ACTIVE` artists are in the catalogue or can be bought.
+5. **Earnings and withdrawals.** Sales and gifts land in the artist's earnings account at once but are held before they can be withdrawn: 7 days, or 30 days for an artist's first 60 days, so money is there if a rights claim turns up. A withdrawal moves the money to *payouts in flight* immediately (it can't be spent twice), the artist's first withdrawal waits for an admin, later ones go straight out, and a failed or declined one comes back. Minimum UGX 10,000.
+
+Labels with their own accounts, rights claims and audio fingerprinting come with the audio pipeline.
+
+**Becoming an admin locally:** start the API with your number in `DEEGEE_ADMIN_PHONES` and sign in with it; *Review queue* appears in the app's profile. To try withdrawals without waiting for the holds, set them to zero:
+
+```bash
+DEEGEE_ADMIN_PHONES=0772123456 DEEGEE_SALE_HOLD=0s DEEGEE_NEW_ARTIST_HOLD=0s mvn spring-boot:run
+```
 
 ## How the money works
 
@@ -79,12 +104,16 @@ The percentages and limits are placeholders until the business terms are final.
 
 ```
 src/main/java/app/deegee/api/
-  auth/      phone sign-in, codes, tokens
-  catalog/   artists, releases, songs, search
+  auth/      phone sign-in, codes, tokens, roles
+  catalog/   artists, releases, songs, search (published only)
+  studio/    artist applications, releases, uploads, rights declarations, review
+  payouts/   earnings, holds, withdrawals
+  admin/     the review queue
+  media/     file storage, signed links, play links
   wallet/    ledger, top-ups, purchases, gifts, webhooks
   common/    errors, hashing, current user
   config/    security, clock
-src/main/resources/db/migration/   Flyway SQL (V4 is the demo catalogue)
+src/main/resources/db/migration/   Flyway SQL (V4 is the demo catalogue, V5 the artist side)
 ```
 
 ## Configuration
@@ -95,5 +124,8 @@ src/main/resources/db/migration/   Flyway SQL (V4 is the demo catalogue)
 | `DEEGEE_JWT_SECRET` | a dev secret; set a random 32+ character value anywhere real |
 | `DEEGEE_WEBHOOK_SECRET` | a dev secret; set one per environment |
 | `DEEGEE_CORS_ORIGINS` | `http://localhost:8081,http://localhost:19006` (the Expo web dev server) |
+| `DEEGEE_ADMIN_PHONES` | none; comma-separated numbers that get admin rights when they sign in |
+| `DEEGEE_MEDIA_DIR` | `./media`; where uploads are stored (object storage in production) |
+| `DEEGEE_SALE_HOLD` / `DEEGEE_NEW_ARTIST_HOLD` | `7d` / `30d` |
 
-Not built yet: real SMS, real MTN/Airtel collections, artist uploads and payouts, audio streaming.
+Not built yet: real SMS, real MTN/Airtel collections and payouts, the audio pipeline (transcoding, 30-second previews, fingerprinting), label accounts and rights claims.

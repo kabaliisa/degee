@@ -7,6 +7,7 @@
  */
 import { create } from 'zustand';
 import { api } from './client';
+import { API_URL } from './config';
 import type { Artist, Release, SearchResults, Track } from './types';
 
 type Snapshot = { artists: Artist[]; releases: Release[]; tracks: Track[] };
@@ -68,8 +69,16 @@ const seeded = (id: string, min: number, span: number) => {
 export const supportersFor = (artistId: string) => seeded(artistId, 1200, 9000);
 export const buyersFor = (trackId: string) => seeded(trackId, 80, 2400);
 
-/** Cover or artist photo. Placeholder colour photos from picsum.photos until artists upload real artwork. */
+/** Turns an API path (e.g. /v1/media/covers/…) into a full URL. */
+export const mediaUrl = (path: string) => (path.startsWith('http') ? path : `${API_URL}${path}`);
+
+/**
+ * Cover or artist photo for an id: the uploaded cover when a release has one, otherwise a placeholder
+ * colour photo from picsum.photos (the demo catalogue and artist photos, until artists can upload them).
+ */
 export const photoUrl = (id: string, size: number) => {
+  const cover = getRelease(id)?.coverUrl;
+  if (cover) return mediaUrl(cover);
   const px = size <= 64 ? 160 : size <= 160 ? 400 : 800;
   return `https://picsum.photos/seed/deegee-${id}/${px}/${px}`;
 };

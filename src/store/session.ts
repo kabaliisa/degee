@@ -6,7 +6,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware';
 import { formatPhone } from '../lib/phone';
 
-export type User = { id: string; phone: string; name: string | null };
+export type User = { id: string; phone: string; name: string | null; roles?: string[] };
 
 type SessionState = {
   accessToken: string | null;
@@ -53,3 +53,5 @@ export const useSignedIn = () => useSession((s) => s.refreshToken !== null);
 
 /** The user's name, or their phone number until they've added one. */
 export const displayName = (user: User | null) => user?.name || (user ? formatPhone(user.phone) : '');
+
+export const isAdmin = (user: User | null) => user?.roles?.includes('ADMIN') ?? false;

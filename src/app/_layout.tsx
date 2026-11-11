@@ -10,15 +10,22 @@ import { API_URL } from '../api/config';
 import { PlayerEngine } from '../components/player/PlayerEngine';
 import { Button } from '../components/ui';
 import { colors, font, space, type } from '../lib/theme';
-import { useSessionHydrated, useSignedIn } from '../store/session';
+import { getMe } from '../api/account';
+import { useSession, useSessionHydrated, useSignedIn } from '../store/session';
 import { useWallet } from '../store/wallet';
 
-/** Loads the wallet when someone signs in, reloads it when the app comes back to the front, clears it on sign-out. */
-function WalletSync({ signedIn }: { signedIn: boolean }) {
+/**
+ * Keeps account data fresh: loads the wallet and the user (name, roles) when someone signs in and when the
+ * app comes back to the front, and clears the wallet on sign-out.
+ */
+function AccountSync({ signedIn }: { signedIn: boolean }) {
   useEffect(() => {
     const { refresh, reset } = useWallet.getState();
     if (!signedIn) return reset();
-    const load = () => { refresh().catch(() => {}); }; // screens show the last known values if this fails
+    const load = () => {
+      refresh().catch(() => {}); // screens show the last known values if this fails
+      getMe().then(useSession.getState().setUser).catch(() => {});
+    };
     load();
     const sub = AppState.addEventListener('change', (state) => { if (state === 'active') load(); });
     return () => sub.remove();
@@ -61,7 +68,7 @@ export default function RootLayout() {
     <View style={styles.root}>
       <StatusBar style="light" />
       <PlayerEngine />
-      <WalletSync signedIn={signedIn} />
+      <AccountSync signedIn={signedIn} />
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: colors.bg },
@@ -84,6 +91,14 @@ export default function RootLayout() {
           <Stack.Screen name="settings" options={{ title: 'Settings' }} />
           <Stack.Screen name="gift" options={{ presentation: 'modal', title: 'Send a gift' }} />
           <Stack.Screen name="topup" options={{ presentation: 'modal', title: 'Add money' }} />
+          <Stack.Screen name="studio/index" options={{ title: 'Artist studio' }} />
+          <Stack.Screen name="studio/apply" options={{ title: 'Sell on Deegee' }} />
+          <Stack.Screen name="studio/new-release" options={{ presentation: 'modal', title: 'New release' }} />
+          <Stack.Screen name="studio/release/[id]" options={{ title: 'Release' }} />
+          <Stack.Screen name="studio/song" options={{ presentation: 'modal', title: 'Song' }} />
+          <Stack.Screen name="studio/rights" options={{ presentation: 'modal', title: 'Rights' }} />
+          <Stack.Screen name="studio/withdraw" options={{ presentation: 'modal', title: 'Withdraw' }} />
+          <Stack.Screen name="admin" options={{ title: 'Review queue' }} />
         </Stack.Protected>
       </Stack>
     </View>

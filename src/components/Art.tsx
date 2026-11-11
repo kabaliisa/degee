@@ -21,12 +21,13 @@ function hash(s: string) {
   return Math.abs(h);
 }
 
-export function Art({ seed, colors: [a, b], size, round, style, photo = true }: {
+export function Art({ seed, colors: [a, b], size, round, style, photo = true, uri: imageUri }: {
   seed: string; colors: [string, string]; size: number; round?: boolean; style?: ViewStyle; photo?: boolean;
+  uri?: string | null; // a specific image (e.g. a draft's uploaded cover) instead of the one looked up by seed
 }) {
   // Mock photos load from the web on top of the pattern; if offline or a photo fails, the pattern stays.
   const [photoFailed, setPhotoFailed] = useState(false);
-  const uri = photo && !photoFailed ? photoUrl(seed, size) : null;
+  const uri = photoFailed ? null : imageUri ?? (photo ? photoUrl(seed, size) : null);
   const h = hash(seed);
   const variant = VARIANTS[h % VARIANTS.length];
   const id = `g${h}`;

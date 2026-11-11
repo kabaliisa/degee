@@ -37,6 +37,11 @@ class CatalogApiTest extends ApiTestSupport {
                         .header("Access-Control-Request-Method", "GET"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:8081"));
+        // Uploads use PUT, so the browser must be allowed to send it.
+        mvc.perform(options("/v1/artist/releases/x/cover")
+                        .header("Origin", "http://localhost:8081")
+                        .header("Access-Control-Request-Method", "PUT"))
+                .andExpect(status().isOk());
         mvc.perform(options("/v1/catalog")
                         .header("Origin", "https://evil.example")
                         .header("Access-Control-Request-Method", "GET"))

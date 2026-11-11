@@ -22,7 +22,7 @@ export type Track = {
   durationSec: number;
   priceUGX: number;
   writers: Songwriter[];
-  audioUrl?: string | null; // real audio arrives with the audio pipeline; mock playback when absent
+  hasAudio?: boolean; // a real recording was uploaded; owners get a play link from the API. Otherwise playback is simulated.
 };
 
 export type Release = {
@@ -34,6 +34,7 @@ export type Release = {
   priceUGX: number; // whole-release price
   colors: [string, string];
   exclusive?: boolean;
+  coverUrl?: string | null; // API path of the uploaded cover, e.g. /v1/media/covers/…
 };
 
 export type SearchResults = { artists: Artist[]; releases: Release[]; tracks: Track[] };

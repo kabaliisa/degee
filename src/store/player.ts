@@ -51,7 +51,7 @@ export const usePlayer = create<PlayerState>()((set, get) => ({
     set({ index: index - 1, positionSec: 0, isPreview: !owned(queue[index - 1]) });
   },
 
-  // Advances mock playback; real audio drives position through expo-audio when a track has audioUrl.
+  // Advances simulated playback; real recordings drive the position through expo-audio (see PlayerEngine).
   tick: (owned, deltaSec = 1) => {
     const s = get();
     if (!s.isPlaying) return;
