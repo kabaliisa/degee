@@ -17,27 +17,28 @@ export const colors = {
   airtel: '#E40000',
 };
 
+// One family everywhere: Plus Jakarta Sans. Hierarchy comes from size and weight, not a second face.
 export const font = {
-  display: 'BricolageGrotesque_800ExtraBold',
-  displayBold: 'BricolageGrotesque_700Bold',
-  regular: 'Figtree_400Regular',
-  medium: 'Figtree_500Medium',
-  semibold: 'Figtree_600SemiBold',
-  bold: 'Figtree_700Bold',
+  display: 'PlusJakartaSans_800ExtraBold',
+  displayBold: 'PlusJakartaSans_700Bold',
+  regular: 'PlusJakartaSans_400Regular',
+  medium: 'PlusJakartaSans_500Medium',
+  semibold: 'PlusJakartaSans_600SemiBold',
+  bold: 'PlusJakartaSans_700Bold',
 };
 
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 };
 export const radius = { xs: 4, sm: 6, md: 10, lg: 16, pill: 999 };
 
 export const type = {
-  hero: { fontFamily: font.display, fontSize: 44, lineHeight: 46, letterSpacing: -1.2, color: colors.text },
-  display: { fontFamily: font.display, fontSize: 30, lineHeight: 34, letterSpacing: -0.6, color: colors.text },
-  title: { fontFamily: font.display, fontSize: 24, lineHeight: 28, letterSpacing: -0.4, color: colors.text },
-  heading: { fontFamily: font.displayBold, fontSize: 21, lineHeight: 26, letterSpacing: -0.3, color: colors.text },
-  body: { fontFamily: font.medium, fontSize: 15, lineHeight: 20, color: colors.text },
-  bodyBold: { fontFamily: font.bold, fontSize: 15, lineHeight: 20, color: colors.text },
-  small: { fontFamily: font.regular, fontSize: 13, lineHeight: 17, color: colors.textMuted },
-  smallBold: { fontFamily: font.semibold, fontSize: 13, lineHeight: 17, color: colors.textMuted },
+  hero: { fontFamily: font.display, fontSize: 42, lineHeight: 48, letterSpacing: -0.8, color: colors.text },
+  display: { fontFamily: font.display, fontSize: 28, lineHeight: 34, letterSpacing: -0.4, color: colors.text },
+  title: { fontFamily: font.bold, fontSize: 22, lineHeight: 28, letterSpacing: -0.3, color: colors.text },
+  heading: { fontFamily: font.bold, fontSize: 19, lineHeight: 24, letterSpacing: -0.2, color: colors.text },
+  body: { fontFamily: font.medium, fontSize: 15, lineHeight: 21, color: colors.text },
+  bodyBold: { fontFamily: font.bold, fontSize: 15, lineHeight: 21, color: colors.text },
+  small: { fontFamily: font.medium, fontSize: 13, lineHeight: 18, color: colors.textMuted },
+  smallBold: { fontFamily: font.bold, fontSize: 13, lineHeight: 18, color: colors.textMuted },
   tiny: { fontFamily: font.semibold, fontSize: 11, lineHeight: 14, color: colors.textMuted },
 };
 
