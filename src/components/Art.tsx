@@ -75,7 +75,7 @@ export function Art({ seed, colors: [a, b], size, round, style }: {
         <Defs>
           <LinearGradient id={id} x1="0" y1="0" x2="1" y2="1">
             <Stop offset="0" stopColor={b} />
-            <Stop offset="1" stopColor="#0b0710" />
+            <Stop offset="1" stopColor="#000000" />
           </LinearGradient>
         </Defs>
         <Rect x={0} y={0} width={S} height={S} fill={`url(#${id})`} />

@@ -24,11 +24,11 @@ export default function Wallet() {
     <ScrollView contentContainerStyle={{ paddingTop: insets.top + space.md, paddingHorizontal: space.lg, paddingBottom: 170 }}>
       <Text style={[type.display, { marginBottom: space.lg }]}>Wallet</Text>
 
-      <LinearGradient colors={['#3B2350', '#24152F']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+      <LinearGradient colors={[colors.surfaceRaised, colors.surface]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
         style={{ borderRadius: radius.lg, padding: space.xl, overflow: 'hidden' }}>
         {/* Drum-skin rings as a quiet watermark. */}
         {[220, 160, 100].map((s) => (
-          <View key={s} style={{ position: 'absolute', right: -s / 3, top: -s / 3, width: s, height: s, borderRadius: s / 2, borderWidth: 14, borderColor: colors.accent, opacity: 0.08 }} />
+          <View key={s} style={{ position: 'absolute', right: -s / 3, top: -s / 3, width: s, height: s, borderRadius: s / 2, borderWidth: 14, borderColor: colors.accent, opacity: 0.12 }} />
         ))}
         <Text style={[type.smallBold, { color: colors.textMuted }]}>Balance</Text>
         <Text style={[type.hero, { marginTop: 2 }]}>{formatUGX(balance)}</Text>

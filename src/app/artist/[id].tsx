@@ -6,7 +6,7 @@ import { Art } from '../../components/Art';
 import { MiniPlayer } from '../../components/MiniPlayer';
 import { Button, EmptyState, IconButton, PlayButton, ReleaseCard, Shelf, TrackRow } from '../../components/ui';
 import { buyersFor, getArtist, releasesByArtist, supportersFor, tracks } from '../../data/catalog';
-import { colors, font, shade, space, type, withAlpha } from '../../lib/theme';
+import { colors, font, space, type, withAlpha } from '../../lib/theme';
 import { useLikes } from '../../store/likes';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
@@ -34,7 +34,7 @@ export default function ArtistScreen() {
         {/* Full-bleed hero: the artist's art fills the top, name set large over a fade. */}
         <View style={{ height: 340, overflow: 'hidden' }}>
           <Art seed={artist.id} colors={artist.colors} size={600} style={{ position: 'absolute', top: -130, left: -100, borderRadius: 0 }} />
-          <LinearGradient colors={[withAlpha(colors.bg, 0), withAlpha(shade(artist.colors[1], 0.6), 0.6), colors.bg]} locations={[0.2, 0.7, 1]}
+          <LinearGradient colors={[withAlpha(colors.bg, 0.1), withAlpha(colors.bg, 0.6), colors.bg]} locations={[0, 0.6, 1]}
             style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }} />
           <View style={{ position: 'absolute', left: space.lg, right: space.lg, bottom: space.md }}>
             {artist.verified ? (

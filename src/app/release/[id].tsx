@@ -7,7 +7,7 @@ import { MiniPlayer } from '../../components/MiniPlayer';
 import { Button, EmptyState, IconButton, PlayButton, ReleaseCard, Shelf, TrackRow } from '../../components/ui';
 import { getArtist, getRelease, releasesByArtist, totalDuration, tracksForRelease } from '../../data/catalog';
 import { formatUGX } from '../../lib/money';
-import { colors, font, shade, space, type } from '../../lib/theme';
+import { colors, font, space, type } from '../../lib/theme';
 import { useLikes } from '../../store/likes';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
@@ -41,7 +41,7 @@ export default function ReleaseScreen() {
   return (
     <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ paddingBottom: 140 }}>
-        <LinearGradient colors={[shade(release.colors[0], 0.25), shade(release.colors[1], 0.55), colors.bg]} locations={[0, 0.55, 1]}
+        <LinearGradient colors={[colors.surfaceRaised, colors.bg]} locations={[0, 0.8]}
           style={{ paddingTop: insets.top + 56, paddingHorizontal: space.lg, paddingBottom: space.md }}>
           <View style={{ alignSelf: 'center', shadowColor: '#000', shadowOpacity: 0.5, shadowRadius: 24, shadowOffset: { width: 0, height: 12 } }}>
             <Art seed={release.id} colors={release.colors} size={240} />

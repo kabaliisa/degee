@@ -1,18 +1,18 @@
-// Deegee: "Kampala at night". Violet-black base, barkcloth-gold accent,
-// and each release's own art colours driving the gradients around it.
+// Deegee: black, white and one blue. Blue is reserved for actions and "now playing";
+// everything else is black, white and greys.
 export const colors = {
-  bg: '#120D17',
-  surface: '#1E1724',
-  surfaceRaised: '#2A2131',
-  surfacePress: '#352A3E',
-  border: '#3A2F44',
-  text: '#FBF4EC',
-  textMuted: '#B9AEC2',
-  textFaint: '#7F738A',
-  accent: '#FFB547',
-  accentInk: '#1E1206',
-  success: '#7CD69A',
-  danger: '#FF7A6B',
+  bg: '#000000',
+  surface: '#141414',
+  surfaceRaised: '#1F1F1F',
+  surfacePress: '#2A2A2A',
+  border: '#2A2A2A',
+  text: '#FFFFFF',
+  textMuted: '#A7A7A7',
+  textFaint: '#6E6E6E',
+  accent: '#2F7BFF',
+  accentInk: '#FFFFFF',
+  success: '#2F7BFF',
+  danger: '#FF5A4E',
   momo: '#FFCB05',
   airtel: '#E40000',
 };

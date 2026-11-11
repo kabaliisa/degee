@@ -10,14 +10,10 @@ import { colors, font, radius, space, type } from '../../lib/theme';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
 
-// Each genre tile gets its own colour and a tilted piece of art from a release in it.
-const GENRES: { name: Genre; color: string }[] = [
-  { name: 'Afrobeat', color: '#C2410C' },
-  { name: 'Kadongo Kamu', color: '#3F6212' },
-  { name: 'Dancehall', color: '#9D174D' },
-  { name: 'Gospel', color: '#1D4ED8' },
-  { name: 'Zouk', color: '#B45309' },
-  { name: 'Hip Hop', color: '#4B5563' },
+// Genre tiles: flat dark tiles, each with a tilted piece of art from a release in it.
+const GENRES: { name: Genre }[] = [
+  { name: 'Afrobeat' }, { name: 'Kadongo Kamu' }, { name: 'Dancehall' },
+  { name: 'Gospel' }, { name: 'Zouk' }, { name: 'Hip Hop' },
 ];
 
 export default function Search() {
@@ -37,7 +33,7 @@ export default function Search() {
       <View style={{ paddingHorizontal: space.lg, paddingBottom: space.md, backgroundColor: colors.bg }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm, backgroundColor: colors.text, borderRadius: radius.md, paddingHorizontal: space.md }}>
           <Ionicons name="search" size={20} color={colors.bg} />
-          <TextInput value={q} onChangeText={setQ} placeholder="What do you want to hear?" placeholderTextColor="#6b6070"
+          <TextInput value={q} onChangeText={setQ} placeholder="What do you want to hear?" placeholderTextColor="#6E6E6E"
             style={{ flex: 1, color: colors.bg, paddingVertical: 12, fontSize: 16, fontFamily: font.semibold }} autoCorrect={false} returnKeyType="search" accessibilityLabel="Search" />
           {q ? <Pressable onPress={() => setQ('')} hitSlop={8} accessibilityLabel="Clear search"><Ionicons name="close" size={20} color={colors.bg} /></Pressable> : null}
         </View>
@@ -51,7 +47,7 @@ export default function Search() {
               const sample = releases.find((r) => getArtist(r.artistId)?.genres.includes(g.name));
               return (
                 <View key={g.name} style={{ width: '50%', padding: 5 }}>
-                  <Pressable onPress={() => setQ(g.name)} style={({ pressed }) => ({ height: 100, borderRadius: radius.md, overflow: 'hidden', backgroundColor: g.color, opacity: pressed ? 0.85 : 1 })}>
+                  <Pressable onPress={() => setQ(g.name)} style={({ pressed }) => ({ height: 100, borderRadius: radius.md, overflow: 'hidden', backgroundColor: pressed ? colors.surfacePress : colors.surfaceRaised })}>
                     <Text style={{ fontFamily: font.display, fontSize: 18, color: '#fff', padding: space.md, width: '75%' }}>{g.name}</Text>
                     {sample ? <Art seed={sample.id} colors={sample.colors} size={66} style={{ position: 'absolute', right: -12, bottom: -6, transform: [{ rotate: '25deg' }] }} /> : null}
                   </Pressable>

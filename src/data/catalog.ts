@@ -36,25 +36,25 @@ export type Release = {
 };
 
 export const artists: Artist[] = [
-  { id: 'a1', name: 'Nalu Kizza', city: 'Kampala', genres: ['Afrobeat', 'Zouk'], verified: true, colors: ['#F2A541', '#C2410C'],
+  { id: 'a1', name: 'Nalu Kizza', city: 'Kampala', genres: ['Afrobeat', 'Zouk'], verified: true, colors: ['#2F7BFF', '#0A1A38'],
     bio: 'Kampala singer blending Afrobeat grooves with Luganda love songs.' },
-  { id: 'a2', name: 'Ssalongo Beats', city: 'Masaka', genres: ['Kadongo Kamu'], verified: true, colors: ['#4D7C0F', '#1A2E05'],
+  { id: 'a2', name: 'Ssalongo Beats', city: 'Masaka', genres: ['Kadongo Kamu'], verified: true, colors: ['#FFFFFF', '#1A1A1A'],
     bio: 'Guitar storyteller keeping Kadongo Kamu alive for a new generation.' },
-  { id: 'a3', name: 'Kiwa Rebel', city: 'Jinja', genres: ['Dancehall'], verified: false, colors: ['#DB2777', '#4C0519'],
+  { id: 'a3', name: 'Kiwa Rebel', city: 'Jinja', genres: ['Dancehall'], verified: false, colors: ['#9DBFFF', '#101B30'],
     bio: 'Riverside dancehall energy from the source of the Nile.' },
-  { id: 'a4', name: 'Grace Atim', city: 'Gulu', genres: ['Gospel'], verified: true, colors: ['#0EA5E9', '#0C4A6E'],
+  { id: 'a4', name: 'Grace Atim', city: 'Gulu', genres: ['Gospel'], verified: true, colors: ['#BDBDBD', '#121212'],
     bio: 'Gospel voice from the north, singing in Acholi and English.' },
-  { id: 'a5', name: 'Mukasa the MC', city: 'Entebbe', genres: ['Hip Hop'], verified: true, colors: ['#A3A3A3', '#171717'],
+  { id: 'a5', name: 'Mukasa the MC', city: 'Entebbe', genres: ['Hip Hop'], verified: true, colors: ['#2F7BFF', '#0A1A38'],
     bio: 'Lugaflow rapper with sharp stories about city life.' },
 ];
 
 export const releases: Release[] = [
-  { id: 'r1', artistId: 'a1', title: 'Enkuba', type: 'EP', year: 2026, priceUGX: 8000, colors: ['#F2A541', '#7C2D12'] },
-  { id: 'r2', artistId: 'a1', title: 'Sunday in Ntinda', type: 'Single', year: 2026, priceUGX: 1500, colors: ['#FDE68A', '#B45309'], exclusive: true },
-  { id: 'r3', artistId: 'a2', title: 'Ebyafaayo', type: 'Album', year: 2025, priceUGX: 15000, colors: ['#65A30D', '#14532D'] },
-  { id: 'r4', artistId: 'a3', title: 'Nile Bounce', type: 'Single', year: 2026, priceUGX: 1000, colors: ['#F472B6', '#831843'] },
-  { id: 'r5', artistId: 'a4', title: 'Lakwena', type: 'EP', year: 2025, priceUGX: 6000, colors: ['#7DD3FC', '#1E3A8A'] },
-  { id: 'r6', artistId: 'a5', title: 'Boda Diaries', type: 'Album', year: 2026, priceUGX: 12000, colors: ['#D4D4D4', '#262626'] },
+  { id: 'r1', artistId: 'a1', title: 'Enkuba', type: 'EP', year: 2026, priceUGX: 8000, colors: ['#FFFFFF', '#1A1A1A'] },
+  { id: 'r2', artistId: 'a1', title: 'Sunday in Ntinda', type: 'Single', year: 2026, priceUGX: 1500, colors: ['#BDBDBD', '#121212'], exclusive: true },
+  { id: 'r3', artistId: 'a2', title: 'Ebyafaayo', type: 'Album', year: 2025, priceUGX: 15000, colors: ['#9DBFFF', '#101B30'] },
+  { id: 'r4', artistId: 'a3', title: 'Nile Bounce', type: 'Single', year: 2026, priceUGX: 1000, colors: ['#2F7BFF', '#0A1A38'] },
+  { id: 'r5', artistId: 'a4', title: 'Lakwena', type: 'EP', year: 2025, priceUGX: 6000, colors: ['#FFFFFF', '#1A1A1A'] },
+  { id: 'r6', artistId: 'a5', title: 'Boda Diaries', type: 'Album', year: 2026, priceUGX: 12000, colors: ['#9DBFFF', '#101B30'] },
 ];
 
 const solo = (name: string, society: Songwriter['society']): Songwriter[] => [{ name, sharePct: 100, society }];

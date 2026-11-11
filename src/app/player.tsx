@@ -8,7 +8,7 @@ import { Art } from '../components/Art';
 import { Button, EmptyState, IconButton, PlayButton } from '../components/ui';
 import { formatDuration, getArtist, getRelease } from '../data/catalog';
 import { formatUGX } from '../lib/money';
-import { colors, font, radius, shade, space, type, withAlpha } from '../lib/theme';
+import { colors, font, radius, space, type, withAlpha } from '../lib/theme';
 import { useLikes } from '../store/likes';
 import { usePlayer } from '../store/player';
 import { useWallet } from '../store/wallet';
@@ -31,7 +31,7 @@ export default function Player() {
   const artSize = Math.min(width - space.xl * 2, height * 0.42, 420);
 
   return (
-    <LinearGradient colors={[shade(release.colors[0], 0.35), shade(release.colors[1], 0.65), colors.bg]} locations={[0, 0.5, 1]}
+    <LinearGradient colors={[colors.surfaceRaised, colors.bg]} locations={[0, 0.6]}
       style={{ flex: 1, paddingTop: insets.top + space.sm, paddingBottom: insets.bottom + space.lg, paddingHorizontal: space.xl }}>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <IconButton name="chevron-down" color={colors.text} size={28} label="Close player" onPress={() => router.back()} />

@@ -1,13 +1,13 @@
 import { router } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 import { getArtist, getRelease } from '../data/catalog';
-import { colors, radius, shade, space, type } from '../lib/theme';
+import { colors, radius, space, type } from '../lib/theme';
 import { useLikes } from '../store/likes';
 import { usePlayer } from '../store/player';
 import { Art } from './Art';
 import { IconButton } from './ui';
 
-/** Art-tinted bar that floats above the tab bar (and at the foot of detail screens). */
+/** Bar that floats above the tab bar (and at the foot of detail screens). */
 export function MiniPlayer({ floating }: { floating?: boolean }) {
   const track = usePlayer((s) => s.current());
   const { isPlaying, isPreview, positionSec, toggle } = usePlayer();
@@ -20,7 +20,7 @@ export function MiniPlayer({ floating }: { floating?: boolean }) {
 
   return (
     <Pressable onPress={() => router.push('/player')} accessibilityLabel={`Now playing ${track.title}. Open player`}
-      style={[{ marginHorizontal: space.sm, borderRadius: radius.md, overflow: 'hidden', backgroundColor: shade(release.colors[1], 0.35) },
+      style={[{ marginHorizontal: space.sm, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.surfaceRaised },
         floating && { position: 'absolute', left: 0, right: 0, bottom: space.xl }]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm + 2, padding: space.sm }}>
         <Art seed={release.id} colors={release.colors} size={40} />

@@ -38,7 +38,7 @@ export default function Library() {
         <>
           <Pressable onPress={() => liked.length && playQueue(liked, 0, owns)}
             style={{ flexDirection: 'row', alignItems: 'center', gap: space.md, paddingHorizontal: space.lg, marginBottom: space.lg }}>
-            <LinearGradient colors={['#6D28D9', colors.accent]} start={{ x: 0, y: 1 }} end={{ x: 1, y: 0 }}
+            <LinearGradient colors={['#0A1A38', colors.accent]} start={{ x: 0, y: 1 }} end={{ x: 1, y: 0 }}
               style={{ width: 64, height: 64, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center' }}>
               <Ionicons name="heart" size={28} color="#fff" />
             </LinearGradient>
