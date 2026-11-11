@@ -45,7 +45,7 @@ export default function Home() {
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + space.md, paddingBottom: 170 }}>
         {/* Just the brand: wordmark left, wallet and profile right. */}
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.lg, gap: space.md }}>
-          <Text accessibilityRole="header" style={{ flex: 1, fontFamily: font.display, fontSize: 30, letterSpacing: -1, color: colors.text }}>deegee</Text>
+          <Text accessibilityRole="header" style={{ flex: 1, fontFamily: font.display, fontSize: 30, letterSpacing: -1, color: colors.text }}>Deegee</Text>
           <Pressable onPress={() => router.push('/(tabs)/wallet')} accessibilityLabel={`Wallet balance ${formatUGX(balance)}`}
             style={{ paddingVertical: 6, paddingHorizontal: 12, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised }}>
             <Text style={{ fontFamily: font.bold, color: colors.text, fontSize: 13 }}>{formatUGX(balance)}</Text>
