@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { getRelease, getTrack, tracksForRelease } from '../data/catalog';
-import { TERMS, splitSale } from '../lib/money';
+import { getArtist, getRelease, getTrack, tracksForRelease } from '../data/catalog';
+import { TERMS, splitGift, splitSale } from '../lib/money';
 
 import type { Provider } from '../lib/phone';
 export type { Provider };
@@ -10,13 +10,14 @@ export type { Provider };
 export type WalletTx = {
   id: string;
   at: number;
-  kind: 'TOPUP' | 'PURCHASE';
-  amount: number; // + for top-up, − for purchase
+  kind: 'TOPUP' | 'PURCHASE' | 'GIFT';
+  amount: number; // + for top-up, − for purchase or gift
+  note?: string;
   label: string;
   status: 'PENDING' | 'COMPLETED' | 'FAILED';
 };
 
-export type PurchaseResult = { ok: true } | { ok: false; reason: 'INSUFFICIENT_FUNDS' | 'ALREADY_OWNED' | 'NOT_FOUND'; shortBy?: number };
+export type PurchaseResult = { ok: true } | { ok: false; reason: 'INSUFFICIENT_FUNDS' | 'ALREADY_OWNED' | 'NOT_FOUND' | 'TOO_SMALL'; shortBy?: number };
 
 type WalletState = {
   balance: number;
@@ -25,6 +26,7 @@ type WalletState = {
   topUp: (amount: number, provider: Provider, phone: string) => Promise<WalletTx>;
   buyTrack: (trackId: string) => PurchaseResult;
   buyRelease: (releaseId: string) => PurchaseResult;
+  sendGift: (artistId: string, amount: number, note?: string) => PurchaseResult;
   owns: (trackId: string) => boolean;
   reset: () => void;
 };
@@ -84,6 +86,21 @@ export const useWallet = create<WalletState>()(
           balance: s.balance - release.priceUGX,
           ownedTracks: [...s.ownedTracks, ...missing],
           txs: [{ id: newId(), at: Date.now(), kind: 'PURCHASE', amount: -release.priceUGX, label: `${release.title} (${release.type})`, status: 'COMPLETED' }, ...s.txs],
+        }));
+        return { ok: true };
+      },
+
+      sendGift: (artistId, amount, note) => {
+        const artist = getArtist(artistId);
+        if (!artist) return { ok: false, reason: 'NOT_FOUND' };
+        if (!Number.isInteger(amount) || amount < TERMS.minGift) return { ok: false, reason: 'TOO_SMALL' };
+        const { balance } = get();
+        if (balance < amount) return { ok: false, reason: 'INSUFFICIENT_FUNDS', shortBy: amount - balance };
+        splitGift(amount); // validates; the server records the real ledger entries
+        const clean = note?.trim().slice(0, 140) || undefined;
+        set((s) => ({
+          balance: s.balance - amount,
+          txs: [{ id: newId(), at: Date.now(), kind: 'GIFT', amount: -amount, label: artist.name, note: clean, status: 'COMPLETED' }, ...s.txs],
         }));
         return { ok: true };
       },

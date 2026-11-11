@@ -18,7 +18,7 @@ export default function Wallet() {
   const insets = useSafeAreaInsets();
   const balance = useWallet((s) => s.balance);
   const txs = useWallet((s) => s.txs);
-  const spent = txs.filter((t) => t.kind === 'PURCHASE').reduce((s, t) => s - t.amount, 0);
+  const spent = txs.filter((t) => t.kind !== 'TOPUP' && t.status === 'COMPLETED').reduce((s, t) => s - t.amount, 0);
 
   return (
     <ScrollView contentContainerStyle={{ paddingTop: insets.top + space.md, paddingHorizontal: space.lg, paddingBottom: 170 }}>
@@ -50,10 +50,10 @@ export default function Wallet() {
         return (
           <View key={t.id} style={{ flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md }}>
             <View style={{ width: 44, height: 44, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceRaised }}>
-              <Ionicons name={isTopUp ? 'phone-portrait-outline' : 'musical-note'} size={20} color={isTopUp ? colors.accent : colors.text} />
+              <Ionicons name={isTopUp ? 'phone-portrait-outline' : t.kind === 'GIFT' ? 'gift-outline' : 'musical-note'} size={20} color={isTopUp ? colors.accent : colors.text} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text numberOfLines={1} style={type.body}>{isTopUp ? 'Added money' : t.label}</Text>
+              <Text numberOfLines={1} style={type.body}>{isTopUp ? 'Added money' : t.kind === 'GIFT' ? `Gift to ${t.label}` : t.label}</Text>
               <Text numberOfLines={1} style={[type.small, failed && { color: colors.danger }]}>
                 {pending ? 'Waiting for your PIN' : failed ? 'Not approved' : `${day(t.at)}${isTopUp ? ` · ${t.label.split(' · ')[0]}` : ''}`}
               </Text>

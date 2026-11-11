@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatUGX, splitSale } from './money.ts';
+import { formatUGX, splitGift, splitSale } from './money.ts';
 
 const sum = (s: ReturnType<typeof splitSale>) => s.uprs + s.songwritersDirect + s.artist + s.platform;
 
@@ -53,4 +53,13 @@ test('rejects bad input', () => {
 
 test('formatUGX', () => {
   assert.equal(formatUGX(2000), 'UGX 2,000');
+});
+
+test('gift: artist gets 95%, no songwriter share, nothing lost', () => {
+  const g = splitGift(5000);
+  assert.equal(g.artist, 4750);
+  assert.equal(g.platform, 250);
+  const odd = splitGift(1999);
+  assert.equal(odd.artist + odd.platform, 1999);
+  assert.throws(() => splitGift(100));
 });

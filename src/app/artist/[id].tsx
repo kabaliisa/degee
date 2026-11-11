@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, Share, Text, View } from 'react-native';
 import { Art } from '../../components/Art';
 import { MiniPlayer } from '../../components/MiniPlayer';
@@ -51,6 +51,8 @@ export default function ArtistScreen() {
           <Text style={type.small}>{supportersFor(artist.id).toLocaleString('en-US')} supporters · {artist.city}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.lg, marginTop: space.md }}>
             <Button small variant="outline" label={following ? 'Following' : 'Follow'} onPress={() => toggleFollow(artist.id)} />
+            <Button small variant="outline" icon="gift-outline" label="Gift"
+              onPress={() => router.push({ pathname: '/gift', params: { artistId: artist.id } })} />
             <IconButton name="share-outline" label="Share artist page" onPress={() => Share.share({ message: `Support ${artist.name} on Deegee: https://${link}` })} />
             <View style={{ flex: 1 }} />
             <PlayButton playing={currentArtist === artist.id && isPlaying} onPress={play} />
@@ -63,6 +65,16 @@ export default function ArtistScreen() {
             <TrackRow track={t} onPlay={() => playQueue(popular.map((x) => x.id), i, owns)} />
           </View>
         ))}
+
+        <Pressable onPress={() => router.push({ pathname: '/gift', params: { artistId: artist.id } })}
+          style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: space.md, margin: space.lg, marginBottom: 0, padding: space.lg, borderRadius: 16, backgroundColor: pressed ? colors.surfacePress : colors.surface })}>
+          <Ionicons name="gift" size={26} color={colors.accent} />
+          <View style={{ flex: 1 }}>
+            <Text style={type.bodyBold}>Support {artist.name} directly</Text>
+            <Text style={type.small}>Send a gift from your wallet. 95% goes straight to them.</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
+        </Pressable>
 
         <Shelf title="Releases">
           {own.map((r) => <ReleaseCard key={r.id} release={r} size={140} subtitle={`${r.year} · ${r.type}`} />)}

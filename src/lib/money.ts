@@ -18,6 +18,8 @@ export type SaleSplit = {
 export const TERMS = {
   songSharePct: 10, // % of each sale that belongs to the song (composition)
   platformPctOfRest: 20, // platform keeps 20% of what remains; artist gets the rest
+  giftPlatformPct: 5, // Deegee's cut of a gift; the artist gets the rest
+  minGift: 500,
   minTopUp: 1000,
   maxTopUp: 2_000_000,
 };
@@ -52,4 +54,13 @@ export function splitSale(total: number, writers: Songwriter[], terms = TERMS): 
   const platform = Math.floor((rest * terms.platformPctOfRest) / 100);
   const artist = rest - platform;
   return { total, uprs, songwritersDirect: direct, artist, platform };
+}
+
+export type GiftSplit = { total: number; artist: number; platform: number };
+
+/** A gift goes to the artist, not a song, so no songwriter/UPRS share. Rounding favours the artist. */
+export function splitGift(total: number, terms = TERMS): GiftSplit {
+  if (!Number.isInteger(total) || total < terms.minGift) throw new Error(`gift must be at least UGX ${terms.minGift}`);
+  const platform = Math.floor((total * terms.giftPlatformPct) / 100);
+  return { total, artist: total - platform, platform };
 }
