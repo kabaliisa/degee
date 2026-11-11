@@ -1,10 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
-import { ScrollView, Share, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useLocalSearchParams } from 'expo-router';
+import { Pressable, ScrollView, Share, Text, View } from 'react-native';
+import { Art } from '../../components/Art';
 import { MiniPlayer } from '../../components/MiniPlayer';
-import { Button, Cover, EmptyState, ReleaseCard, SectionTitle, TrackRow } from '../../components/ui';
-import { getArtist, releasesByArtist, tracks } from '../../data/catalog';
-import { colors, space, type } from '../../lib/theme';
+import { Button, EmptyState, IconButton, PlayButton, ReleaseCard, Shelf, TrackRow } from '../../components/ui';
+import { buyersFor, getArtist, releasesByArtist, supportersFor, tracks } from '../../data/catalog';
+import { colors, font, shade, space, type, withAlpha } from '../../lib/theme';
+import { useLikes } from '../../store/likes';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
 
@@ -13,44 +16,68 @@ export default function ArtistScreen() {
   const artist = getArtist(id);
   const owns = useWallet((s) => s.owns);
   const playQueue = usePlayer((s) => s.playQueue);
-  const currentId = usePlayer((s) => s.queue[s.index]);
+  const toggle = usePlayer((s) => s.toggle);
+  const currentArtist = usePlayer((s) => s.current()?.artistId);
+  const isPlaying = usePlayer((s) => s.isPlaying);
+  const following = useLikes((s) => (artist ? s.following.includes(artist.id) : false));
+  const toggleFollow = useLikes((s) => s.toggleFollow);
   if (!artist) return <EmptyState icon="person-outline" title="Artist not found" body="This page may have moved." />;
 
-  const own = releasesByArtist(artist.id);
-  const songs = tracks.filter((t) => t.artistId === artist.id);
-  const shareLink = `https://deegee.app/${artist.name.toLowerCase().replace(/\s+/g, '')}`;
+  const own = releasesByArtist(artist.id).sort((a, b) => b.year - a.year);
+  const popular = tracks.filter((t) => t.artistId === artist.id).sort((a, b) => buyersFor(b.id) - buyersFor(a.id)).slice(0, 5);
+  const link = `deegee.app/${artist.name.toLowerCase().replace(/\s+/g, '')}`;
+  const play = () => (currentArtist === artist.id ? toggle() : playQueue(popular.map((t) => t.id), 0, owns));
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: space.xxl }}>
-        <View style={{ alignItems: 'center', padding: space.lg, gap: space.sm }}>
-          <Cover title={artist.name} colors={artist.colors} size={140} style={{ borderRadius: 70 }} />
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: space.sm }}>
-            <Text style={type.title}>{artist.name}</Text>
-            {artist.verified ? <Ionicons name="checkmark-circle" size={20} color={colors.accent} accessibilityLabel="Verified artist" /> : null}
-          </View>
-          <Text style={type.small}>{artist.genres.join(' · ')} · {artist.city}</Text>
-          <Text style={[type.body, { textAlign: 'center', color: colors.textMuted, marginTop: space.xs }]}>{artist.bio}</Text>
-          <View style={{ flexDirection: 'row', gap: space.sm, marginTop: space.md }}>
-            <Button label="Play" icon="play" onPress={() => playQueue(songs.map((s) => s.id), 0, owns)} />
-            <Button label="Share" icon="share-social" variant="secondary"
-              onPress={() => Share.share({ message: `Support ${artist.name} on Deegee: ${shareLink}` })} />
+      <ScrollView contentContainerStyle={{ paddingBottom: 140 }}>
+        {/* Full-bleed hero: the artist's art fills the top, name set large over a fade. */}
+        <View style={{ height: 340, overflow: 'hidden' }}>
+          <Art seed={artist.id} colors={artist.colors} size={600} style={{ position: 'absolute', top: -130, left: -100, borderRadius: 0 }} />
+          <LinearGradient colors={[withAlpha(colors.bg, 0), withAlpha(shade(artist.colors[1], 0.6), 0.6), colors.bg]} locations={[0.2, 0.7, 1]}
+            style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }} />
+          <View style={{ position: 'absolute', left: space.lg, right: space.lg, bottom: space.md }}>
+            {artist.verified ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                <Ionicons name="checkmark-circle" size={18} color={colors.accent} />
+                <Text style={[type.smallBold, { color: colors.text }]}>Verified artist</Text>
+              </View>
+            ) : null}
+            <Text style={type.hero} numberOfLines={2} adjustsFontSizeToFit>{artist.name}</Text>
           </View>
         </View>
 
-        <View style={{ paddingHorizontal: space.lg, marginTop: space.lg }}><SectionTitle>Releases</SectionTitle></View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.lg, paddingHorizontal: space.lg }}>
-          {own.map((r) => <ReleaseCard key={r.id} release={r} size={130} />)}
-        </ScrollView>
+        <View style={{ paddingHorizontal: space.lg }}>
+          <Text style={type.small}>{supportersFor(artist.id).toLocaleString('en-US')} supporters · {artist.city}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.lg, marginTop: space.md }}>
+            <Button small variant="outline" label={following ? 'Following' : 'Follow'} onPress={() => toggleFollow(artist.id)} />
+            <IconButton name="share-outline" label="Share artist page" onPress={() => Share.share({ message: `Support ${artist.name} on Deegee: https://${link}` })} />
+            <View style={{ flex: 1 }} />
+            <PlayButton playing={currentArtist === artist.id && isPlaying} onPress={play} />
+          </View>
+        </View>
 
-        <View style={{ paddingHorizontal: space.lg, marginTop: space.xl }}><SectionTitle>Songs</SectionTitle></View>
-        {songs.map((t, i) => (
-          <TrackRow key={t.id} track={t} index={i} isCurrent={currentId === t.id}
-            onPlay={() => playQueue(songs.map((s) => s.id), i, owns)}
-            onBuy={() => router.push({ pathname: '/buy', params: { kind: 'track', id: t.id } })} />
+        <Text style={[type.heading, { paddingHorizontal: space.lg, marginTop: space.xl, marginBottom: space.sm }]}>Popular</Text>
+        {popular.map((t, i) => (
+          <View key={t.id}>
+            <TrackRow track={t} onPlay={() => playQueue(popular.map((x) => x.id), i, owns)} />
+          </View>
         ))}
+
+        <Shelf title="Releases">
+          {own.map((r) => <ReleaseCard key={r.id} release={r} size={140} subtitle={`${r.year} · ${r.type}`} />)}
+        </Shelf>
+
+        <View style={{ margin: space.lg, marginTop: space.xl, padding: space.lg, borderRadius: 16, backgroundColor: colors.surface }}>
+          <Text style={type.heading}>About</Text>
+          <Text style={[type.body, { color: colors.textMuted, marginTop: space.sm, fontFamily: font.regular }]}>{artist.bio}</Text>
+          <Text style={[type.small, { marginTop: space.md }]}>{artist.genres.join(', ')}</Text>
+          <Pressable onPress={() => Share.share({ message: `https://${link}` })} style={{ marginTop: space.md }}>
+            <Text style={[type.smallBold, { color: colors.accent }]}>{link}</Text>
+          </Pressable>
+        </View>
       </ScrollView>
-      <MiniPlayer />
+      <MiniPlayer floating />
     </View>
   );
 }

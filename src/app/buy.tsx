@@ -2,10 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
-import { Button, Cover, EmptyState } from '../components/ui';
+import { Art } from '../components/Art';
+import { Button, EmptyState } from '../components/ui';
 import { getArtist, getRelease, getTrack, tracksForRelease } from '../data/catalog';
 import { formatUGX, splitSale, type SaleSplit } from '../lib/money';
-import { colors, radius, space, type } from '../lib/theme';
+import { colors, font, radius, space, type } from '../lib/theme';
 import { useWallet } from '../store/wallet';
 
 function addSplits(a: SaleSplit, b: SaleSplit): SaleSplit {
@@ -68,15 +69,15 @@ export default function Buy() {
 
   const Row = ({ label, value, strong }: { label: string; value: number; strong?: boolean }) => (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
-      <Text style={[type.body, { color: strong ? colors.text : colors.textMuted, fontWeight: strong ? '700' : '400' }]}>{label}</Text>
-      <Text style={[type.body, { fontWeight: strong ? '700' : '500' }]}>{formatUGX(value)}</Text>
+      <Text style={[type.body, { color: strong ? colors.text : colors.textMuted, fontFamily: strong ? font.bold : font.regular }]}>{label}</Text>
+      <Text style={[type.body, { fontFamily: strong ? font.bold : font.medium }]}>{formatUGX(value)}</Text>
     </View>
   );
 
   return (
     <ScrollView contentContainerStyle={{ padding: space.lg, gap: space.lg }}>
       <View style={{ flexDirection: 'row', gap: space.md, alignItems: 'center' }}>
-        <Cover title={release.title} colors={release.colors} size={72} />
+        <Art seed={release.id} colors={release.colors} size={72} />
         <View style={{ flex: 1 }}>
           <Text style={type.heading} numberOfLines={2}>{title}</Text>
           <Text style={type.small}>{artist.name}</Text>
@@ -85,7 +86,7 @@ export default function Buy() {
       </View>
 
       <View style={{ backgroundColor: colors.surface, borderRadius: radius.md, padding: space.lg }}>
-        <Text style={[type.label, { marginBottom: space.sm }]}>Where your money goes</Text>
+        <Text style={[type.smallBold, { marginBottom: space.sm }]}>Where your money goes</Text>
         <Row label={artist.name} value={split.artist} />
         <Row label="Songwriters (incl. UPRS)" value={songwriters} />
         <Row label="Deegee" value={split.platform} />
@@ -95,13 +96,13 @@ export default function Buy() {
 
       <View style={{ backgroundColor: colors.surface, borderRadius: radius.md, padding: space.lg }}>
         <Row label="Wallet balance" value={balance} />
-        {shortBy > 0 ? <Text style={[type.small, { color: colors.danger, marginTop: space.xs }]}>You need {formatUGX(shortBy)} more. Top up with mobile money first.</Text> : <Row label="After purchase" value={balance - price} />}
+        {shortBy > 0 ? <Text style={[type.small, { color: colors.danger, marginTop: space.xs }]}>You need {formatUGX(shortBy)} more. Add money with mobile money first.</Text> : <Row label="After purchase" value={balance - price} />}
       </View>
 
       {error ? <Text style={{ color: colors.danger }}>{error}</Text> : null}
 
       {shortBy > 0 ? (
-        <Button label={`Top up ${formatUGX(Math.max(shortBy, 1000))}`} icon="add" onPress={() => router.push({ pathname: '/topup', params: { amount: String(Math.max(shortBy, 1000)) } })} />
+        <Button label={`Add ${formatUGX(Math.max(shortBy, 1000))}`} icon="add" onPress={() => router.push({ pathname: '/topup', params: { amount: String(Math.max(shortBy, 1000)) } })} />
       ) : (
         <Button label={`Pay ${formatUGX(price)}`} icon="lock-closed" onPress={confirm} />
       )}

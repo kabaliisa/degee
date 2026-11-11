@@ -98,3 +98,13 @@ export function search(q: string) {
 
 export const formatDuration = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
 export const PREVIEW_SEC = 30;
+
+// Mock social proof: fans who have bought from an artist / a track. Stable per id.
+const seeded = (id: string, min: number, span: number) => {
+  let h = 7;
+  for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 100003;
+  return min + (h % span);
+};
+export const supportersFor = (artistId: string) => seeded(artistId, 1200, 9000);
+export const buyersFor = (trackId: string) => seeded(trackId, 80, 2400);
+export const totalDuration = (list: Track[]) => list.reduce((s, t) => s + t.durationSec, 0);
