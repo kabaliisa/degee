@@ -68,7 +68,10 @@ export function PlayerEngine() {
   const seekRequest = usePlayer((s) => s.seekRequest);
   useEffect(() => {
     if (seekRequest === null) return;
-    if (audioUrl) audio.seekTo(seekRequest).catch(() => {});
+    if (audioUrl) {
+      audio.seekTo(seekRequest).catch(() => {});
+      if (usePlayer.getState().isPlaying) audio.play(); // a finished recording needs a fresh play() to start again
+    }
     usePlayer.setState({ seekRequest: null });
   }, [audio, audioUrl, seekRequest]);
 
@@ -76,7 +79,7 @@ export function PlayerEngine() {
   useEffect(() => {
     if (!audioUrl || !isPlaying) return;
     usePlayer.setState({ positionSec: Math.floor(currentTime) });
-    if (currentTime >= limit || didJustFinish) next(owns);
+    if (currentTime >= limit || didJustFinish) next(owns, true);
   }, [audioUrl, isPlaying, currentTime, didJustFinish, limit, next, owns]);
 
   // Mock audio: advance once a second.

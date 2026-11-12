@@ -7,7 +7,7 @@ import { ArtworkBackdrop } from '../components/ArtworkBackdrop';
 import { OwnershipBanner } from '../components/player/OwnershipBanner';
 import { SeekBar } from '../components/player/SeekBar';
 import { Button, EmptyState, IconButton, PlayButton } from '../components/ui';
-import { colors, space, type } from '../lib/theme';
+import { colors, font, space, type } from '../lib/theme';
 import { useLikes } from '../store/likes';
 import { usePlayer } from '../store/player';
 import { useWallet } from '../store/wallet';
@@ -20,7 +20,9 @@ export default function Player() {
   const isPreview = usePlayer((s) => s.isPreview);
   const positionSec = usePlayer((s) => s.positionSec);
   const limit = usePlayer((s) => s.limitSec());
-  const { toggle, next, prev, seek } = usePlayer.getState();
+  const { toggle, next, prev, seek, toggleShuffle, cycleRepeat } = usePlayer.getState();
+  const shuffle = usePlayer((s) => s.shuffle);
+  const repeat = usePlayer((s) => s.repeat);
   const owns = useWallet((s) => s.owns);
   const liked = useLikes((s) => (track ? s.liked.includes(track.id) : false));
   const toggleLike = useLikes((s) => s.toggleLike);
@@ -69,12 +71,15 @@ export default function Player() {
       </View>
 
       <View style={styles.controls}>
-        {/* Shuffle and repeat are placeholders until queue modes are built. */}
-        <IconButton name="shuffle" color={colors.textMuted} label="Shuffle" onPress={() => {}} />
+        <IconButton name="shuffle" color={shuffle ? colors.accent : colors.textMuted} label={shuffle ? 'Shuffle on' : 'Shuffle off'} onPress={toggleShuffle} />
         <IconButton name="play-skip-back" color={colors.text} size={34} label="Previous" onPress={() => prev(owns)} />
         <PlayButton size={68} playing={isPlaying} onPress={toggle} />
         <IconButton name="play-skip-forward" color={colors.text} size={34} label="Next" onPress={() => next(owns)} />
-        <IconButton name="repeat" color={colors.textMuted} label="Repeat" onPress={() => {}} />
+        <View>
+          <IconButton name="repeat" color={repeat === 'off' ? colors.textMuted : colors.accent}
+            label={repeat === 'off' ? 'Repeat off' : repeat === 'all' ? 'Repeat all' : 'Repeat this song'} onPress={cycleRepeat} />
+          {repeat === 'one' ? <Text pointerEvents="none" style={styles.repeatOne}>1</Text> : null}
+        </View>
       </View>
 
       <OwnershipBanner track={track} artist={artist} isPreview={isPreview} />
@@ -83,6 +88,7 @@ export default function Player() {
 }
 
 const styles = StyleSheet.create({
+  repeatOne: { position: 'absolute', right: 2, top: 0, fontFamily: font.bold, fontSize: 10, color: colors.accent },
   screen: { flex: 1, paddingHorizontal: space.xl, backgroundColor: colors.bg, overflow: 'hidden' },
   topBar: { flexDirection: 'row', alignItems: 'center' },
   source: { flex: 1, alignItems: 'center' },
