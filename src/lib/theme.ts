@@ -17,14 +17,15 @@ export const colors = {
   airtel: '#E40000',
 };
 
-// One family everywhere: Plus Jakarta Sans. Hierarchy comes from size and weight, not a second face.
+// Two faces with clear jobs: Bricolage Grotesque gives the wordmark and headings their character;
+// DM Sans keeps everything people read or tap (lists, prices, buttons, small print) clean at any size.
 export const font = {
-  display: 'PlusJakartaSans_800ExtraBold',
-  displayBold: 'PlusJakartaSans_700Bold',
-  regular: 'PlusJakartaSans_400Regular',
-  medium: 'PlusJakartaSans_500Medium',
-  semibold: 'PlusJakartaSans_600SemiBold',
-  bold: 'PlusJakartaSans_700Bold',
+  display: 'BricolageGrotesque_800ExtraBold', // wordmark, hero and screen titles
+  displayBold: 'BricolageGrotesque_700Bold', // section and card headings
+  regular: 'DMSans_400Regular',
+  medium: 'DMSans_500Medium',
+  semibold: 'DMSans_600SemiBold',
+  bold: 'DMSans_700Bold',
 };
 
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 };
@@ -33,8 +34,8 @@ export const radius = { xs: 4, sm: 6, md: 10, lg: 16, pill: 999 };
 export const type = {
   hero: { fontFamily: font.display, fontSize: 42, lineHeight: 48, letterSpacing: -0.8, color: colors.text },
   display: { fontFamily: font.display, fontSize: 28, lineHeight: 34, letterSpacing: -0.4, color: colors.text },
-  title: { fontFamily: font.bold, fontSize: 22, lineHeight: 28, letterSpacing: -0.3, color: colors.text },
-  heading: { fontFamily: font.bold, fontSize: 19, lineHeight: 24, letterSpacing: -0.2, color: colors.text },
+  title: { fontFamily: font.displayBold, fontSize: 23, lineHeight: 28, letterSpacing: -0.4, color: colors.text },
+  heading: { fontFamily: font.displayBold, fontSize: 20, lineHeight: 25, letterSpacing: -0.3, color: colors.text },
   body: { fontFamily: font.medium, fontSize: 15, lineHeight: 21, color: colors.text },
   bodyBold: { fontFamily: font.bold, fontSize: 15, lineHeight: 21, color: colors.text },
   small: { fontFamily: font.medium, fontSize: 13, lineHeight: 18, color: colors.textMuted },

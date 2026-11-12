@@ -1,6 +1,5 @@
-import {
-  PlusJakartaSans_400Regular, PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold, useFonts,
-} from '@expo-google-fonts/plus-jakarta-sans';
+import { BricolageGrotesque_700Bold, BricolageGrotesque_800ExtraBold } from '@expo-google-fonts/bricolage-grotesque';
+import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold, DMSans_700Bold, useFonts } from '@expo-google-fonts/dm-sans';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -59,7 +58,8 @@ function Splash({ error, onRetry }: { error?: string; onRetry?: () => void }) {
 
 export default function RootLayout() {
   const [loaded] = useFonts({
-    PlusJakartaSans_400Regular, PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold,
+    BricolageGrotesque_700Bold, BricolageGrotesque_800ExtraBold,
+    DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold, DMSans_700Bold,
   });
   const hydrated = useSessionHydrated();
   const signedIn = useSignedIn();
@@ -82,7 +82,7 @@ export default function RootLayout() {
         screenOptions={{
           headerStyle: { backgroundColor: colors.bg },
           headerTintColor: colors.text,
-          headerTitleStyle: { fontFamily: font.bold, fontSize: 16 },
+          headerTitleStyle: { fontFamily: font.displayBold, fontSize: 17 },
           headerShadowVisible: false,
           headerBackButtonDisplayMode: 'minimal',
           contentStyle: { backgroundColor: colors.bg },
