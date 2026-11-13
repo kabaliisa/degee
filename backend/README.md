@@ -2,15 +2,18 @@
 
 The server behind the Deegee app: phone sign-in, the catalogue, wallets, mobile money top-ups, purchases and gifts.
 
-Java 21 · Spring Boot 4 · PostgreSQL 16 · Flyway
+Java 21 · Spring Boot 4 · PostgreSQL 16 · Flyway · ffmpeg
 
 ## Run it
 
 ```bash
+brew install ffmpeg           # once: encodes previews and streams (apt install ffmpeg on Linux)
 cd backend
 docker compose up -d          # Postgres on localhost:5432 (db/user/password: deegee)
 mvn spring-boot:run
 ```
+
+Without ffmpeg the API still runs, but uploaded songs stay "Processing…" (it says so in the log at startup). Once it's installed, restart the API and anything waiting is processed.
 
 The API starts on `http://localhost:8080`. Flyway creates the tables and loads the same five artists and six releases the app shows.
 
@@ -80,7 +83,19 @@ Errors are JSON with a machine-readable `code`, e.g. `INSUFFICIENT_FUNDS` (with 
 4. **Review.** Submitting moves the release to `IN_REVIEW`. The admin queue shows flags (label deal, released before, first release), lets the reviewer listen to each song and open the letter, then publish or send back with a note. Only `PUBLISHED` releases by `ACTIVE` artists are in the catalogue or can be bought.
 5. **Earnings and withdrawals.** Sales and gifts land in the artist's earnings account at once but are held before they can be withdrawn: 7 days, or 30 days for an artist's first 60 days, so money is there if a rights claim turns up. A withdrawal moves the money to *payouts in flight* immediately (it can't be spent twice), the artist's first withdrawal waits for an admin, later ones go straight out, and a failed or declined one comes back. Minimum UGX 10,000.
 
-Labels with their own accounts, rights claims and audio fingerprinting come with the audio pipeline.
+Labels with their own accounts, rights claims and audio fingerprinting come later (backlog Sprints 5 and 6).
+
+## The audio pipeline
+
+Every uploaded recording goes through ffmpeg in the background (two at a time); the song shows *Processing…* in the studio until it's done, usually a few seconds:
+
+1. **Measure** its loudness with the EBU R128 meter (integrated LUFS and true peak).
+2. **Stream** for buyers: AAC 128 kbps stereo, about 1 MB a minute against about 10 MB for a WAV, set up to start playing at once.
+3. **Preview** for everyone else: 30 seconds from about a third of the way in, faded in and out, AAC 96 kbps, public (no signed link).
+
+Both are matched to −14 LUFS so songs play at a similar volume: loud songs are turned down, quiet ones up by at most 10 dB and never past −1 dBTP, so nothing clips. The master is kept untouched for lossless downloads later. MP3 and M4A uploads work, but the studio suggests the WAV or FLAC master. A song can't be submitted while it's processing or if processing failed (the artist is told to upload again). Songs left half-done by a restart, and recordings uploaded before the pipeline existed, are processed at startup.
+
+Still to come: several bitrates with HLS so playback adapts to the connection (DG-02), and the Data saver setting (DG-08).
 
 **Becoming an admin locally:** start the API with your number in `DEEGEE_ADMIN_PHONES` and sign in with it; *Review queue* appears in the app's profile. To try withdrawals without waiting for the holds, set them to zero:
 
@@ -109,11 +124,12 @@ src/main/java/app/deegee/api/
   studio/    artist applications, releases, uploads, rights declarations, review
   payouts/   earnings, holds, withdrawals
   admin/     the review queue
+  audio/     the audio pipeline: loudness, streams, previews (ffmpeg)
   media/     file storage, signed links, play links
   wallet/    ledger, top-ups, purchases, gifts, webhooks
   common/    errors, hashing, current user
   config/    security, clock
-src/main/resources/db/migration/   Flyway SQL (V4 is the demo catalogue, V5 the artist side)
+src/main/resources/db/migration/   Flyway SQL (V4 is the demo catalogue, V5 the artist side, V6 the audio pipeline)
 ```
 
 ## Configuration
@@ -127,5 +143,6 @@ src/main/resources/db/migration/   Flyway SQL (V4 is the demo catalogue, V5 the 
 | `DEEGEE_ADMIN_PHONES` | none; comma-separated numbers that get admin rights when they sign in |
 | `DEEGEE_MEDIA_DIR` | `./media`; where uploads are stored (object storage in production) |
 | `DEEGEE_SALE_HOLD` / `DEEGEE_NEW_ARTIST_HOLD` | `7d` / `30d` |
+| `DEEGEE_FFMPEG` | `ffmpeg` (on the PATH); a full path if it's elsewhere |
 
-Not built yet: real SMS, real MTN/Airtel collections and payouts, the audio pipeline (transcoding, 30-second previews, fingerprinting), label accounts and rights claims.
+Not built yet: real SMS, real MTN/Airtel collections and payouts, adaptive (HLS) streaming, fingerprinting, label accounts and rights claims. The full list is in the GitHub issues.

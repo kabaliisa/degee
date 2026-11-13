@@ -45,6 +45,7 @@ function SongForm({ release, trackId }: { release: StudioRelease; trackId?: stri
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  const lossy = file ? /\.(mp3|m4a)$/i.test(file.name) : track?.sourceLossy ?? false;
   const total = rows.reduce((sum, r) => sum + Number(r.share || 0), 0);
   const setRow = (i: number, patch: Partial<Row>) => setRows((list) => list.map((r, j) => (j === i ? { ...r, ...patch } : r)));
 
@@ -119,9 +120,18 @@ function SongForm({ release, trackId }: { release: StudioRelease; trackId?: stri
           <Text style={type.bodyBold} numberOfLines={1}>
             {file ? file.name : track?.hasAudio ? `Uploaded · ${formatDuration(track.durationSec)}` : 'Choose the audio file'}
           </Text>
-          <Text style={type.small}>{file || track?.hasAudio ? 'Tap to replace' : 'MP3, M4A, WAV or FLAC, the final master'}</Text>
+          <Text style={type.small}>{file || track?.hasAudio ? 'Tap to replace' : 'WAV or FLAC master is best. MP3 and M4A work too.'}</Text>
         </View>
       </Pressable>
+      {!file && track?.audioStatus === 'PROCESSING' ? (
+        <Text style={[type.small, styles.muted]}>Processing: we’re making the preview and the version fans stream. This takes a minute or two.</Text>
+      ) : null}
+      {!file && track?.audioStatus === 'FAILED' && track.audioError ? <Text style={[type.small, styles.danger]}>{track.audioError}</Text> : null}
+      {lossy ? (
+        <Text style={[type.small, styles.muted]}>
+          This is a compressed file (MP3 or M4A). If you have the studio master as WAV or FLAC, upload that instead: fans hear the difference.
+        </Text>
+      ) : null}
 
       <SectionTitle>Who wrote it</SectionTitle>
       <Text style={[type.small, styles.muted]}>

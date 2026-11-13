@@ -19,6 +19,12 @@ export type WriterInput = { name: string; sharePct: number; society: Society };
 export type StudioTrack = {
   id: string; trackNo: number; title: string; priceUGX: number; durationSec: number;
   hasAudio: boolean; audioUrl: string | null; writers: WriterInput[];
+  /** Where the recording is in processing (null with no recording). */
+  audioStatus: 'PROCESSING' | 'READY' | 'FAILED' | null;
+  audioError: string | null; // why processing failed, in plain words
+  previewUrl: string | null; // the 30-second preview fans hear
+  sourceLossy: boolean; // uploaded as MP3/M4A rather than the WAV/FLAC master
+  loudnessLufs: number | null;
 };
 
 export type Declaration = {

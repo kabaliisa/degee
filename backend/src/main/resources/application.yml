@@ -34,6 +34,15 @@ deegee:
     # Uploaded audio, covers and documents. A local folder in development; object storage (S3/R2) in production.
     dir: ${DEEGEE_MEDIA_DIR:./media}
     signed-url-ttl: 1h
+  audio:
+    # Encodes previews and streams. Install it with `brew install ffmpeg` (Mac) or `apt install ffmpeg`.
+    ffmpeg: ${DEEGEE_FFMPEG:ffmpeg}
+    target-lufs: -14
+    max-boost-db: 10
+    stream-bitrate: 128k
+    preview-sec: 30
+    timeout: 5m
+    synchronous: false
   payouts:
     min-withdrawal-ugx: 10000
     sale-hold: ${DEEGEE_SALE_HOLD:7d} # sales and gifts wait this long before they can be withdrawn (refunds, disputes)

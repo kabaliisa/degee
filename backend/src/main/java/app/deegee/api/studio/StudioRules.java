@@ -34,7 +34,13 @@ final class StudioRules {
             problems.add("%s has %d to %d songs; this one has %d.".formatted(article(type), minTracks(type), maxTracks(type), tracks.size()));
         }
         for (Track t : tracks) {
-            if (!t.hasAudio()) problems.add("Upload the recording for “%s”.".formatted(t.getTitle()));
+            if (!t.hasAudio()) {
+                problems.add("Upload the recording for “%s”.".formatted(t.getTitle()));
+            } else if (t.getAudioStatus() == Track.AudioStatus.PROCESSING) {
+                problems.add("“%s” is still processing. This takes a minute or two.".formatted(t.getTitle()));
+            } else if (t.getAudioStatus() == Track.AudioStatus.FAILED) {
+                problems.add("“%s”: %s".formatted(t.getTitle(), t.getAudioError()));
+            }
         }
         long separately = tracks.stream().mapToLong(Track::getPriceUgx).sum();
         if (tracks.size() > 1 && release.getPriceUgx() > separately) {

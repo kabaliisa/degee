@@ -18,9 +18,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class MediaStorage {
 
-    /** What a file is for. Covers are public; audio masters and label letters are only reachable by signed link. */
+    /**
+     * What a file is for. Covers and 30-second previews are public; audio (masters and full streams) and
+     * label letters are only reachable by signed link.
+     */
     public enum Folder {
-        COVERS("covers", true), AUDIO("audio", false), LETTERS("letters", false);
+        COVERS("covers", true), PREVIEWS("previews", true), AUDIO("audio", false), LETTERS("letters", false);
 
         final String path;
         final boolean isPublic;
@@ -31,7 +34,7 @@ public class MediaStorage {
         }
     }
 
-    private static final Pattern KEY = Pattern.compile("^(covers|audio|letters)/[0-9a-f-]{36}\\.[a-z0-9]{2,5}$");
+    private static final Pattern KEY = Pattern.compile("^(covers|previews|audio|letters)/[0-9a-f-]{36}\\.[a-z0-9]{2,5}$");
 
     private final Path root;
 
@@ -73,7 +76,7 @@ public class MediaStorage {
     }
 
     public static boolean isPublic(String key) {
-        return key != null && key.startsWith(Folder.COVERS.path + "/");
+        return key != null && (key.startsWith(Folder.COVERS.path + "/") || key.startsWith(Folder.PREVIEWS.path + "/"));
     }
 
     public void delete(String key) {

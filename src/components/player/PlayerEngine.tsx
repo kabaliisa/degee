@@ -7,9 +7,9 @@ import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
 
 /**
- * Drives playback. Songs with a real recording play through expo-audio, using a short-lived link
- * from the API when you may hear them in full (you bought it, or it's your own song). Everything else (previews, and the demo songs with no recording)
- * advances on a timer until the audio pipeline makes real previews. Renders nothing.
+ * Drives playback through expo-audio. If you may hear a song in full (you bought it, or it's your own),
+ * it plays the light stream from a short-lived link the API gives. Otherwise it plays the song's public
+ * 30-second preview. Demo songs with no recording advance on a timer instead. Renders nothing.
  */
 const MAIN_PLAYER = {}; // identity for audio focus
 
@@ -19,13 +19,18 @@ export function PlayerEngine() {
   const hasAudio = usePlayer((s) => s.current()?.hasAudio ?? false);
   const isOwned = useWallet((s) => (trackId ? s.ownedTracks.includes(trackId) : false));
   const [link, setLink] = useState<{ trackId: string; url: string } | null>(null);
-  const audioUrl = link && link.trackId === trackId ? link.url : undefined;
+  const fullUrl = link && link.trackId === trackId ? link.url : undefined;
+  const previewPath = usePlayer((s) => s.current()?.previewUrl ?? null);
   const isPlaying = usePlayer((s) => s.isPlaying);
   const limit = usePlayer((s) => s.limitSec());
   const tick = usePlayer((s) => s.tick);
   const next = usePlayer((s) => s.next);
   const setPreview = usePlayer((s) => s.setPreview);
 
+  // Full song if allowed; otherwise the preview clip (which is itself 30 seconds long). An owner waits a moment
+  // for their link rather than hearing the preview first.
+  const previewUrl = previewPath ? mediaUrl(previewPath) : undefined;
+  const audioUrl = fullUrl ?? (isOwned ? undefined : previewUrl);
   const audio = useAudioPlayer(audioUrl ? { uri: audioUrl } : null);
   const { currentTime, didJustFinish } = useAudioPlayerStatus(audio);
 
@@ -36,7 +41,7 @@ export function PlayerEngine() {
   }, []);
 
   // A song with a real recording: ask the server for a play link. It decides who may hear it in full
-  // (buyers, the song's own artist, admins); anyone else gets a refusal and hears the simulated preview.
+  // (buyers, the song's own artist, admins); anyone else gets a refusal and hears the preview.
   useEffect(() => {
     if (!trackId || !hasAudio) return;
     let cancelled = false;
@@ -47,7 +52,7 @@ export function PlayerEngine() {
   }, [trackId, hasAudio, isOwned]); // isOwned: buying mid-preview asks again and unlocks the full song
 
   // Full song if you own it or the server gave a link (e.g. you're the artist); otherwise a preview.
-  const canPlayFull = isOwned || audioUrl !== undefined;
+  const canPlayFull = isOwned || fullUrl !== undefined;
   useEffect(() => {
     if (trackId) setPreview(!canPlayFull);
   }, [trackId, canPlayFull, setPreview]);

@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * A short-lived link to play a song's real recording: for people who bought it, its artist, and admins.
- * Previews for everyone else come with the audio pipeline (it cuts 30-second clips); until then the app
- * keeps its simulated preview.
+ * A short-lived link to play a whole song: for people who bought it, its artist, and admins. It points to the
+ * light, loudness-matched stream once the song is processed (the master until then). Everyone else hears the
+ * public 30-second preview listed with the song in the catalogue.
  */
 @RestController
 class PlayController {
@@ -52,6 +52,7 @@ class PlayController {
         boolean isArtist = artists.findById(track.getArtistId()).map(Artist::getOwnerUserId).map(userId::equals).orElse(false);
         boolean allowed = isArtist || purchases.library(userId).contains(id) || roles.isAdmin(userId);
         if (!allowed) throw new ApiException(HttpStatus.FORBIDDEN, "NOT_OWNED", "Buy this song to play it in full.");
-        return new PlayLink(urls.urlFor(track.getAudioKey()), Instant.now().plus(props.signedUrlTtl()));
+        String key = track.getStreamKey() != null ? track.getStreamKey() : track.getAudioKey();
+        return new PlayLink(urls.urlFor(key), Instant.now().plus(props.signedUrlTtl()));
     }
 }

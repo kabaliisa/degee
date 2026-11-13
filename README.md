@@ -88,4 +88,4 @@ Set in `TERMS` in `src/lib/money.ts`:
 
 ## Known placeholders
 
-Shuffle, repeat, Help and support, "Sell on Deegee" and Terms do nothing yet. Audio is simulated for songs without an `audioUrl`. Cover photos are placeholder stock photos. Supporter and buyer counts are placeholders.
+Help and support and Terms do nothing yet. Songs with an uploaded recording play for real: buyers and the artist hear the full stream, everyone else the 30-second preview the server cuts. The demo songs have no recordings, so their playback is simulated on a timer. Cover photos are placeholder stock photos. Supporter and buyer counts are placeholders.

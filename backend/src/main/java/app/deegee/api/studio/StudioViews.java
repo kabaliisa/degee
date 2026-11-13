@@ -22,13 +22,19 @@ public final class StudioViews {
         }
     }
 
-    /** {@code audioUrl}: a short-lived link to the uploaded recording, so the artist can listen back. */
+    /**
+     * {@code audioUrl}: a short-lived link to the uploaded recording, so the artist can listen back.
+     * {@code audioStatus}: PROCESSING, READY or FAILED (null with no recording); {@code audioError} says why it failed.
+     * {@code previewUrl}: the 30-second preview fans hear. {@code sourceLossy}: uploaded as MP3/M4A, not WAV/FLAC.
+     */
     public record StudioTrack(String id, int trackNo, String title, long priceUGX, int durationSec, boolean hasAudio,
-                              String audioUrl, List<WriterView> writers) {
+                              String audioUrl, String audioStatus, String audioError, String previewUrl, boolean sourceLossy,
+                              Double loudnessLufs, List<WriterView> writers) {
         static StudioTrack of(Track t, Function<String, String> urlFor) {
             List<WriterView> writers = t.getWriters().stream().map(w -> new WriterView(w.getName(), w.getSharePct(), w.getSociety())).toList();
             return new StudioTrack(t.getId(), t.getTrackNo(), t.getTitle(), t.getPriceUgx(), t.getDurationSec(), t.hasAudio(),
-                    urlFor.apply(t.getAudioKey()), writers);
+                    urlFor.apply(t.getAudioKey()), t.getAudioStatus() == null ? null : t.getAudioStatus().name(), t.getAudioError(),
+                    urlFor.apply(t.getPreviewKey()), t.isSourceLossy(), t.getLoudnessLufs(), writers);
         }
     }
 

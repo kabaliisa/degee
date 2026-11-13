@@ -1,5 +1,6 @@
 package app.deegee.api.studio;
 
+import app.deegee.api.audio.AudioUploaded;
 import app.deegee.api.auth.PhoneNumbers;
 import app.deegee.api.catalog.Artist;
 import app.deegee.api.catalog.ArtistRepository;
@@ -25,6 +26,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,9 +63,10 @@ public class StudioService {
     private final MediaUrls urls;
     private final Ledger ledger;
     private final Clock clock;
+    private final ApplicationEventPublisher events;
 
     StudioService(ArtistRepository artists, ReleaseRepository releases, TrackRepository tracks, RightsDeclarationRepository declarations,
-                  UploadChecks uploads, MediaStorage storage, MediaUrls urls, Ledger ledger, Clock clock) {
+                  UploadChecks uploads, MediaStorage storage, MediaUrls urls, Ledger ledger, Clock clock, ApplicationEventPublisher events) {
         this.artists = artists;
         this.releases = releases;
         this.tracks = tracks;
@@ -73,6 +76,7 @@ public class StudioService {
         this.urls = urls;
         this.ledger = ledger;
         this.clock = clock;
+        this.events = events;
     }
 
     // ---- artist profile ---------------------------------------------------------------------
@@ -155,7 +159,7 @@ public class StudioService {
     public void deleteRelease(UUID userId, String releaseId) {
         Release release = own(userId, releaseId, true);
         List<Track> songs = tracks.findByReleaseIdOrderByTrackNo(releaseId);
-        songs.forEach(t -> storage.delete(t.getAudioKey()));
+        songs.forEach(t -> t.mediaKeys().forEach(storage::delete));
         tracks.deleteAll(songs);
         declarations.findById(releaseId).ifPresent(d -> {
             storage.delete(d.getLabelLetterKey());
@@ -197,7 +201,7 @@ public class StudioService {
     public StudioRelease deleteTrack(UUID userId, String releaseId, String trackId) {
         Release release = own(userId, releaseId, true);
         Track track = ownTrack(release, trackId);
-        storage.delete(track.getAudioKey());
+        track.mediaKeys().forEach(storage::delete);
         tracks.delete(track);
         tracks.flush();
         List<Track> rest = tracks.findByReleaseIdOrderByTrackNo(releaseId);
@@ -211,9 +215,10 @@ public class StudioService {
         Release release = own(userId, releaseId, true);
         Track track = ownTrack(release, trackId);
         UploadChecks.Audio audio = uploads.audio(file);
-        String old = track.getAudioKey();
-        track.setAudio(storage.store(Folder.AUDIO, audio.file(), audio.extension()), audio.durationSec());
-        storage.delete(old);
+        String key = storage.store(Folder.AUDIO, audio.file(), audio.extension());
+        List<String> old = track.setAudio(key, audio.durationSec(), audio.lossy());
+        old.forEach(storage::delete);
+        events.publishEvent(new AudioUploaded(track.getId(), key)); // processed once this is saved
         return view(release);
     }
 

@@ -24,5 +24,7 @@ public interface TrackRepository extends JpaRepository<Track, String> {
     @Query("select t from Track t where " + PUBLISHED_RELEASE + " and lower(t.title) like lower(concat('%', :q, '%')) order by t.title")
     List<Track> search(String q);
 
+    List<Track> findByAudioStatus(Track.AudioStatus status);
+
     int countByReleaseId(String releaseId);
 }

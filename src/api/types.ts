@@ -22,7 +22,8 @@ export type Track = {
   durationSec: number;
   priceUGX: number;
   writers: Songwriter[];
-  hasAudio?: boolean; // a real recording was uploaded; owners get a play link from the API. Otherwise playback is simulated.
+  hasAudio?: boolean; // a real recording was uploaded; owners get a play link from the API
+  previewUrl?: string | null; // public 30-second clip, once the recording is processed. Without one, playback is simulated.
 };
 
 export type Release = {

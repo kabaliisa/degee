@@ -22,7 +22,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Component
 class UploadChecks {
 
-    record Audio(Path file, String extension, int durationSec) {}
+    /** {@code lossy}: an MP3 or M4A, not the studio master (WAV or FLAC). */
+    record Audio(Path file, String extension, int durationSec, boolean lossy) {}
 
     record Staged(Path file, String extension) {}
 
@@ -62,7 +63,7 @@ class UploadChecks {
             discard(file);
             throw unprocessable("AUDIO_LENGTH", "Songs must be between 30 seconds and 20 minutes long.");
         }
-        return new Audio(file, ext, seconds);
+        return new Audio(file, ext, seconds, ext.equals("mp3") || ext.equals("m4a"));
     }
 
     /** Cover art: a JPG or PNG at least 400×400 pixels. */

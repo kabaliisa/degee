@@ -8,6 +8,8 @@ deegee:
   admin-phones: "+256700000001"
   media:
     dir: ${java.io.tmpdir}/deegee-test-media
+  audio:
+    synchronous: true # process in the request thread, so tests see the result straight away
   payments:
     mock-auto-approve: false # tests confirm top-ups and payouts through the webhook explicitly
   payouts:

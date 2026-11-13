@@ -25,20 +25,25 @@ public final class CatalogViews {
         }
     }
 
-    public static String coverPath(String coverKey) {
-        return coverKey == null ? null : "/v1/media/" + coverKey;
+    /** API path of a public file (a cover or a preview). */
+    public static String coverPath(String key) {
+        return key == null ? null : "/v1/media/" + key;
     }
 
     public record WriterView(String name, int sharePct, String society) {}
 
-    /** {@code hasAudio}: a real recording was uploaded; ask GET /v1/tracks/{id}/play for a link. */
+    /**
+     * {@code hasAudio}: a real recording was uploaded; buyers ask GET /v1/tracks/{id}/play for a link.
+     * {@code previewUrl}: the public 30-second preview, once the recording is processed (null before).
+     */
     public record TrackView(String id, String releaseId, String artistId, String title, int durationSec, long priceUGX,
-                            List<WriterView> writers, boolean hasAudio) {
+                            List<WriterView> writers, boolean hasAudio, String previewUrl) {
         public static TrackView of(Track t) {
             List<WriterView> writers = t.getWriters().stream()
                     .map(w -> new WriterView(w.getName(), w.getSharePct(), w.getSociety()))
                     .toList();
-            return new TrackView(t.getId(), t.getReleaseId(), t.getArtistId(), t.getTitle(), t.getDurationSec(), t.getPriceUgx(), writers, t.hasAudio());
+            return new TrackView(t.getId(), t.getReleaseId(), t.getArtistId(), t.getTitle(), t.getDurationSec(), t.getPriceUgx(), writers, t.hasAudio(),
+                    t.isAudioReady() ? coverPath(t.getPreviewKey()) : null);
         }
     }
 

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { mediaUrl } from '../../../api/catalog';
 import {
@@ -23,6 +23,13 @@ function rightsSummary(d: Declaration | null) {
   return `${label}${d.releasedBefore ? ` · released before on ${d.previousDistributor}` : ''}`;
 }
 
+function songStatus(t: StudioRelease['tracks'][number]) {
+  if (!t.hasAudio) return 'No recording yet';
+  if (t.audioStatus === 'PROCESSING') return 'Processing…';
+  if (t.audioStatus === 'FAILED') return 'Couldn’t process · upload again';
+  return formatDuration(t.durationSec);
+}
+
 const STATUS_NOTES: Partial<Record<StudioRelease['status'], string>> = {
   IN_REVIEW: 'Deegee is reviewing this release, usually within two days. You can’t change it while it’s in review.',
   PUBLISHED: 'This release is live. Fans can find it, listen to previews and buy it.',
@@ -33,6 +40,14 @@ export default function ReleaseEditor() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const load = useCallback(() => getMyRelease(id), [id]);
   const { data: release, error, setData, reload } = useLoad(load);
+
+  // While a recording is being processed, check back every few seconds so "Processing…" turns into the length.
+  const processing = release?.tracks.some((t) => t.audioStatus === 'PROCESSING') ?? false;
+  useEffect(() => {
+    if (!processing) return;
+    const id = setInterval(() => void reload(), 4000);
+    return () => clearInterval(id);
+  }, [processing, reload]);
 
   if (!release) {
     return error ? <EmptyState icon="alert-circle-outline" title="Couldn’t open this release" body={error}
@@ -132,8 +147,8 @@ function Editor({ release, onChange }: { release: StudioRelease; onChange: (r: S
             style={({ pressed }) => [styles.songBody, pressed && styles.pressed]}>
             <View style={styles.flex}>
               <Text style={type.bodyBold} numberOfLines={1}>{t.trackNo}. {t.title}</Text>
-              <Text style={[type.small, !t.hasAudio && styles.danger]}>
-                {t.hasAudio ? `${formatDuration(t.durationSec)} · ${formatUGX(t.priceUGX)}` : `No recording yet · ${formatUGX(t.priceUGX)}`}
+              <Text style={[type.small, (!t.hasAudio || t.audioStatus === 'FAILED') && styles.danger]}>
+                {songStatus(t)} · {formatUGX(t.priceUGX)}
               </Text>
             </View>
             {editable ? <Ionicons name="chevron-forward" size={18} color={colors.textFaint} /> : null}

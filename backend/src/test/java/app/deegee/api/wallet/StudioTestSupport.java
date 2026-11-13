@@ -33,6 +33,17 @@ abstract class StudioTestSupport extends ApiTestSupport {
         return b.array();
     }
 
+    /** A mono 16-bit WAV of a steady tone at {@code level} (0–1 of full scale): something the loudness meter can measure. */
+    static byte[] tone(int seconds, double level) {
+        int rate = 16000, samples = rate * seconds;
+        ByteBuffer b = ByteBuffer.allocate(44 + samples * 2).order(ByteOrder.LITTLE_ENDIAN);
+        b.put("RIFF".getBytes()).putInt(36 + samples * 2).put("WAVE".getBytes());
+        b.put("fmt ".getBytes()).putInt(16).putShort((short) 1).putShort((short) 1).putInt(rate).putInt(rate * 2).putShort((short) 2).putShort((short) 16);
+        b.put("data".getBytes()).putInt(samples * 2);
+        for (int i = 0; i < samples; i++) b.putShort((short) Math.round(Math.sin(2 * Math.PI * 1000 * i / rate) * level * Short.MAX_VALUE));
+        return b.array();
+    }
+
     static byte[] png(int size) throws IOException {
         BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
