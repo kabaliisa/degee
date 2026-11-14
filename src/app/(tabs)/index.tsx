@@ -94,19 +94,27 @@ function Hero({ release, playing, onPlay }: { release: Release; playing: boolean
   return (
     <View style={[styles.hero, { height }]}>
       {artist ? <Art seed={artist.id} colors={artist.colors} size={Math.max(width, height)} style={[styles.heroArt, { left: (width - Math.max(width, height)) / 2 }]} /> : null}
-      {/* A gentle top scrim keeps the wordmark legible without hiding the artist's face.
-          The stronger fade belongs at the bottom, behind the release details. */}
+      {/* Keep the logo fully on ink, then ease gradually into the portrait.
+          A separate bottom fade protects the release copy without a dark band through the face. */}
       <LinearGradient
         colors={[
-          withAlpha(colors.ink, 0.62),
+          colors.ink,
+          withAlpha(colors.ink, 0.98),
+          withAlpha(colors.ink, 0.9),
+          withAlpha(colors.ink, 0.65),
           withAlpha(colors.ink, 0.32),
-          withAlpha(colors.ink, 0.06),
+          withAlpha(colors.ink, 0.1),
           withAlpha(colors.ink, 0),
-          withAlpha(colors.ink, 0.4),
-          withAlpha(colors.ink, 0.92),
         ]}
-        locations={[0, 0.14, 0.3, 0.46, 0.7, 1]}
-        style={StyleSheet.absoluteFill}
+        locations={[0, 0.22, 0.38, 0.55, 0.72, 0.86, 1]}
+        style={[styles.heroTopFade, { height: insets.top + 190 }]}
+        pointerEvents="none"
+      />
+      <LinearGradient
+        colors={[withAlpha(colors.ink, 0), withAlpha(colors.ink, 0.35), withAlpha(colors.ink, 0.92)]}
+        locations={[0, 0.45, 1]}
+        style={styles.heroBottomFade}
+        pointerEvents="none"
       />
       <View style={[styles.heroTop, { paddingTop: insets.top + space.sm }]}>
         <Wordmark size={30} />
@@ -148,6 +156,8 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.85 },
   hero: { backgroundColor: colors.ink, overflow: 'hidden', borderBottomLeftRadius: radius.xl, borderBottomRightRadius: radius.xl },
   heroArt: { position: 'absolute', left: 0, top: 0, borderRadius: 0 },
+  heroTopFade: { position: 'absolute', top: 0, left: 0, right: 0 },
+  heroBottomFade: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 230 },
   heroTop: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.lg },
   heroBody: { position: 'absolute', left: space.lg, right: space.lg, bottom: space.xl, gap: space.md },
   heroKicker: { fontFamily: font.display, fontSize: 20, color: onDark.text },
