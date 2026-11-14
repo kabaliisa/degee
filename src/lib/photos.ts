@@ -1,16 +1,17 @@
 import type { ImageSourcePropType } from 'react-native';
-import portraitHd1 from '../../assets/photos/portrait-hd-1.jpg';
-import portrait1 from '../../assets/photos/portrait-1.jpg';
-import portrait5 from '../../assets/photos/portrait-5.jpg';
-import portrait6 from '../../assets/photos/portrait-6.jpg';
+import portrait1 from '../../assets/photos/portrait-hd-1.jpg';
+import portrait2 from '../../assets/photos/portrait-hd-2.jpg';
+import portrait3 from '../../assets/photos/portrait-hd-3.jpg';
+import group1 from '../../assets/photos/portrait-hd-4.jpg';
+import portrait4 from '../../assets/photos/portrait-hd-5.jpg';
 import scene1 from '../../assets/photos/scene-1.jpg';
 
 /**
  * Placeholder photos shipped with the app, in the warm portrait style of the Deegee designs. Used for
  * demo artists and releases until artists upload their own photos and covers.
  */
-const PORTRAITS: ImageSourcePropType[] = [portraitHd1, portrait5, portrait6, portrait1];
-const COVERS: ImageSourcePropType[] = [portraitHd1, scene1, portrait5, portrait6, portrait1];
+const PORTRAITS: ImageSourcePropType[] = [portrait1, portrait2, portrait3, portrait4, group1];
+const COVERS: ImageSourcePropType[] = [portrait3, portrait2, scene1, portrait1, group1, portrait4];
 
 function hash(s: string) {
   let h = 2166136261;
