@@ -5,7 +5,7 @@ import { PlusJakartaSans_500Medium } from '@expo-google-fonts/plus-jakarta-sans/
 import { PlusJakartaSans_600SemiBold } from '@expo-google-fonts/plus-jakarta-sans/600SemiBold';
 import { PlusJakartaSans_700Bold } from '@expo-google-fonts/plus-jakarta-sans/700Bold';
 import { PlusJakartaSans_800ExtraBold } from '@expo-google-fonts/plus-jakarta-sans/800ExtraBold';
-import { Stack, useSegments } from 'expo-router';
+import { Stack } from 'expo-router';
 import { Wordmark } from '../components/Wordmark';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -82,8 +82,6 @@ export default function RootLayout() {
   const signedIn = useSignedIn();
   const hasName = useSession((s) => Boolean(s.user?.name?.trim()));
   const catalog = useCatalog((s) => s.status);
-  const segments = useSegments();
-  const lightScreen = segments[0] === 'sign-in' || segments[0] === 'welcome';
   const catalogError = useCatalog((s) => s.error);
 
   useEffect(() => { void useCatalog.getState().load(); }, []);
@@ -94,8 +92,8 @@ export default function RootLayout() {
 
   return (
     <View style={styles.root}>
-      {/* Every screen has a dark top except the two ivory ones you only see once. */}
-      <StatusBar style={lightScreen ? 'dark' : 'light'} />
+      {/* The whole app is dark now, top to bottom. */}
+      <StatusBar style="light" />
       {/* Playback is a browser thing; there is no audio on the machine that renders these pages. */}
       {PRERENDERING ? null : <PlayerEngine />}
       <AccountSync signedIn={signedIn} />

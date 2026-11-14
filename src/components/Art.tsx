@@ -21,14 +21,30 @@ function hash(s: string) {
   return Math.abs(h);
 }
 
-export function Art({ seed, colors: [a, b], size, round, style, photo = true, uri: imageUri }: {
-  seed: string; colors: [string, string]; size: number; round?: boolean; style?: StyleProp<ViewStyle>; photo?: boolean;
+/**
+ * The generated covers stay inside the app's own greens. The server sends a colour pair per release,
+ * but those were picked for the old palette and a bright blue square on this background looks like
+ * someone else's app, so the pair is chosen here from the seed instead: same artwork every time, and
+ * always of a piece with everything around it.
+ */
+const PAIRS: [string, string][] = [
+  ['#0F3D2A', '#1E7A4E'], // forest to emerald
+  ['#0B3A3A', '#1C7C73'], // deep teal
+  ['#133D1A', '#3C8F2E'], // pine to leaf
+  ['#0D2F3C', '#1E6F86'], // petrol, the cool one
+  ['#1A3A12', '#5FA524'], // olive to moss
+  ['#082E22', '#2FD96B'], // near-black to the brand green
+];
+
+export function Art({ seed, size, round, style, photo = true, uri: imageUri }: {
+  seed: string; size: number; round?: boolean; style?: StyleProp<ViewStyle>; photo?: boolean;
   uri?: string | null; // a specific image (e.g. a draft's uploaded cover) instead of the one looked up by seed
 }) {
   // Mock photos load from the web on top of the pattern; if offline or a photo fails, the pattern stays.
   const [photoFailed, setPhotoFailed] = useState(false);
   const source = photoFailed ? null : imageUri ? { uri: imageUri } : photo ? photoSource(seed) : null;
   const h = hash(seed);
+  const [a, b] = PAIRS[h % PAIRS.length];
   const variant = VARIANTS[h % VARIANTS.length];
   const id = `g${h}`;
   const S = 100;

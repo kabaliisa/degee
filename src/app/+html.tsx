@@ -20,7 +20,7 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover" />
 
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#101014" />
+        <meta name="theme-color" content="#0A0C0A" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="Deegee" />
@@ -43,10 +43,10 @@ export default function Root({ children }: PropsWithChildren) {
 
 const SHELL_CSS = `
 /* Ink while the page loads, so an installed app opens dark rather than flashing white. */
-html, body, #root { background-color: #101014; }
+html, body, #root { background-color: #0A0C0A; }
 /* The app is a phone-shaped column; centre it rather than stretching it across a desktop. */
 @media (min-width: 560px) {
-  body { background-color: #17171d; }
+  body { background-color: #050605; }
   #root { width: 100%; max-width: 460px; margin: 0 auto; box-shadow: 0 0 60px rgba(0,0,0,0.45); }
 }
 `;

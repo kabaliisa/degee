@@ -51,7 +51,7 @@ export default function Player() {
 
       <View style={styles.artArea}>
         <View style={styles.artShadow}>
-          <Art seed={release.id} colors={release.colors} size={artSize} />
+          <Art seed={release.id} size={artSize} />
         </View>
       </View>
 

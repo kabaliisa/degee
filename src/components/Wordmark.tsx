@@ -1,7 +1,7 @@
 import { StyleSheet, Text, type TextStyle } from 'react-native';
 import { colors, font } from '../lib/theme';
 
-/** The "deegee" wordmark: lowercase, rounded and coral. */
+/** The "deegee" wordmark: lowercase, rounded and green. */
 export function Wordmark({ size = 30, style }: { size?: number; style?: TextStyle }) {
   return (
     <Text accessibilityRole="header" accessibilityLabel="Deegee" style={[styles.mark, { fontSize: size, letterSpacing: -size * 0.04, lineHeight: size * 1.15 }, style]}>

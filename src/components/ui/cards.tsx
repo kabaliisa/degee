@@ -46,7 +46,7 @@ export function ReleaseCard({ release, size = 148, subtitle, price = true }: { r
     <Pressable onPress={() => router.push(`/release/${release.id}`)} accessibilityLabel={`${release.title} by ${artist?.name}`}
       style={({ pressed }) => [{ width: size }, pressed && styles.pressed]}>
       <View>
-        <Art seed={release.id} colors={release.colors} size={size} style={styles.cover} />
+        <Art seed={release.id} size={size} style={styles.cover} />
         {release.year >= new Date().getFullYear() ? <View style={styles.newBadge}><Text style={styles.newText}>NEW</Text></View> : null}
       </View>
       <Text numberOfLines={1} style={[type.bodyBold, styles.cardTitle]}>{release.title}</Text>
@@ -60,7 +60,7 @@ export function ArtistCard({ artist, size = 132 }: { artist: Artist; size?: numb
   return (
     <Pressable onPress={() => router.push(`/artist/${artist.id}`)} accessibilityLabel={artist.name}
       style={({ pressed }) => [{ width: size }, pressed && styles.pressed]}>
-      <Art seed={artist.id} colors={artist.colors} size={size} round />
+      <Art seed={artist.id} size={size} round />
       <Text numberOfLines={1} style={[type.bodyBold, styles.cardTitle, styles.centered]}>{artist.name}</Text>
       <Text numberOfLines={1} style={[type.small, styles.centered]}>Artist</Text>
     </Pressable>
@@ -68,13 +68,13 @@ export function ArtistCard({ artist, size = 132 }: { artist: Artist; size?: numb
 }
 
 /** A tappable list row with art and two lines of text: used for artists and releases in lists. */
-export function ListRow({ seed, colors: art, round, title, subtitle, onPress, artSize = 48 }: {
-  seed: string; colors: [string, string]; round?: boolean; title: string; subtitle: string; onPress: () => void; artSize?: number;
+export function ListRow({ seed, round, title, subtitle, onPress, artSize = 48 }: {
+  seed: string; round?: boolean; title: string; subtitle: string; onPress: () => void; artSize?: number;
 }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${title}, ${subtitle}`}
       style={({ pressed }) => [styles.listRow, pressed && styles.listRowPressed]}>
-      <Art seed={seed} colors={art} size={artSize} round={round} />
+      <Art seed={seed} size={artSize} round={round} />
       <View style={styles.flex}>
         <Text numberOfLines={1} style={type.bodyBold}>{title}</Text>
         <Text numberOfLines={1} style={type.small}>{subtitle}</Text>

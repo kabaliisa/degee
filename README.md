@@ -19,6 +19,14 @@ Sign in with any Ugandan mobile number. No SMS is sent in development: the 6-dig
 
 **On your phone:** the phone and the Mac must be on the same Wi-Fi. The app finds the API at port 8080 on the computer running Expo. If macOS asks whether Java may accept incoming connections, allow it. To point the app somewhere else (a tunnel, staging), set `EXPO_PUBLIC_API_URL`, e.g. `EXPO_PUBLIC_API_URL=https://api.example.com npx expo start`.
 
+## Look
+
+Black and green. The page is a near-black with a trace of green in it, so warm photographs of artists
+sit on it without a colour fight; panels lift off it in charcoal, and the headers carry a deep forest
+wash so a screen still has a top and a body rather than being one black sheet. Green is the money
+colour and is spent only where money is — prices, Buy, Owned, paid out — which is why so little of the
+screen is green and why the green reads as loudly as it does. All of it lives in `src/lib/theme.ts`.
+
 ## The web app (PWA)
 
 The browser build is the one that can take mobile money directly: no store sits between a fan and an

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, font, onDark, radius, space } from '../../lib/theme';
@@ -14,6 +15,8 @@ export function ScreenHeader({ title, subtitle, right, children }: {
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.top, { paddingTop: insets.top + space.sm }]}>
+      <LinearGradient colors={[colors.accentSoft, colors.ink]} start={{ x: 0, y: 0 }} end={{ x: 0.6, y: 1 }}
+        style={StyleSheet.absoluteFill} pointerEvents="none" />
       <View style={styles.bar}>
         <Wordmark size={28} style={styles.flex} />
         {right}
@@ -41,5 +44,5 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   title: { fontFamily: font.display, fontSize: 32, lineHeight: 38, letterSpacing: -1, color: onDark.text, marginTop: space.xs },
   subtitle: { fontFamily: font.medium, fontSize: 15, lineHeight: 21, color: onDark.textMuted, marginTop: space.xs },
-  strip: { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: colors.ink },
+  strip: { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: colors.accentSoft },
 });

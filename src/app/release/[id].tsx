@@ -62,7 +62,7 @@ export default function ReleaseScreen() {
         <View style={styles.stage}>
           <View style={[styles.header, { paddingTop: insets.top + 56 }]}>
             <View style={styles.cover}>
-              <Art seed={release.id} colors={release.colors} size={Math.min(width - space.lg * 2, 340)} style={styles.coverArt} />
+              <Art seed={release.id} size={Math.min(width - space.lg * 2, 340)} style={styles.coverArt} />
             </View>
             <Text style={[type.display, styles.title]}>{release.title}</Text>
             <Pressable onPress={() => router.push(`/artist/${artist.id}`)} accessibilityRole="link" style={styles.artist}>

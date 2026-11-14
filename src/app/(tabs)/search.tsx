@@ -19,7 +19,7 @@ function GenreTile({ genre, onPress }: { genre: Genre; onPress: () => void }) {
     <View style={styles.genreCell}>
       <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={genre}
         style={({ pressed }) => [styles.genreTile, pressed && styles.pressed]}>
-        {sample ? <Art seed={sample.id} colors={sample.colors} size={160} style={styles.genreArt} /> : null}
+        {sample ? <Art seed={sample.id} size={160} style={styles.genreArt} /> : null}
         <LinearGradient colors={[withAlpha(colors.ink, 0), withAlpha(colors.ink, 0.8)]} locations={[0.3, 1]} style={StyleSheet.absoluteFill} />
         <Text numberOfLines={2} style={styles.genreName}>{genre}</Text>
       </Pressable>
@@ -65,10 +65,10 @@ export default function Search() {
       {searching && !nothing ? (
         <View style={styles.results}>
           {results.artists.map((a) => (
-            <ListRow key={a.id} seed={a.id} colors={a.colors} round title={a.name} subtitle="Artist" onPress={() => router.push(`/artist/${a.id}`)} />
+            <ListRow key={a.id} seed={a.id} round title={a.name} subtitle="Artist" onPress={() => router.push(`/artist/${a.id}`)} />
           ))}
           {results.releases.map((r) => (
-            <ListRow key={r.id} seed={r.id} colors={r.colors} title={r.title} subtitle={`${r.type} · ${getArtist(r.artistId)?.name}`}
+            <ListRow key={r.id} seed={r.id} title={r.title} subtitle={`${r.type} · ${getArtist(r.artistId)?.name}`}
               onPress={() => router.push(`/release/${r.id}`)} />
           ))}
           {results.tracks.map((t, i) => (

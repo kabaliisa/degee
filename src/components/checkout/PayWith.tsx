@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { PayWith } from '../../api/checkout';
 import { formatPhone, guessProvider, normalizeUgPhone, type Provider } from '../../lib/phone';
-import { colors, font, radius, space, type, withAlpha } from '../../lib/theme';
+import { colors, font, radius, space, type } from '../../lib/theme';
 import { useSession } from '../../store/session';
 import { tap } from '../ui';
 
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   wrap: { gap: space.md },
   options: { gap: space.sm },
   option: { flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.md, borderRadius: radius.lg, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.border },
-  optionOn: { borderColor: colors.accent, backgroundColor: withAlpha(colors.accent, 0.06) },
+  optionOn: { borderColor: colors.accent, backgroundColor: colors.accentSoft },
   tile: { width: 52, height: 36, borderRadius: radius.xs, alignItems: 'center', justifyContent: 'center' },
   tileText: { fontFamily: font.display, fontSize: 13 },
   flex: { flex: 1 },

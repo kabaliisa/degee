@@ -141,9 +141,9 @@ function Collage() {
   if (!a || !b || !c) return null;
   return (
     <View style={styles.collage} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <View style={styles.blob}><Art seed={b.id} colors={b.colors} size={92} style={styles.side} /></View>
-      <View style={[styles.blob, styles.middle]}><Art seed={a.id} colors={a.colors} size={150} style={styles.center} /></View>
-      <View style={styles.blob}><Art seed={c.id} colors={c.colors} size={92} style={styles.side} /></View>
+      <View style={styles.blob}><Art seed={b.id} size={92} style={styles.side} /></View>
+      <View style={[styles.blob, styles.middle]}><Art seed={a.id} size={150} style={styles.center} /></View>
+      <View style={styles.blob}><Art seed={c.id} size={92} style={styles.side} /></View>
     </View>
   );
 }

@@ -46,7 +46,7 @@ export default function Buy() {
   }
   if (checkout.stage === 'done') {
     return (
-      <ResultState icon="checkmark" tone="lime" title="It’s yours" art={<Art seed={release.id} colors={release.colors} size={148} />}
+      <ResultState icon="checkmark" tone="good" title="It’s yours" art={<Art seed={release.id} size={148} />}
         body={`${title} is in your music, yours to keep. ${formatUGX(split.artist)} went to ${artist.name}.`}>
         <Button label="Go to my music" onPress={() => { router.dismissAll(); router.push('/(tabs)/library'); }} />
         <Button label="Keep browsing" variant="ghost" onPress={close} />
@@ -57,7 +57,7 @@ export default function Buy() {
   return (
     <FormScrollView contentContainerStyle={styles.content}>
       <View style={styles.item}>
-        <Art seed={release.id} colors={release.colors} size={72} />
+        <Art seed={release.id} size={72} />
         <View style={styles.flex}>
           <Text style={type.heading} numberOfLines={2}>{title}</Text>
           <Text style={type.small} numberOfLines={2}>{what} by {artist.name}</Text>

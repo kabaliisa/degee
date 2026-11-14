@@ -44,7 +44,7 @@ export default function Gift() {
   }
   if (checkout.stage === 'done' && split) {
     return (
-      <ResultState icon="gift" title="Gift sent" art={<Art seed={artist.id} colors={artist.colors} size={120} round />}
+      <ResultState icon="gift" title="Gift sent" art={<Art seed={artist.id} size={120} round />}
         body={`${formatUGX(split.artist)} is on its way to ${artist.name}.${note.trim() ? ' They’ll see your message too.' : ''}`}>
         <Button label="Done" onPress={close} />
       </ResultState>
@@ -54,7 +54,7 @@ export default function Gift() {
   return (
     <FormScrollView contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Art seed={artist.id} colors={artist.colors} size={88} round />
+        <Art seed={artist.id} size={88} round />
         <Text style={type.title}>{artist.name}</Text>
         <Text style={[type.small, styles.centered]}>A gift is a thank-you, separate from buying music.</Text>
       </View>

@@ -46,7 +46,7 @@ export function TrackRow({ track, onPlay, showArt = true, index }: { track: Trac
   return (
     <Pressable onPress={onPlay} accessibilityLabel={`${track.title} by ${artist?.name}${owned ? ', owned' : ', preview'}`}
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}>
-      {showArt && release ? <Art seed={release.id} colors={release.colors} size={48} /> : (
+      {showArt && release ? <Art seed={release.id} size={48} /> : (
         <View style={styles.index}>
           {isCurrent ? <Equalizer playing={isPlaying} /> : <Text style={[type.small, styles.indexText]}>{(index ?? 0) + 1}</Text>}
         </View>

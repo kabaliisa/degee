@@ -31,7 +31,7 @@ export function MiniPlayer({ floating }: { floating?: boolean }) {
   const bar = (
     <Pressable onPress={() => router.push('/player')} accessibilityLabel={`Now playing ${track.title}. Open player`} style={styles.bar}>
       <View style={styles.row}>
-        <Art seed={release.id} colors={release.colors} size={44} style={styles.art} />
+        <Art seed={release.id} size={44} style={styles.art} />
         <View style={styles.flex}>
           <Text numberOfLines={1} style={[type.bodyBold, styles.title]}>{track.title}</Text>
           <Text numberOfLines={1} style={[type.small, styles.sub]}>{isPreview ? 'Preview · ' : ''}{getArtist(track.artistId)?.name}</Text>

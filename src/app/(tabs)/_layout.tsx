@@ -51,7 +51,7 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   dock: { position: 'absolute', left: 0, right: 0, bottom: 0 },
   fade: { position: 'absolute', left: 0, right: 0, top: -40, height: 120 },
-  tabBar: { backgroundColor: colors.surface, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, elevation: 0 },
+  tabBar: { backgroundColor: colors.ink, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, elevation: 0 },
   tabLabel: { fontFamily: font.bold, fontSize: 11 },
   scene: { backgroundColor: colors.bg },
 });

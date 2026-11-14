@@ -94,7 +94,7 @@ export default function Library() {
           <View style={styles.grid}>
             {ownedReleases.map((r) => (
               <Pressable key={r.id} onPress={() => router.push(`/release/${r.id}`)} accessibilityLabel={r.title} style={styles.gridCell}>
-                <View style={styles.gridArt}><Art seed={r.id} colors={r.colors} size={170} style={styles.fill} /></View>
+                <View style={styles.gridArt}><Art seed={r.id} size={170} style={styles.fill} /></View>
                 <View style={styles.gridMeta}>
                   <Text numberOfLines={1} style={type.bodyBold}>{r.title}</Text>
                   <Text numberOfLines={1} style={type.small}>{getArtist(r.artistId)?.name}</Text>
@@ -109,7 +109,7 @@ export default function Library() {
       {signedIn && view === 'Artists' ? (
         myArtists.length === 0 ? <EmptyState icon="people-outline" title="No artists yet" body="Follow artists or buy their music to keep them here." /> : (
           myArtists.map((a) => (
-            <ListRow key={a.id} seed={a.id} colors={a.colors} round artSize={64} title={a.name}
+            <ListRow key={a.id} seed={a.id} round artSize={64} title={a.name}
               subtitle={following.includes(a.id) ? 'Following' : 'Artist'} onPress={() => router.push(`/artist/${a.id}`)} />
           ))
         )

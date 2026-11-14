@@ -100,7 +100,7 @@ function Editor({ release, onChange }: { release: StudioRelease; onChange: (r: S
       <Stack.Screen options={{ title: release.type }} />
       <View style={styles.top}>
         <Pressable onPress={editable ? pickCover : undefined} disabled={!editable} accessibilityRole="button" accessibilityLabel="Change cover">
-          <Art seed={release.id} colors={release.colors} size={120} photo={false} uri={release.coverUrl ? mediaUrl(release.coverUrl) : null} />
+          <Art seed={release.id} size={120} photo={false} uri={release.coverUrl ? mediaUrl(release.coverUrl) : null} />
           {editable ? (
             <View style={styles.coverBadge}>
               <Ionicons name={busy === 'cover' ? 'hourglass-outline' : 'camera'} size={16} color={colors.accentInk} />

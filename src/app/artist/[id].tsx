@@ -39,7 +39,7 @@ export default function ArtistScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {/* Full-bleed hero: the artist's art fills the top, name set large over a fade. */}
         <View style={styles.hero}>
-          <Art seed={artist.id} colors={artist.colors} size={600} style={styles.heroArt} />
+          <Art seed={artist.id} size={600} style={styles.heroArt} />
           <LinearGradient colors={[withAlpha(colors.ink, 0.5), withAlpha(colors.ink, 0), withAlpha(colors.ink, 0.3), withAlpha(colors.ink, 0.95)]}
             locations={[0, 0.25, 0.55, 1]} style={StyleSheet.absoluteFill} />
           <View style={styles.heroText}>

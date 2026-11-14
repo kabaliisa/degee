@@ -26,7 +26,7 @@ export default function Home() {
   const featured = releases.find((r) => r.exclusive) ?? releases[0];
   const newest = [...releases].sort((a, b) => b.year - a.year);
 
-  // Artists you've bought from come first, with a coral ring; then others worth backing.
+  // Artists you've bought from come first, with a green ring; then others worth backing.
   const backed = new Set(owned.map((t) => releases.find((r) => tracksForRelease(r.id).some((x) => x.id === t))?.artistId));
   const artists = [...listArtists()].sort((a, b) => Number(backed.has(b.id)) - Number(backed.has(a.id)));
 
@@ -93,7 +93,7 @@ function Hero({ release, playing, onPlay }: { release: Release; playing: boolean
   const open = () => router.push(`/release/${release.id}`);
   return (
     <View style={[styles.hero, { height }]}>
-      {artist ? <Art seed={artist.id} colors={artist.colors} size={Math.max(width, height)} style={[styles.heroArt, { left: (width - Math.max(width, height)) / 2 }]} /> : null}
+      {artist ? <Art seed={artist.id} size={Math.max(width, height)} style={[styles.heroArt, { left: (width - Math.max(width, height)) / 2 }]} /> : null}
       {/* Keep the logo fully on ink, then ease gradually into the portrait.
           A separate bottom fade protects the release copy without a dark band through the face. */}
       <LinearGradient
@@ -143,7 +143,7 @@ function ArtistBubble({ artist, backed }: { artist: Artist; backed: boolean }) {
     <Pressable onPress={() => router.push(`/artist/${artist.id}`)} accessibilityRole="button"
       accessibilityLabel={backed ? `${artist.name}, you back this artist` : artist.name} style={styles.bubble}>
       <View style={[styles.ring, backed && styles.ringOn]}>
-        <Art seed={artist.id} colors={artist.colors} size={68} round />
+        <Art seed={artist.id} size={68} round />
       </View>
       <Text numberOfLines={2} style={styles.bubbleName}>{artist.name}</Text>
     </Pressable>

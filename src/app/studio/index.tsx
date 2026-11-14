@@ -10,7 +10,7 @@ import { StatusPill } from '../../components/studio/StatusPill';
 import { Button, EmptyState } from '../../components/ui';
 import { useLoad } from '../../hooks/useLoad';
 import { formatUGX } from '../../lib/money';
-import { colors, font, onDark, radius, space, type, withAlpha } from '../../lib/theme';
+import { colors, font, onDark, radius, space, type } from '../../lib/theme';
 
 type Studio = { artist: ArtistProfile | null; releases: StudioRelease[]; earnings: Earnings | null };
 
@@ -51,7 +51,7 @@ export default function StudioHome() {
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Art seed={artist.id} colors={artist.colors} size={64} round photo={false} />
+        <Art seed={artist.id} size={64} round photo={false} />
         <View style={styles.flex}>
           <Text style={type.title}>{artist.name}</Text>
           <StatusPill status={artist.status} />
@@ -100,7 +100,7 @@ export default function StudioHome() {
         releases.map((r) => (
           <Pressable key={r.id} accessibilityLabel={`${r.title}, ${r.type}`} onPress={() => router.push({ pathname: '/studio/release/[id]', params: { id: r.id } })}
             accessibilityRole="button" style={({ pressed }) => [styles.release, pressed && styles.pressed]}>
-            <Art seed={r.id} colors={r.colors} size={56} photo={false} uri={r.coverUrl ? mediaUrl(r.coverUrl) : null} />
+            <Art seed={r.id} size={56} photo={false} uri={r.coverUrl ? mediaUrl(r.coverUrl) : null} />
             <View style={styles.flex}>
               <Text style={type.bodyBold} numberOfLines={1}>{r.title}</Text>
               <Text style={type.small}>{r.type} · {r.tracks.length} {r.tracks.length === 1 ? 'song' : 'songs'} · {formatUGX(r.priceUGX)}</Text>
@@ -131,7 +131,7 @@ export default function StudioHome() {
 
 const styles = StyleSheet.create({
   content: { padding: space.lg, gap: space.md, paddingBottom: space.xxl * 3 },
-  introBadge: { width: 88, height: 88, borderRadius: 44, alignItems: 'center', justifyContent: 'center', backgroundColor: withAlpha(colors.accent, 0.12) },
+  introBadge: { width: 88, height: 88, borderRadius: 44, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentSoft },
   intro: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xl, gap: space.md },
   centered: { textAlign: 'center' },
   mutedCentered: { textAlign: 'center', color: colors.textMuted },

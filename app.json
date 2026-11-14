@@ -12,7 +12,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#14110F",
+        "backgroundColor": "#070907",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -26,8 +26,8 @@
       "name": "Deegee",
       "shortName": "Deegee",
       "description": "Buy music straight from Ugandan artists with mobile money. Yours to keep.",
-      "themeColor": "#101014",
-      "backgroundColor": "#101014",
+      "themeColor": "#0A0C0A",
+      "backgroundColor": "#0A0C0A",
       "display": "standalone",
       "bundler": "metro"
     },
@@ -37,6 +37,6 @@
       "expo-font"
     ],
     "scheme": "deegee",
-    "backgroundColor": "#14110F"
+    "backgroundColor": "#0A0C0A"
   }
 }

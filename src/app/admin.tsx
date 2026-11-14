@@ -63,7 +63,7 @@ function ReleaseCard({ item, onDone }: { item: PendingRelease; onDone: () => voi
   return (
     <View style={styles.card}>
       <View style={styles.row}>
-        <Art seed={r.id} colors={r.colors} size={72} photo={false} uri={r.coverUrl ? mediaUrl(r.coverUrl) : null} />
+        <Art seed={r.id} size={72} photo={false} uri={r.coverUrl ? mediaUrl(r.coverUrl) : null} />
         <View style={styles.flex}>
           <Text style={type.heading}>{r.title}</Text>
           <Text style={type.small}>{item.artistName} · {r.type} · {formatUGX(r.priceUGX)}</Text>
