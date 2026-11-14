@@ -41,7 +41,7 @@ export default function TabsLayout() {
         sceneStyle: styles.scene,
       }}>
       <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: tabIcon('home', 'home-outline') }} />
-      <Tabs.Screen name="search" options={{ title: 'Discover', tabBarIcon: tabIcon('search', 'search-outline') }} />
+      <Tabs.Screen name="search" options={{ title: 'Explore', tabBarIcon: tabIcon('search', 'search-outline') }} />
       <Tabs.Screen name="library" options={{ title: 'My music', tabBarIcon: tabIcon('musical-notes', 'musical-notes-outline') }} />
       <Tabs.Screen name="wallet" options={{ title: 'Wallet', tabBarIcon: tabIcon('wallet', 'wallet-outline') }} />
     </Tabs>
@@ -50,8 +50,8 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   dock: { position: 'absolute', left: 0, right: 0, bottom: 0 },
-  fade: { position: 'absolute', left: 0, right: 0, top: -40, bottom: 0 },
-  tabBar: { backgroundColor: 'transparent', borderTopWidth: 0, elevation: 0 },
+  fade: { position: 'absolute', left: 0, right: 0, top: -40, height: 120 },
+  tabBar: { backgroundColor: colors.surface, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, elevation: 0 },
   tabLabel: { fontFamily: font.bold, fontSize: 11 },
   scene: { backgroundColor: colors.bg },
 });

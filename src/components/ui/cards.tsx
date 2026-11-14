@@ -39,7 +39,10 @@ export function ReleaseCard({ release, size = 148, subtitle, price = true }: { r
   return (
     <Pressable onPress={() => router.push(`/release/${release.id}`)} accessibilityLabel={`${release.title} by ${artist?.name}`}
       style={({ pressed }) => [{ width: size }, pressed && styles.pressed]}>
-      <Art seed={release.id} colors={release.colors} size={size} style={styles.cover} />
+      <View>
+        <Art seed={release.id} colors={release.colors} size={size} style={styles.cover} />
+        {release.year >= new Date().getFullYear() ? <View style={styles.newBadge}><Text style={styles.newText}>NEW</Text></View> : null}
+      </View>
       <Text numberOfLines={1} style={[type.bodyBold, styles.cardTitle]}>{release.title}</Text>
       <Text numberOfLines={1} style={type.small}>{subtitle ?? artist?.name}</Text>
       {price ? <PriceTag release={release} /> : null}
@@ -79,6 +82,8 @@ const styles = StyleSheet.create({
   shelfHeader: { paddingHorizontal: space.lg, marginBottom: space.md },
   shelfRow: { gap: space.md, paddingHorizontal: space.lg },
   cover: { borderRadius: radius.md },
+  newBadge: { position: 'absolute', left: 8, top: 8, backgroundColor: colors.accent, borderRadius: radius.pill, paddingVertical: 3, paddingHorizontal: 8 },
+  newText: { fontFamily: font.display, fontSize: 10, letterSpacing: 0.5, color: colors.accentInk },
   tag: { alignSelf: 'flex-start', marginTop: space.sm, paddingVertical: 3, paddingHorizontal: 10, borderRadius: radius.pill, borderWidth: 1.5, borderColor: colors.text },
   tagOwned: { backgroundColor: colors.lime, borderColor: colors.lime },
   tagText: { fontFamily: font.bold, fontSize: 12, color: colors.text },

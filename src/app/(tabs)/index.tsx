@@ -7,22 +7,14 @@ import { getArtist, getRelease, listArtists, listReleases, releasesInGenre, trac
 import { Art } from '../../components/Art';
 import { Avatar } from '../../components/profile/Avatar';
 import { PriceTag, ReleaseCard, Shelf } from '../../components/ui';
+import { LightStatusBar } from '../../components/LightStatusBar';
 import { Wordmark } from '../../components/Wordmark';
-import { PREVIEW_SEC } from '../../lib/format';
 import { formatUGX } from '../../lib/money';
 import { colors, font, layout, onDark, radius, space, type, withAlpha } from '../../lib/theme';
 import { usePlayer } from '../../store/player';
-import { useSession } from '../../store/session';
 import { useWallet } from '../../store/wallet';
 
-function greeting(now = new Date()) {
-  const h = now.getHours();
-  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
-}
-
 export default function Home() {
-  const insets = useSafeAreaInsets();
-  const name = useSession((s) => s.user?.name?.trim().split(/\s+/)[0]);
   const owned = useWallet((s) => s.ownedTracks);
   const owns = useWallet((s) => s.owns);
   const playQueue = usePlayer((s) => s.playQueue);
@@ -45,22 +37,21 @@ export default function Home() {
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + space.sm }]}>
-        <View style={styles.header}>
-          <Wordmark size={32} style={styles.flex} />
-          <Pressable onPress={() => router.push('/(tabs)/search')} accessibilityRole="button" accessibilityLabel="Search" hitSlop={8} style={styles.headerIcon}>
-            <Ionicons name="search" size={22} color={colors.text} />
-          </Pressable>
-        </View>
-
-        <View style={styles.greetRow}>
-          <Text style={[type.display, styles.flex]}>{greeting()}{name ? `,\n${name}` : ''}</Text>
-          <Pressable onPress={() => router.push('/profile')} accessibilityRole="button" accessibilityLabel="Your profile and settings" hitSlop={6}>
-            <Avatar size={48} />
-          </Pressable>
-        </View>
-
+      <LightStatusBar />
+      <ScrollView contentContainerStyle={styles.content}>
         <Hero release={featured} playing={currentRelease === featured.id && isPlaying} onPlay={() => playRelease(featured.id)} />
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={type.heading}>Curated local releases</Text>
+            <Pressable onPress={() => router.push('/(tabs)/search')} accessibilityRole="link" hitSlop={8}>
+              <Text style={styles.seeAll}>See all</Text>
+            </Pressable>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+            {newest.map((r) => <ReleaseCard key={r.id} release={r} size={132} />)}
+          </ScrollView>
+        </View>
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -69,48 +60,52 @@ export default function Home() {
               <Text style={styles.seeAll}>See all</Text>
             </Pressable>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.artistRow}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
             {artists.map((a) => <ArtistBubble key={a.id} artist={a} backed={backed.has(a.id)} />)}
           </ScrollView>
         </View>
 
-        <Shelf title="New in Kampala">
-          {newest.map((r) => <ReleaseCard key={r.id} release={r} size={124} />)}
-        </Shelf>
-
         <Shelf title="Kadongo Kamu & storytellers">
-          {[...releasesInGenre('Kadongo Kamu'), ...releasesInGenre('Hip Hop')].map((r) => <ReleaseCard key={r.id} release={r} size={124} />)}
+          {[...releasesInGenre('Kadongo Kamu'), ...releasesInGenre('Hip Hop')].map((r) => <ReleaseCard key={r.id} release={r} size={132} />)}
         </Shelf>
 
         <Shelf title="Sunday praise">
-          {[...releasesInGenre('Gospel'), ...releasesInGenre('Zouk')].map((r) => <ReleaseCard key={r.id} release={r} size={124} />)}
+          {[...releasesInGenre('Gospel'), ...releasesInGenre('Zouk')].map((r) => <ReleaseCard key={r.id} release={r} size={132} />)}
         </Shelf>
       </ScrollView>
     </View>
   );
 }
 
-/** Today's release, big: the cover fills the card, with a preview button and its price. */
+/** Full-width, edge to edge: the artist's photo, their name big, and Listen now. */
 function Hero({ release, playing, onPlay }: { release: Release; playing: boolean; onPlay: () => void }) {
+  const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const cardWidth = Math.min(width, 600) - space.lg * 2;
   const artist = getArtist(release.artistId);
+  const height = insets.top + 400;
   const open = () => router.push(`/release/${release.id}`);
   return (
-    <View style={styles.hero}>
-      <Art seed={release.id} colors={release.colors} size={cardWidth} style={styles.heroArt} />
-      <LinearGradient colors={[withAlpha(colors.ink, 0.9), withAlpha(colors.ink, 0.55), withAlpha(colors.ink, 0)]} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }}
-        style={StyleSheet.absoluteFill} />
+    <View style={[styles.hero, { height }]}>
+      {artist ? <Art seed={artist.id} colors={artist.colors} size={Math.max(width, height)} style={styles.heroArt} /> : null}
+      <LinearGradient colors={[withAlpha(colors.ink, 0.55), withAlpha(colors.ink, 0), withAlpha(colors.ink, 0.35), withAlpha(colors.ink, 0.95)]}
+        locations={[0, 0.25, 0.55, 1]} style={StyleSheet.absoluteFill} />
+      <View style={[styles.heroTop, { paddingTop: insets.top + space.sm }]}>
+        <Wordmark size={30} style={styles.flex} />
+        <Pressable onPress={() => router.push('/profile')} accessibilityRole="button" accessibilityLabel="Your profile and settings" hitSlop={6}>
+          <Avatar size={38} />
+        </Pressable>
+      </View>
       <View style={styles.heroBody}>
         <Pressable onPress={open} accessibilityRole="link" accessibilityLabel={`${release.title} by ${artist?.name}`}>
-          <Text style={styles.heroArtist}>{artist?.name}</Text>
-          <Text numberOfLines={2} style={styles.heroTitle}>{release.title}</Text>
+          <Text style={styles.heroKicker}>New from</Text>
+          <Text numberOfLines={2} style={styles.heroTitle}>{artist?.name}</Text>
+          <Text numberOfLines={2} style={styles.heroBlurb}>{release.title}, a new {release.type.toLowerCase()}{release.exclusive ? ', only on Deegee' : ''}.</Text>
         </Pressable>
         <View style={styles.heroActions}>
-          <Pressable onPress={onPlay} accessibilityRole="button" accessibilityLabel={playing ? 'Pause preview' : 'Play preview'}
-            style={({ pressed }) => [styles.previewBtn, pressed && styles.pressed]}>
-            <Ionicons name={playing ? 'pause' : 'play'} size={15} color={colors.accentInk} />
-            <Text style={styles.previewLabel}>{playing ? 'Playing' : `Preview 0:${PREVIEW_SEC}`}</Text>
+          <Pressable onPress={onPlay} accessibilityRole="button" accessibilityLabel={playing ? 'Pause' : 'Listen now'}
+            style={({ pressed }) => [styles.listenBtn, pressed && styles.pressed]}>
+            <Ionicons name={playing ? 'pause' : 'play'} size={16} color={colors.accentInk} />
+            <Text style={styles.listenLabel}>{playing ? 'Playing' : 'Listen now'}</Text>
           </Pressable>
           <Pressable onPress={open} accessibilityRole="button" accessibilityLabel={`Buy ${release.title}, ${formatUGX(release.priceUGX)}`}>
             <PriceTag release={release} onDark />
@@ -137,22 +132,21 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { paddingBottom: layout.tabScreenBottom },
   flex: { flex: 1 },
-  pressed: { opacity: 0.8 },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.lg },
-  headerIcon: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  greetRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingHorizontal: space.lg, marginTop: space.sm },
-  hero: { marginHorizontal: space.lg, marginTop: space.lg, height: 214, borderRadius: radius.xl, overflow: 'hidden', backgroundColor: colors.ink },
-  heroArt: { position: 'absolute', right: 0, top: -40, borderRadius: 0 },
-  heroBody: { flex: 1, justifyContent: 'flex-end', padding: space.lg, gap: space.xs },
-  heroArtist: { fontFamily: font.bold, fontSize: 13, letterSpacing: 0.5, color: onDark.textMuted },
-  heroTitle: { fontFamily: font.display, fontSize: 34, lineHeight: 36, letterSpacing: -1, color: onDark.text, maxWidth: '75%' },
-  heroActions: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.sm },
-  previewBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.accent, borderRadius: radius.pill, paddingVertical: 10, paddingHorizontal: 16 },
-  previewLabel: { fontFamily: font.display, fontSize: 14, color: colors.accentInk },
+  pressed: { opacity: 0.85 },
+  hero: { backgroundColor: colors.ink, overflow: 'hidden' },
+  heroArt: { position: 'absolute', left: 0, top: 0, borderRadius: 0 },
+  heroTop: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.lg },
+  heroBody: { position: 'absolute', left: space.lg, right: space.lg, bottom: space.xl, gap: space.md },
+  heroKicker: { fontFamily: font.display, fontSize: 20, color: onDark.text },
+  heroTitle: { fontFamily: font.display, fontSize: 46, lineHeight: 50, letterSpacing: -1.5, color: onDark.text },
+  heroBlurb: { fontFamily: font.medium, fontSize: 14, lineHeight: 20, color: onDark.textMuted, maxWidth: 280, marginTop: space.xs },
+  heroActions: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  listenBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.accent, borderRadius: radius.pill, paddingVertical: 12, paddingHorizontal: 20 },
+  listenLabel: { fontFamily: font.display, fontSize: 15, color: colors.accentInk },
   section: { marginTop: space.xl },
   sectionHeader: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', paddingHorizontal: space.lg, marginBottom: space.md },
   seeAll: { fontFamily: font.bold, fontSize: 14, color: colors.accentText },
-  artistRow: { gap: space.md, paddingHorizontal: space.lg },
+  row: { gap: space.md, paddingHorizontal: space.lg },
   bubble: { width: 80, alignItems: 'center', gap: space.xs },
   ring: { padding: 3, borderRadius: 40, borderWidth: 2.5, borderColor: 'transparent' },
   ringOn: { borderColor: colors.accent },

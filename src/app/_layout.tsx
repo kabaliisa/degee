@@ -99,7 +99,7 @@ export default function RootLayout() {
         <Stack.Protected guard={signedIn && hasName}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="artist/[id]" options={{ headerTransparent: true, title: '', headerStyle: { backgroundColor: 'transparent' } }} />
-          <Stack.Screen name="release/[id]" options={{ headerTransparent: true, title: '', headerStyle: { backgroundColor: 'transparent' } }} />
+          <Stack.Screen name="release/[id]" options={{ headerTransparent: true, title: '', headerTintColor: '#FFFFFF', headerStyle: { backgroundColor: 'transparent' } }} />
           <Stack.Screen name="player" options={{ presentation: 'fullScreenModal', headerShown: false, animation: 'slide_from_bottom' }} />
           <Stack.Screen name="buy" options={{ presentation: 'modal', title: 'Checkout' }} />
           <Stack.Screen name="profile" options={{ title: 'Profile' }} />

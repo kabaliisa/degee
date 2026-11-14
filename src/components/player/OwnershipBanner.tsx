@@ -9,9 +9,13 @@ import { colors, font, onDark, radius, space, type, withAlpha } from '../../lib/
 export function OwnershipBanner({ track, artist, isPreview, dark }: { track: Track; artist: Artist; isPreview: boolean; dark?: boolean }) {
   if (!isPreview) {
     return (
-      <View style={styles.owned}>
-        <Ionicons name="checkmark-circle" size={16} color={colors.lime} />
-        <Text style={[type.small, dark && styles.mutedDark]}>Yours, saved to play any time.</Text>
+      <View style={styles.ownedWrap}>
+        <Pressable onPress={() => router.push({ pathname: '/gift', params: { artistId: artist.id } })} accessibilityRole="button"
+          style={({ pressed }) => [styles.support, pressed && styles.pressed]}>
+          <Ionicons name="heart" size={18} color={colors.accent} />
+          <Text style={styles.supportText}>Support the artist</Text>
+        </Pressable>
+        <Text style={[type.small, styles.centered, dark && styles.mutedDark]}>Yours to keep. Send {artist.name} a gift to help them keep creating.</Text>
       </View>
     );
   }
@@ -31,7 +35,11 @@ export function OwnershipBanner({ track, artist, isPreview, dark }: { track: Tra
 }
 
 const styles = StyleSheet.create({
-  owned: { marginTop: space.xl, flexDirection: 'row', alignItems: 'center', gap: space.sm, justifyContent: 'center' },
+  ownedWrap: { marginTop: space.xl, gap: space.sm },
+  support: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm, paddingVertical: 13, borderRadius: radius.lg, borderWidth: 1.5, borderColor: colors.accent, backgroundColor: withAlpha(colors.accent, 0.12) },
+  supportText: { fontFamily: font.display, fontSize: 15, color: '#FF8A6B' },
+  pressed: { opacity: 0.8 },
+  centered: { textAlign: 'center' },
   upsell: { marginTop: space.xl, flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.md, borderRadius: radius.lg, backgroundColor: withAlpha('#FFFFFF', 0.08), borderWidth: 1, borderColor: withAlpha('#FFFFFF', 0.12) },
   flex: { flex: 1 },
   textDark: { color: onDark.text },

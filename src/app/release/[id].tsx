@@ -1,15 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, Share, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getRelease, releasesByArtist, tracksForRelease } from '../../api';
 import { Art } from '../../components/Art';
 import { ArtworkBackdrop } from '../../components/ArtworkBackdrop';
+import { LightStatusBar } from '../../components/LightStatusBar';
 import { MiniPlayer } from '../../components/player/MiniPlayer';
 import { Button, EmptyState, IconButton, PlayButton, ReleaseCard, Shelf, TrackRow } from '../../components/ui';
 import { PREVIEW_SEC, totalDuration } from '../../lib/format';
 import { formatUGX } from '../../lib/money';
-import { colors, font, layout, space, type } from '../../lib/theme';
+import { colors, font, layout, onDark, radius, space, type } from '../../lib/theme';
 import { useLikes } from '../../store/likes';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
@@ -17,6 +18,7 @@ import { useWallet } from '../../store/wallet';
 export default function ReleaseScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const release = getRelease(id);
   const ownedIds = useWallet((s) => s.ownedTracks);
   const owns = useWallet((s) => s.owns);
@@ -45,37 +47,46 @@ export default function ReleaseScreen() {
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
-        {/* Taller than the header so the colour runs down behind the title and fades out there. */}
-        <ArtworkBackdrop seed={release.id} colors={release.colors} height={insets.top + 56 + 240 + 200} fadeAt={1} />
-        <View style={[styles.header, { paddingTop: insets.top + 56 }]}>
-          <View style={styles.cover}>
-            <Art seed={release.id} colors={release.colors} size={240} />
+        <LightStatusBar />
+        <View style={styles.stage}>
+          <ArtworkBackdrop seed={release.id} colors={release.colors} fadeAt={1} tone="dark" />
+          <View style={[styles.header, { paddingTop: insets.top + 56 }]}>
+            <View style={styles.cover}>
+              <Art seed={release.id} colors={release.colors} size={Math.min(width - space.lg * 2, 340)} style={styles.coverArt} />
+            </View>
+            <Text style={[type.display, styles.title]}>{release.title}</Text>
+            <Pressable onPress={() => router.push(`/artist/${artist.id}`)} accessibilityRole="link" style={styles.artist}>
+              <Text style={[type.bodyBold, styles.light]}>{artist.name}</Text>
+            </Pressable>
+            <Text style={[type.small, styles.meta]}>
+              {release.type} · {list.length} song{list.length === 1 ? '' : 's'} · {mins} min{release.exclusive ? ' · Only on Deegee' : ''}
+            </Text>
           </View>
-          <Text style={[type.display, styles.title]}>{release.title}</Text>
-          <Pressable onPress={() => router.push(`/artist/${artist.id}`)} accessibilityRole="link" style={styles.artist}>
-            <Art seed={artist.id} colors={artist.colors} size={24} round />
-            <Text style={type.bodyBold}>{artist.name}</Text>
-          </Pressable>
-          <Text style={[type.small, styles.meta]}>
-            {release.type} · {release.year}{release.exclusive ? ' · Only on Deegee' : ''}
-          </Text>
-        </View>
 
-        <View style={styles.actions}>
-          <IconButton name={saved ? 'checkmark-circle' : 'add-circle-outline'} active={saved} size={28}
-            label={saved ? 'Remove from your music' : 'Save to your music'} onPress={toggleSaved} />
-          <IconButton name="share-outline" size={24} label="Share" onPress={share} />
-          {ownsAll ? <Ionicons name="arrow-down-circle" size={28} color={colors.accent} accessibilityLabel="You own this" /> : null}
-          <View style={styles.flex} />
-          {!ownsAll ? (
-            <Button small variant="outline" label={`Buy ${formatUGX(release.priceUGX)}`}
-              onPress={() => router.push({ pathname: '/buy', params: { kind: 'release', id: release.id } })} />
-          ) : null}
-          <PlayButton playing={currentRelease === release.id && isPlaying} onPress={play} />
+          <View style={styles.buttons}>
+            {ownsAll ? (
+              <View style={styles.ownedPill}>
+                <Ionicons name="checkmark-circle" size={18} color={colors.limeInk} />
+                <Text style={styles.ownedText}>Owned · plays offline</Text>
+              </View>
+            ) : (
+              <Button icon="bag-handle" label={`Buy ${release.type.toLowerCase()} · ${formatUGX(release.priceUGX)}`}
+                onPress={() => router.push({ pathname: '/buy', params: { kind: 'release', id: release.id } })} />
+            )}
+            <Pressable onPress={play} accessibilityRole="button" style={({ pressed }) => [styles.listen, pressed && styles.pressed]}>
+              <Ionicons name={currentRelease === release.id && isPlaying ? 'pause' : 'play'} size={18} color={colors.text} />
+              <Text style={styles.listenText}>{currentRelease === release.id && isPlaying ? 'Pause' : ownsAll ? 'Play' : `Listen to previews`}</Text>
+            </Pressable>
+            <View style={styles.iconRow}>
+              <IconButton name={saved ? 'heart' : 'heart-outline'} active={saved} size={26} color={onDark.text}
+                label={saved ? 'Remove from your music' : 'Save to your music'} onPress={toggleSaved} />
+              <IconButton name="share-outline" size={24} color={onDark.text} label="Share" onPress={share} />
+            </View>
+          </View>
         </View>
 
         {!ownsAll ? (
-          <Text style={[type.small, styles.note]}>
+          <Text style={[type.small, styles.note, styles.noteTop]}>
             {ownedCount ? `You own ${ownedCount} of ${list.length}. ` : `Previews play ${PREVIEW_SEC} seconds. `}
             {list.length > 1 && saving > 0 ? `The full ${release.type.toLowerCase()} saves ${formatUGX(saving)}.` : ''}
           </Text>
@@ -102,12 +113,22 @@ export default function ReleaseScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { paddingBottom: layout.detailScreenBottom },
+  stage: { backgroundColor: onDark.bg, borderBottomLeftRadius: radius.xl, borderBottomRightRadius: radius.xl, overflow: 'hidden', paddingBottom: space.lg },
   header: { paddingHorizontal: space.lg, paddingBottom: space.md },
   cover: { alignSelf: 'center', shadowColor: '#000', shadowOpacity: 0.5, shadowRadius: 24, shadowOffset: { width: 0, height: 12 } },
-  title: { marginTop: space.xl },
-  artist: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.sm },
-  meta: { marginTop: space.xs },
-  actions: { flexDirection: 'row', alignItems: 'center', gap: space.lg, paddingHorizontal: space.lg, marginBottom: space.md },
+  coverArt: { borderRadius: radius.lg },
+  title: { marginTop: space.xl, color: onDark.text },
+  light: { color: onDark.text },
+  artist: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.xs },
+  meta: { marginTop: space.xs, color: onDark.textMuted },
+  buttons: { paddingHorizontal: space.lg, gap: space.sm },
+  listen: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm, paddingVertical: 13, borderRadius: radius.lg, backgroundColor: colors.surfaceRaised },
+  listenText: { fontFamily: font.display, fontSize: 15, color: colors.text },
+  pressed: { opacity: 0.85 },
+  iconRow: { flexDirection: 'row', justifyContent: 'center', gap: space.xl, marginTop: space.xs },
+  ownedPill: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm, paddingVertical: 14, borderRadius: radius.lg, backgroundColor: colors.lime },
+  ownedText: { fontFamily: font.display, fontSize: 15, color: colors.limeInk },
+  noteTop: { marginTop: space.lg },
   flex: { flex: 1 },
   note: { paddingHorizontal: space.lg, marginBottom: space.sm },
   footer: { paddingHorizontal: space.lg, marginTop: space.lg },

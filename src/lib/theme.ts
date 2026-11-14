@@ -11,7 +11,7 @@ export const colors = {
   textFaint: '#8A8378',
   accent: '#FF633E', // coral: fills, icons, the wordmark
   accentText: '#C2381A', // coral dark enough to read as text on ivory
-  accentInk: '#101014', // text on coral (white on this coral is too faint to read)
+  accentInk: '#FFFFFF', // text on coral buttons
   lime: '#C8F56A',
   limeInk: '#101014',
   ink: '#101014',
