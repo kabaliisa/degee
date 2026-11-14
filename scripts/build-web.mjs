@@ -10,17 +10,19 @@ import { readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
 const DIST = 'dist';
-const KEEP = /\.(js|css|ttf|otf|woff2?|png|jpg|jpeg|svg|ico|json)$/i;
-const SKIP = /^(precache\.json|sw\.js|metadata\.json)$/;
+const KEEP = /\.(js|css|ttf|otf|woff2?|png|jpg|jpeg|svg|ico|json|html)$/i;
+const SKIP = /^(precache\.json|sw\.js|metadata\.json|sitemap\.xml|robots\.txt)$/;
 /**
  * Code and fonts are held from the start: without them there is no app at all offline. Photographs are
  * left to cache as they are seen, because a first visit on mobile data shouldn't quietly pull megabytes
  * of pictures before the person has decided they even want this.
  */
-const ALWAYS = /\.(js|css|ttf|otf|woff2?)$/i;
+const ALWAYS = /\.(js|css|ttf|otf|woff2?|html)$/i;
 const SMALL_ENOUGH = 50 * 1024;
 
+execFileSync('node', ['scripts/fetch-catalog.mjs'], { stdio: 'inherit' });
 execFileSync('npx', ['expo', 'export', '--platform', 'web'], { stdio: 'inherit' });
+execFileSync('node', ['scripts/seo.mjs'], { stdio: 'inherit' });
 
 const files = [];
 const later = [];

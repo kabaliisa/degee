@@ -1,13 +1,15 @@
+import seed from '../../api/catalog.seed.json';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { buyersFor, getArtist, releasesByArtist, supportersFor, tracksByArtist } from '../../api';
 import { Art } from '../../components/Art';
-import { SupportCard } from '../../components/artist/GiftEntryPoints';
+import { GiftButton, SupportCard } from '../../components/artist/GiftEntryPoints';
 import { MiniPlayer } from '../../components/player/MiniPlayer';
 import { Button, EmptyState, IconButton, PlayButton, ReleaseCard, Shelf, TrackRow } from '../../components/ui';
 import { colors, font, layout, onDark, radius, space, type, withAlpha } from '../../lib/theme';
+import { siteUrl } from '../../lib/site';
 import { useLikes } from '../../store/likes';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
@@ -26,8 +28,10 @@ export default function ArtistScreen() {
 
   const ownReleases = releasesByArtist(artist.id).sort((a, b) => b.year - a.year);
   const popular = tracksByArtist(artist.id).sort((a, b) => buyersFor(b.id) - buyersFor(a.id)).slice(0, 5);
-  const link = `deegee.app/${artist.name.toLowerCase().replace(/\s+/g, '')}`;
-  const share = () => Share.share({ message: `Support ${artist.name} on Deegee: https://${link}` });
+  // The real page, so a shared link opens the artist rather than the front door.
+  const url = siteUrl(`/artist/${artist.id}`);
+  const link = url.replace(/^https?:\/\//, '');
+  const share = () => Share.share({ message: `Support ${artist.name} on Deegee: ${url}` });
   const play = () => (currentArtist === artist.id ? toggle() : playQueue(popular.map((t) => t.id), 0, owns));
 
   return (
@@ -56,8 +60,7 @@ export default function ArtistScreen() {
         <View style={styles.actions}>
           <Button variant={following ? 'secondary' : 'primary'} icon={following ? 'checkmark' : undefined} label={following ? 'Following' : 'Follow'}
             onPress={() => toggleFollow(artist.id)} style={styles.flex} />
-          <Button variant="outline" label="Send a gift" onPress={() => router.push({ pathname: '/gift', params: { artistId: artist.id } })}
-            style={styles.flex} />
+          <GiftButton artist={artist} style={styles.flex} />
           <IconButton name="share-outline" label="Share artist page" onPress={share} />
         </View>
 
@@ -104,3 +107,9 @@ const styles = StyleSheet.create({
   aboutMeta: { marginTop: space.md },
   link: { color: colors.accentText },
 });
+
+/** One page per artist, written out as HTML at build time, so searching their name can find them. */
+export async function generateStaticParams(): Promise<{ id: string }[]> {
+  return seed.artists.map((a) => ({ id: a.id }));
+}
+

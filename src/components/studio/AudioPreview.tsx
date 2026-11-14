@@ -8,7 +8,14 @@ import { colors } from '../../lib/theme';
 import { tap } from '../ui';
 
 /** A small play/pause button for an uploaded recording, so artists and reviewers can listen back. */
-export function AudioPreview({ url, label }: { url: string; label: string }) {
+/** There is no audio on the machine that renders these pages into HTML, so it draws nothing there. */
+const PRERENDERING = typeof window === 'undefined';
+
+export function AudioPreview(props: { url: string; label: string }) {
+  return PRERENDERING ? null : <Preview {...props} />;
+}
+
+function Preview({ url, label }: { url: string; label: string }) {
   const player = useAudioPlayer({ uri: mediaUrl(url) });
   const { playing } = useAudioPlayerStatus(player);
   const [focusId] = useState(() => ({})); // identity for audio focus

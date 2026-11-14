@@ -5,7 +5,7 @@ import { PlusJakartaSans_500Medium } from '@expo-google-fonts/plus-jakarta-sans/
 import { PlusJakartaSans_600SemiBold } from '@expo-google-fonts/plus-jakarta-sans/600SemiBold';
 import { PlusJakartaSans_700Bold } from '@expo-google-fonts/plus-jakarta-sans/700Bold';
 import { PlusJakartaSans_800ExtraBold } from '@expo-google-fonts/plus-jakarta-sans/800ExtraBold';
-import { Stack } from 'expo-router';
+import { Stack, useSegments } from 'expo-router';
 import { Wordmark } from '../components/Wordmark';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -66,6 +66,13 @@ function Splash({ error, onRetry }: { error?: string; onRetry?: () => void }) {
   );
 }
 
+/**
+ * The pages are rendered to HTML on a build machine, where there are no fonts to load and nothing has
+ * been read from storage yet. Waiting for either would put a blank page in front of every search engine,
+ * so on the server we render the app as it is and let the browser fill in the rest.
+ */
+const PRERENDERING = typeof window === 'undefined';
+
 export default function RootLayout() {
   const [loaded] = useFonts({
     Nunito_900Black,
@@ -75,19 +82,22 @@ export default function RootLayout() {
   const signedIn = useSignedIn();
   const hasName = useSession((s) => Boolean(s.user?.name?.trim()));
   const catalog = useCatalog((s) => s.status);
+  const segments = useSegments();
+  const lightScreen = segments[0] === 'sign-in' || segments[0] === 'welcome';
   const catalogError = useCatalog((s) => s.error);
 
   useEffect(() => { void useCatalog.getState().load(); }, []);
 
-  if (!loaded || !hydrated) return <View style={styles.root} />;
+  if (!PRERENDERING && (!loaded || !hydrated)) return <View style={styles.root} />;
   if (catalog === 'loading') return <Splash />;
   if (catalog === 'error') return <Splash error={__DEV__ ? `${catalogError}\n\nAPI: ${API_URL}` : catalogError} onRetry={() => void useCatalog.getState().load()} />;
 
   return (
     <View style={styles.root}>
-      {/* Every screen inside the app has a dark top; sign-in and welcome are light. */}
-      <StatusBar style={signedIn && hasName ? 'light' : 'dark'} />
-      <PlayerEngine />
+      {/* Every screen has a dark top except the two ivory ones you only see once. */}
+      <StatusBar style={lightScreen ? 'dark' : 'light'} />
+      {/* Playback is a browser thing; there is no audio on the machine that renders these pages. */}
+      {PRERENDERING ? null : <PlayerEngine />}
       <AccountSync signedIn={signedIn} />
       <OfflineBar />
       <Stack
@@ -99,17 +109,18 @@ export default function RootLayout() {
           headerBackButtonDisplayMode: 'minimal',
           contentStyle: { backgroundColor: colors.bg },
         }}>
-        <Stack.Protected guard={!signedIn}>
-          <Stack.Screen name="sign-in" options={{ headerShown: false, animation: 'fade' }} />
-        </Stack.Protected>
+        {/* Open to everyone: the catalogue is what a search result or a shared link lands on, and a
+            stranger should hear the music before being asked for a phone number. */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="artist/[id]" options={{ headerTransparent: true, title: '', headerStyle: { backgroundColor: 'transparent' } }} />
+        <Stack.Screen name="release/[id]" options={{ headerTransparent: true, title: '', headerStyle: { backgroundColor: 'transparent' } }} />
+        <Stack.Screen name="player" options={{ presentation: 'fullScreenModal', headerShown: false, animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="sign-in" options={{ presentation: 'modal', headerShown: false, animation: 'fade' }} />
         <Stack.Protected guard={signedIn && !hasName}>
           <Stack.Screen name="welcome" options={{ headerShown: false, animation: 'fade' }} />
         </Stack.Protected>
+        {/* Everything that spends money, or is about your own account. */}
         <Stack.Protected guard={signedIn && hasName}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="artist/[id]" options={{ headerTransparent: true, title: '', headerStyle: { backgroundColor: 'transparent' } }} />
-          <Stack.Screen name="release/[id]" options={{ headerTransparent: true, title: '', headerStyle: { backgroundColor: 'transparent' } }} />
-          <Stack.Screen name="player" options={{ presentation: 'fullScreenModal', headerShown: false, animation: 'slide_from_bottom' }} />
           <Stack.Screen name="buy" options={{ presentation: 'modal', title: 'Complete your purchase' }} />
           <Stack.Screen name="settings" options={{ title: 'Settings' }} />
           <Stack.Screen name="gift" options={{ presentation: 'modal', title: 'Send a gift' }} />

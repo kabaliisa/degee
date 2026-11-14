@@ -8,6 +8,7 @@ import { getPlayLink } from '../../api/studio';
 import { useMediaSession } from '../../lib/mediaSession';
 import { savedSongUrl } from '../../lib/offlineAudio';
 import { usePlayer } from '../../store/player';
+import { useSignedIn } from '../../store/session';
 import { useOffline } from '../../store/offline';
 import { useWallet } from '../../store/wallet';
 
@@ -31,6 +32,7 @@ export function PlayerEngine() {
   const tick = usePlayer((s) => s.tick);
   const next = usePlayer((s) => s.next);
   const setPreview = usePlayer((s) => s.setPreview);
+  const signedIn = useSignedIn();
   const isSavedOffline = useOffline((s) => (trackId ? s.saved.includes(trackId) : false));
   const [offline, setOffline] = useState<{ trackId: string; url: string } | null>(null);
 
@@ -59,13 +61,13 @@ export function PlayerEngine() {
   // A song with a real recording: ask the server for a play link. It decides who may hear it in full
   // (buyers, the song's own artist, admins); anyone else gets a refusal and hears the preview.
   useEffect(() => {
-    if (!trackId || !hasAudio || offlineUrl) return; // a saved song needs no link
+    if (!trackId || !hasAudio || offlineUrl || !signedIn) return; // a saved song, or no account, needs no link
     let cancelled = false;
     getPlayLink(trackId)
       .then(({ url }) => { if (!cancelled) setLink({ trackId, url: mediaUrl(url) }); })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, [trackId, hasAudio, isOwned, offlineUrl]); // isOwned: buying mid-preview asks again and unlocks the full song
+  }, [trackId, hasAudio, isOwned, offlineUrl, signedIn]); // isOwned: buying mid-preview asks again and unlocks the full song
 
   // Full song if you own it or the server gave a link (e.g. you're the artist); otherwise a preview.
   const canPlayFull = isOwned || fullUrl !== undefined || offlineUrl !== undefined;

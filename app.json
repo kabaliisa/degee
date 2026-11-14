@@ -22,7 +22,7 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "output": "single",
+      "output": "static",
       "name": "Deegee",
       "shortName": "Deegee",
       "description": "Buy music straight from Ugandan artists with mobile money. Yours to keep.",

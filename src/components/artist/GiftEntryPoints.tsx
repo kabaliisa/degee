@@ -1,19 +1,26 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import type { Artist } from '../../api';
+import { askToSignIn } from '../../lib/auth';
 import { TERMS } from '../../lib/money';
+import { useSession } from '../../store/session';
 import { colors, font, radius, space, type } from '../../lib/theme';
 import { tap } from '../ui';
 
-const openGift = (artistId: string) => { tap(); router.push({ pathname: '/gift', params: { artistId } }); };
+const openGift = (artistId: string) => {
+  tap();
+  const path = { pathname: '/gift' as const, params: { artistId } };
+  if (useSession.getState().refreshToken) router.push(path);
+  else askToSignIn(`/gift?artistId=${artistId}`);
+};
 const artistSharePct = 100 - TERMS.giftPlatformPct;
 
 /** Compact "Send a gift" button for the artist header row. */
-export function GiftButton({ artist }: { artist: Artist }) {
+export function GiftButton({ artist, style }: { artist: Artist; style?: StyleProp<ViewStyle> }) {
   return (
     <Pressable onPress={() => openGift(artist.id)} accessibilityRole="button" accessibilityLabel={`Send ${artist.name} a gift`}
-      style={({ pressed }) => [styles.button, pressed && styles.pressed]}>
+      style={({ pressed }) => [styles.button, style, pressed && styles.pressed]}>
       <Ionicons name="gift" size={16} color={colors.accent} />
       <Text style={styles.buttonLabel}>Send a gift</Text>
     </Pressable>

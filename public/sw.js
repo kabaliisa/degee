@@ -52,6 +52,12 @@ function isAppData(url) {
   return url.pathname.startsWith('/v1/') || url.pathname.startsWith('/media/') || url.pathname.startsWith('/offline-song/');
 }
 
+/** /release/abc was exported as /release/abc.html, which is how it sits in the cache. */
+function pageFile(url) {
+  if (url.pathname === '/' || url.pathname.endsWith('.html')) return url.pathname;
+  return `${url.pathname.replace(/\/$/, '')}.html`;
+}
+
 /** Anything under a hashed path can be cached forever, because a new build gets a new name. */
 function isImmutable(url) {
   return url.pathname.startsWith('/_expo/static/') || url.pathname.startsWith('/assets/');
@@ -63,18 +69,23 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin || isAppData(url)) return;
 
-  // Every route is served by the same shell, so a page opened offline still works.
+  // Each page is its own file, so a page opened offline is served from its own copy where we have one.
+  // Failing that the home page is served, and the app routes itself from the address bar.
   if (request.mode === 'navigate') {
+    const fallback = async () =>
+      (await caches.match(request, { ignoreSearch: true })) ??
+      (await caches.match(pageFile(url), { ignoreSearch: true })) ??
+      (await caches.match('/', { ignoreSearch: true }));
     event.respondWith(
       fetch(request)
         .then(async (res) => {
           // A host with no rewrite rule answers /release/123 with a 404; the app owns its own routes,
-          // so serve the shell and let it decide what that path means.
-          if (!res.ok) return (await caches.match('/', { ignoreSearch: true })) ?? res;
-          caches.open(SHELL_CACHE).then((c) => c.put('/', res.clone()));
+          // so serve what we have and let it decide what that path means.
+          if (!res.ok) return (await fallback()) ?? res;
+          caches.open(SHELL_CACHE).then((c) => c.put(request, res.clone()));
           return res;
         })
-        .catch(() => caches.match('/', { ignoreSearch: true }).then((hit) => hit ?? Response.error())),
+        .catch(async () => (await fallback()) ?? Response.error()),
     );
     return;
   }

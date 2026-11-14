@@ -1,0 +1,496 @@
+{
+  "artists": [
+    {
+      "id": "a4",
+      "name": "Grace Atim",
+      "city": "Gulu",
+      "bio": "Gospel voice from the north, singing in Acholi and English.",
+      "genres": [
+        "Gospel"
+      ],
+      "verified": true,
+      "colors": [
+        "#BDBDBD",
+        "#121212"
+      ]
+    },
+    {
+      "id": "a3",
+      "name": "Kiwa Rebel",
+      "city": "Jinja",
+      "bio": "Riverside dancehall energy from the source of the Nile.",
+      "genres": [
+        "Dancehall"
+      ],
+      "verified": false,
+      "colors": [
+        "#9DBFFF",
+        "#101B30"
+      ]
+    },
+    {
+      "id": "a5",
+      "name": "Mukasa the MC",
+      "city": "Entebbe",
+      "bio": "Lugaflow rapper with sharp stories about city life.",
+      "genres": [
+        "Hip Hop"
+      ],
+      "verified": true,
+      "colors": [
+        "#2F7BFF",
+        "#0A1A38"
+      ]
+    },
+    {
+      "id": "ark5wcuutp9x",
+      "name": "Nakato Rose",
+      "city": "Entebbe",
+      "bio": "Afrobeat and zouk from the lake shore.",
+      "genres": [
+        "Afrobeat",
+        "Zouk"
+      ],
+      "verified": true,
+      "colors": [
+        "#BDBDBD",
+        "#121212"
+      ]
+    },
+    {
+      "id": "a1",
+      "name": "Nalu Kizza",
+      "city": "Kampala",
+      "bio": "Kampala singer blending Afrobeat grooves with Luganda love songs.",
+      "genres": [
+        "Afrobeat",
+        "Zouk"
+      ],
+      "verified": true,
+      "colors": [
+        "#2F7BFF",
+        "#0A1A38"
+      ]
+    },
+    {
+      "id": "a2",
+      "name": "Ssalongo Beats",
+      "city": "Masaka",
+      "bio": "Guitar storyteller keeping Kadongo Kamu alive for a new generation.",
+      "genres": [
+        "Kadongo Kamu"
+      ],
+      "verified": true,
+      "colors": [
+        "#FFFFFF",
+        "#1A1A1A"
+      ]
+    }
+  ],
+  "releases": [
+    {
+      "id": "r5w9t7ihi33",
+      "artistId": "ark5wcuutp9x",
+      "title": "Kampala Nights",
+      "type": "Single",
+      "year": 2026,
+      "priceUGX": 20000,
+      "colors": [
+        "#2F7BFF",
+        "#0A1A3A"
+      ],
+      "exclusive": false,
+      "coverUrl": "/v1/media/covers/7ff6558f-c6d3-446c-b9b8-b0c04f983634.png"
+    },
+    {
+      "id": "r1",
+      "artistId": "a1",
+      "title": "Enkuba",
+      "type": "EP",
+      "year": 2026,
+      "priceUGX": 8000,
+      "colors": [
+        "#FFFFFF",
+        "#1A1A1A"
+      ],
+      "exclusive": false,
+      "coverUrl": null
+    },
+    {
+      "id": "r2",
+      "artistId": "a1",
+      "title": "Sunday in Ntinda",
+      "type": "Single",
+      "year": 2026,
+      "priceUGX": 1500,
+      "colors": [
+        "#BDBDBD",
+        "#121212"
+      ],
+      "exclusive": true,
+      "coverUrl": null
+    },
+    {
+      "id": "r3",
+      "artistId": "a2",
+      "title": "Ebyafaayo",
+      "type": "Album",
+      "year": 2025,
+      "priceUGX": 15000,
+      "colors": [
+        "#9DBFFF",
+        "#101B30"
+      ],
+      "exclusive": false,
+      "coverUrl": null
+    },
+    {
+      "id": "r4",
+      "artistId": "a3",
+      "title": "Nile Bounce",
+      "type": "Single",
+      "year": 2026,
+      "priceUGX": 1000,
+      "colors": [
+        "#2F7BFF",
+        "#0A1A38"
+      ],
+      "exclusive": false,
+      "coverUrl": null
+    },
+    {
+      "id": "r5",
+      "artistId": "a4",
+      "title": "Lakwena",
+      "type": "EP",
+      "year": 2025,
+      "priceUGX": 6000,
+      "colors": [
+        "#FFFFFF",
+        "#1A1A1A"
+      ],
+      "exclusive": false,
+      "coverUrl": null
+    },
+    {
+      "id": "r6",
+      "artistId": "a5",
+      "title": "Boda Diaries",
+      "type": "Album",
+      "year": 2026,
+      "priceUGX": 12000,
+      "colors": [
+        "#9DBFFF",
+        "#101B30"
+      ],
+      "exclusive": false,
+      "coverUrl": null
+    }
+  ],
+  "tracks": [
+    {
+      "id": "t1",
+      "releaseId": "r1",
+      "artistId": "a1",
+      "title": "Enkuba",
+      "durationSec": 214,
+      "priceUGX": 2000,
+      "writers": [
+        {
+          "name": "Nalu Kizza",
+          "sharePct": 100,
+          "society": "UPRS"
+        }
+      ],
+      "hasAudio": false,
+      "previewUrl": null
+    },
+    {
+      "id": "t2",
+      "releaseId": "r1",
+      "artistId": "a1",
+      "title": "Mpola Mpola",
+      "durationSec": 198,
+      "priceUGX": 2000,
+      "writers": [
+        {
+          "name": "Daudi Okello",
+          "sharePct": 50,
+          "society": null
+        },
+        {
+          "name": "Nalu Kizza",
+          "sharePct": 50,
+          "society": "UPRS"
+        }
+      ],
+      "hasAudio": false,
+      "previewUrl": null
+    },
+    {
+      "id": "t3",
+      "releaseId": "r1",
+      "artistId": "a1",
+      "title": "Ttaala",
+      "durationSec": 231,
+      "priceUGX": 2000,
+      "writers": [
+        {
+          "name": "Nalu Kizza",
+          "sharePct": 100,
+          "society": "UPRS"
+        }
+      ],
+      "hasAudio": false,
+      "previewUrl": null
+    },
+    {
+      "id": "t4",
+      "releaseId": "r1",
+      "artistId": "a1",
+      "title": "Wano Wano",
+      "durationSec": 189,
+      "priceUGX": 2000,
+      "writers": [
+        {
+          "name": "Nalu Kizza",
+          "sharePct": 100,
+          "society": "UPRS"
+        }
+      ],
+      "hasAudio": false,
+      "previewUrl": null
+    },
+    {
+      "id": "t5",
+      "releaseId": "r2",
+      "artistId": "a1",
+      "title": "Sunday in Ntinda",
+      "durationSec": 204,
+      "priceUGX": 1500,
+      "writers": [
+        {
+          "name": "Nalu Kizza",
+          "sharePct": 100,
+          "society": "UPRS"
+        }
+      ],
+      "hasAudio": false,
+      "previewUrl": null
+    },
+    {
+      "id": "t6",
+      "releaseId": "r3",
+      "artistId": "a2",
+      "title": "Ebyafaayo",
+      "durationSec": 312,
+      "priceUGX": 2000,
+      "writers": [
+        {
+          "name": "Ssalongo Beats",
+          "sharePct": 100,
+          "society": null
+        }
+      ],
+      "hasAudio": false,
+      "previewUrl": null
+    },
+    {
+      "id": "t7",
+      "releaseId": "r3",
+      "artistId": "a2",
+      "title": "Omukwano Gwa Kyalo",
+      "durationSec": 287,
+      "priceUGX": 2000,
+      "writers": [
+        {
+          "name": "Ssalongo Beats",
+          "sharePct": 100,
+          "society": null
+        }
+      ],
+      "hasAudio": false,
+      "previewUrl": null
+    },
+    {
+      "id": "t8",
+      "releaseId": "r3",
+      "artistId": "a2",
+      "title": "Taxi ya Masaka",
+      "durationSec": 265,
+      "priceUGX": 2000,
+      "writers": [
+        {
+          "name": "Ssalongo Beats",
+          "sharePct": 100,
+          "society": null
+        }
+      ],
+      "hasAudio": false,
+      "previewUrl": null
+    },
+    {
+      "id": "t9",
+      "releaseId": "r3",
+      "artistId": "a2",
+      "title": "Ennanga",
+      "durationSec": 340,
+      "priceUGX": 2000,
+      "writers": [
+        {
+          "name": "Ssalongo Beats",
+          "sharePct": 100,
+          "society": null
+        }
+      ],
+      "hasAudio": false,
+      "previewUrl": null
+    },
+    {
+      "id": "t10",
+      "releaseId": "r4",
+      "artistId": "a3",
+      "title": "Nile Bounce",
+      "durationSec": 176,
+      "priceUGX": 1000,
+      "writers": [
+        {
+          "name": "Kiwa Rebel",
+          "sharePct": 100,
+          "society": null
+        }
+      ],
+      "hasAudio": false,
+      "previewUrl": null
+    },
+    {
+      "id": "t11",
+      "releaseId": "r5",
+      "artistId": "a4",
+      "title": "Lakwena",
+      "durationSec": 246,
+      "priceUGX": 1500,
+      "writers": [
+        {
+          "name": "Grace Atim",
+          "sharePct": 100,
+          "society": "UPRS"
+        }
+      ],
+      "hasAudio": false,
+      "previewUrl": null
+    },
+    {
+      "id": "t12",
+      "releaseId": "r5",
+      "artistId": "a4",
+      "title": "Pwoyo",
+      "durationSec": 222,
+      "priceUGX": 1500,
+      "writers": [
+        {
+          "name": "Grace Atim",
+          "sharePct": 100,
+          "society": "UPRS"
+        }
+      ],
+      "hasAudio": false,
+      "previewUrl": null
+    },
+    {
+      "id": "t13",
+      "releaseId": "r5",
+      "artistId": "a4",
+      "title": "Morning Light",
+      "durationSec": 258,
+      "priceUGX": 1500,
+      "writers": [
+        {
+          "name": "Grace Atim",
+          "sharePct": 100,
+          "society": "UPRS"
+        }
+      ],
+      "hasAudio": false,
+      "previewUrl": null
+    },
+    {
+      "id": "tizfgyepr23",
+      "releaseId": "r5w9t7ihi33",
+      "artistId": "ark5wcuutp9x",
+      "title": "Kampala Nights",
+      "durationSec": 34,
+      "priceUGX": 20000,
+      "writers": [
+        {
+          "name": "Nakato Rose",
+          "sharePct": 70,
+          "society": "UPRS"
+        },
+        {
+          "name": "Producer Ssali",
+          "sharePct": 30,
+          "society": null
+        }
+      ],
+      "hasAudio": true,
+      "previewUrl": "/v1/media/previews/67c3dfa2-7437-4ebd-a647-3cc35003ba17.m4a"
+    },
+    {
+      "id": "t14",
+      "releaseId": "r6",
+      "artistId": "a5",
+      "title": "Stage Two",
+      "durationSec": 201,
+      "priceUGX": 1500,
+      "writers": [
+        {
+          "name": "Mukasa the MC",
+          "sharePct": 100,
+          "society": "UPRS"
+        }
+      ],
+      "hasAudio": false,
+      "previewUrl": null
+    },
+    {
+      "id": "t15",
+      "releaseId": "r6",
+      "artistId": "a5",
+      "title": "Rolex at Midnight",
+      "durationSec": 193,
+      "priceUGX": 1500,
+      "writers": [
+        {
+          "name": "Lil Juma",
+          "sharePct": 30,
+          "society": "FOREIGN"
+        },
+        {
+          "name": "Mukasa the MC",
+          "sharePct": 70,
+          "society": "UPRS"
+        }
+      ],
+      "hasAudio": false,
+      "previewUrl": null
+    },
+    {
+      "id": "t16",
+      "releaseId": "r6",
+      "artistId": "a5",
+      "title": "Kikuubo Hustle",
+      "durationSec": 215,
+      "priceUGX": 1500,
+      "writers": [
+        {
+          "name": "Mukasa the MC",
+          "sharePct": 100,
+          "society": "UPRS"
+        }
+      ],
+      "hasAudio": false,
+      "previewUrl": null
+    }
+  ]
+}

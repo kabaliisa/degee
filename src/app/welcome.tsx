@@ -5,6 +5,7 @@ import { updateMe } from '../api/account';
 import { Button } from '../components/ui';
 import { initials } from '../lib/format';
 import { colors, font, radius, space, type } from '../lib/theme';
+import { router } from 'expo-router';
 import { useSession } from '../store/session';
 
 const MAX_NAME = 40;
@@ -22,7 +23,8 @@ export default function Welcome() {
     setError(null);
     setBusy(true);
     try {
-      setUser(await updateMe({ name: clean.slice(0, MAX_NAME) })); // the root layout then opens the app
+      setUser(await updateMe({ name: clean.slice(0, MAX_NAME) }));
+      router.replace('/');
     } catch (e) {
       setError((e as Error).message);
       setBusy(false);

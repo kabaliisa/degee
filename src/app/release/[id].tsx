@@ -1,3 +1,4 @@
+import seed from '../../api/catalog.seed.json';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, Share, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
@@ -9,9 +10,12 @@ import { Button, EmptyState, IconButton, ReleaseCard, Shelf, TrackRow } from '..
 import { PREVIEW_SEC, totalDuration } from '../../lib/format';
 import { formatUGX } from '../../lib/money';
 import { colors, font, layout, onDark, radius, space, type } from '../../lib/theme';
+import { askToSignIn } from '../../lib/auth';
+import { siteUrl } from '../../lib/site';
 import { useLikes } from '../../store/likes';
 import { useOffline } from '../../store/offline';
 import { usePlayer } from '../../store/player';
+import { useSignedIn } from '../../store/session';
 import { useWallet } from '../../store/wallet';
 
 export default function ReleaseScreen() {
@@ -27,6 +31,7 @@ export default function ReleaseScreen() {
   const isPlaying = usePlayer((s) => s.isPlaying);
   const liked = useLikes((s) => s.liked);
   const toggleLike = useLikes((s) => s.toggleLike);
+  const signedIn = useSignedIn();
   const offlineSupported = useOffline((o) => o.supported);
   const savedSongs = useOffline((o) => o.saved);
   const savingSongs = useOffline((o) => o.saving);
@@ -47,7 +52,9 @@ export default function ReleaseScreen() {
   const toggleSaved = () => ids.forEach((t) => { if (saved === liked.includes(t)) toggleLike(t); });
   const downloading = ids.some((t) => savingSongs.includes(t));
   const allSaved = offlineSupported && ids.length > 0 && ids.every((t) => savedSongs.includes(t));
-  const share = () => Share.share({ message: `Listen to ${release.title} by ${artist.name} on Deegee` });
+  const share = () => Share.share({
+    message: `Listen to ${release.title} by ${artist.name} on Deegee: ${siteUrl(`/release/${release.id}`)}`,
+  });
 
   return (
     <View style={styles.screen}>
@@ -83,7 +90,9 @@ export default function ReleaseScreen() {
               </View>
             ) : (
               <Button icon="bag-handle" label={`Buy ${release.type === 'EP' ? 'EP' : release.type.toLowerCase()} · ${formatUGX(release.priceUGX)}`}
-                onPress={() => router.push({ pathname: '/buy', params: { kind: 'release', id: release.id } })} />
+                onPress={() => (signedIn
+                  ? router.push({ pathname: '/buy', params: { kind: 'release', id: release.id } })
+                  : askToSignIn(`/buy?kind=release&id=${release.id}`))} />
             )}
             <Pressable onPress={play} accessibilityRole="button" style={({ pressed }) => [styles.listen, pressed && styles.pressed]}>
               <Ionicons name={currentRelease === release.id && isPlaying ? 'pause' : 'play'} size={18} color={colors.text} />
@@ -149,3 +158,12 @@ const styles = StyleSheet.create({
   footer: { paddingHorizontal: space.lg, marginTop: space.lg },
   copyright: { paddingHorizontal: space.lg, fontFamily: font.regular, color: colors.textFaint },
 });
+
+/**
+ * One page per release, written out as HTML at build time. Without this there is a single
+ * release/[id] page that says "not found", which is what a search engine would index.
+ */
+export async function generateStaticParams(): Promise<{ id: string }[]> {
+  return seed.releases.map((r) => ({ id: r.id }));
+}
+

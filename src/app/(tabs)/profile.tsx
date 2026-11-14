@@ -10,14 +10,16 @@ import { Button, ScreenHeader, StatusBarStrip } from '../../components/ui';
 import { formatUGX } from '../../lib/money';
 import { formatPhone } from '../../lib/phone';
 import { colors, font, layout, onDark, radius, space, type } from '../../lib/theme';
+import { askToSignIn } from '../../lib/auth';
 import { useLikes } from '../../store/likes';
-import { displayName, isAdmin, useSession } from '../../store/session';
+import { displayName, isAdmin, useSession, useSignedIn } from '../../store/session';
 import { sentToArtists, useWallet } from '../../store/wallet';
 
 const MAX_NAME = 40;
 
 export default function Profile() {
   const user = useSession((s) => s.user);
+  const signedIn = useSignedIn();
   const setUser = useSession((s) => s.setUser);
   const credit = useWallet((s) => s.balance);
   const owned = useWallet((s) => s.ownedTracks);
@@ -55,6 +57,17 @@ export default function Profile() {
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <ScreenHeader>
+          {!signedIn ? (
+            <View style={styles.guest}>
+              <Text accessibilityRole="header" style={styles.name}>Buy music. Keep it.</Text>
+              <Text style={styles.phone}>
+                Sign in with your mobile money number. No password, and your songs follow the number to any phone.
+              </Text>
+              <Button label="Sign in" onPress={() => askToSignIn()} style={styles.signIn} />
+            </View>
+          ) : null}
+          {signedIn ? (
+          <>
           <View style={styles.who}>
             <Avatar size={72} />
             {editing ? (
@@ -88,20 +101,26 @@ export default function Profile() {
               </View>
             ))}
           </View>
+          </>
+          ) : null}
         </ScreenHeader>
 
         <InstallCard />
 
+        {signedIn ? (
         <SettingsGroup>
           <SettingsRow icon="receipt-outline" label="Purchases and gifts" detail={credit > 0 ? `${formatUGX(credit)} credit` : undefined}
             onPress={() => router.push('/activity')} />
           <SettingsRow icon="settings-outline" label="Settings" onPress={() => router.push('/settings')} last />
         </SettingsGroup>
+        ) : null}
 
+        {signedIn ? (
         <SettingsGroup title="For artists">
           <SettingsRow icon="mic-outline" label="Artist studio" detail="Sell your music" onPress={() => router.push('/studio')} last={!isAdmin(user)} />
           {isAdmin(user) ? <SettingsRow icon="shield-checkmark-outline" label="Review queue" onPress={() => router.push('/admin')} last /> : null}
         </SettingsGroup>
+        ) : null}
 
         <Text style={[type.small, styles.version]}>Deegee 0.1, test payments</Text>
       </ScrollView>
@@ -114,6 +133,8 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { paddingBottom: layout.tabScreenBottom },
   flex: { flex: 1, minWidth: 0 },
+  guest: { gap: space.md, marginTop: space.md },
+  signIn: { alignSelf: 'flex-start' },
   who: { flexDirection: 'row', alignItems: 'center', gap: space.lg, marginTop: space.md },
   name: { fontFamily: font.display, fontSize: 26, lineHeight: 31, letterSpacing: -0.6, color: onDark.text },
   phone: { fontFamily: font.medium, fontSize: 14, color: onDark.textMuted, marginTop: 2 },

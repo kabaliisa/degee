@@ -94,3 +94,4 @@ const styles = StyleSheet.create({
   genreName: { fontFamily: font.display, fontSize: 14, lineHeight: 17, color: onDark.text, padding: space.sm },
   genreArt: { position: 'absolute', left: -20, top: -30, borderRadius: 0 },
 });
+

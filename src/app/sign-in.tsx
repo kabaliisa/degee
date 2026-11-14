@@ -1,3 +1,4 @@
+import { useLocalSearchParams } from 'expo-router';
 import { useRef, useState, type ComponentRef } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,6 +7,7 @@ import { requestCode, verifyCode } from '../api/account';
 import { Art } from '../components/Art';
 import { Wordmark } from '../components/Wordmark';
 import { Button } from '../components/ui';
+import { afterSignIn } from '../lib/auth';
 import { formatPhone, normalizeUgPhone } from '../lib/phone';
 import { colors, font, radius, space, type } from '../lib/theme';
 import { useSession } from '../store/session';
@@ -14,6 +16,7 @@ const CODE_LENGTH = 6;
 
 /** Phone number → 6-digit code → signed in. New numbers get an account automatically. */
 export default function SignIn() {
+  const { next } = useLocalSearchParams<{ next?: string }>();
   const [step, setStep] = useState<'phone' | 'code'>('phone');
   const [phone, setPhone] = useState('');
   const [sentTo, setSentTo] = useState('');
@@ -61,7 +64,8 @@ export default function SignIn() {
     setBusy(true);
     try {
       const s = await verifyCode(sentTo, value);
-      useSession.getState().signIn(s); // the root layout swaps to the app
+      useSession.getState().signIn(s);
+      afterSignIn(next, Boolean(s.user.name?.trim()));
     } catch (e) {
       setError((e as Error).message);
       setCode('');
@@ -87,7 +91,9 @@ export default function SignIn() {
               <View style={styles.copy}>
                 <Text style={type.hero}>Own the music you love.</Text>
                 <View style={styles.rule} />
-                <Text style={[type.body, styles.muted]}>Buy direct from artists. Keep every song.</Text>
+                <Text style={[type.body, styles.muted]}>
+                  {next ? 'Sign in to pay. No password, no subscription.' : 'Buy direct from artists. Keep every song.'}
+                </Text>
               </View>
               <View style={styles.phoneRow}>
                 <View style={styles.prefix}><Text style={styles.prefixText}>🇺🇬 +256</Text></View>

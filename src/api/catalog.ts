@@ -8,6 +8,7 @@ import { placeholderPhoto } from '../lib/photos';
  * getters become TanStack Query hooks over the paged endpoints; screens import from here only.
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import seed from './catalog.seed.json';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { api } from './client';
@@ -31,10 +32,10 @@ type CatalogState = Snapshot & {
 export const useCatalog = create<CatalogState>()(
   persist(
     (set, get) => ({
-      artists: [],
-      releases: [],
-      tracks: [],
-      status: 'loading',
+      // The copy taken at build time (scripts/fetch-catalog.mjs). It is what renders the pages into HTML
+      // for search engines, and what fills the screen in the first instant before the live one arrives.
+      ...(seed as Snapshot),
+      status: seed.releases.length ? 'ready' : 'loading',
       stale: false,
       load: async () => {
         if (!useCatalog.persist.hasHydrated()) {

@@ -175,3 +175,4 @@ const styles = StyleSheet.create({
   ringOn: { borderColor: colors.accent },
   bubbleName: { fontFamily: font.bold, fontSize: 12, lineHeight: 15, color: colors.text, textAlign: 'center' },
 });
+

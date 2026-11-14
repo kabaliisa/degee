@@ -26,13 +26,38 @@ artist, so there is no 30% cut and no billing rule to work around. It installs t
 opens offline, and plays songs the fan has bought.
 
 ```bash
-npm run build:web     # exports to dist/ and writes the offline file list
+npm run build:web     # catalogue snapshot, export, SEO tags, offline file list
 npx serve dist        # or any static host
 ```
 
-The host must rewrite unknown paths to `index.html` (Netlify `_redirects`, Vercel `rewrites`, EAS
-Hosting by default). The service worker falls back to the shell if a host doesn't, so deep links still
-work, but the first visit to one is faster when the host does it.
+Every page is written out as its own HTML file, so a search engine and a WhatsApp link preview see the
+real thing without running any JavaScript. The host needs to resolve `/release/abc` to
+`release/abc.html` (Netlify, Vercel, Cloudflare Pages and EAS Hosting all do by default) and fall back
+to `index.html` for anything it doesn't recognise. The service worker covers the fallback itself if a
+host doesn't.
+
+Set `EXPO_PUBLIC_SITE_URL` for anything other than `https://deegee.ug`.
+
+### Who can see what
+
+Anyone can browse the catalogue, open an artist or a release and hear the 30-second previews, with no
+account. A phone number is only asked for at the point of paying — which is also what makes the site
+findable, since a search result that demanded a login would rank as a login page.
+
+### Being found
+
+- `scripts/fetch-catalog.mjs` takes a copy of the catalogue into `src/api/catalog.seed.json`. The pages
+  are rendered from it on the build machine, so **a new release has no page of its own until the next
+  build** — worth hooking a rebuild to publishing.
+- `generateStaticParams` turns that copy into one page per artist and per release.
+- `scripts/seo.mjs` writes the titles, descriptions, link-preview cards, `MusicAlbum`/`MusicGroup`
+  structured data, `sitemap.xml` and `robots.txt`. Expo's own `generateMetadata` only runs for
+  server-rendered output, not a static export, which is why this is a build step.
+- Account pages (profile, settings, purchases, studio) are kept out of the index.
+
+Expo's static rendering logs a recoverable React hydration warning (#418) on first paint. It happens
+with Expo's own HTML template too, and the app hydrates and works; it is not something this project
+introduced.
 
 What makes it an app rather than a website:
 
@@ -57,9 +82,10 @@ the phone. Android (Chrome) handles background audio, the lock screen and instal
 can't hold a song through a screen lock, that is the argument for a listen-only native iOS app, which
 Apple's reader rule allows because nothing is sold inside it.
 
-**Checked end to end in a real browser** against a production build: the service worker registers, the
-app installs, a song is bought and saved, and with the network cut the app still opens, still knows what
-you own, and still plays it.
+**Checked end to end in a real browser** against a production build, twice over: with JavaScript turned
+off every page still has its title, description, preview card and real content; and with JavaScript on,
+the service worker registers, the app installs, a song is bought and saved, and with the network cut the
+app still opens, still knows what you own, and still plays it.
 
 ## Checks (run all three before every commit)
 

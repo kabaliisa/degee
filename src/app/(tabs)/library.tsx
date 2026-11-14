@@ -7,7 +7,9 @@ import { getArtist, getTrack, listArtists, listReleases, tracksForRelease, type 
 import { Art } from '../../components/Art';
 import { Button, Chip, EmptyState, ListRow, PlayButton, ScreenHeader, StatusBarStrip, TrackRow } from '../../components/ui';
 import { colors, font, layout, radius, space, type } from '../../lib/theme';
+import { askToSignIn } from '../../lib/auth';
 import { useLikes } from '../../store/likes';
+import { useSignedIn } from '../../store/session';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
 
@@ -30,6 +32,7 @@ export default function Library() {
   const liked = useLikes((s) => s.liked);
   const following = useLikes((s) => s.following);
   const playQueue = usePlayer((s) => s.playQueue);
+  const signedIn = useSignedIn();
 
   const owned = ownedIds.map(getTrack).filter((t): t is Track => t !== undefined);
   const ownedReleases = listReleases().filter((r) => tracksForRelease(r.id).some((t) => ownedIds.includes(t.id)));
@@ -39,14 +42,23 @@ export default function Library() {
     <View style={styles.screen}>
     <ScrollView contentContainerStyle={styles.content}>
       <ScreenHeader title="Your music, forever."
-        subtitle={owned.length
+        subtitle={!signedIn
+          ? 'Songs you buy stay here, yours to keep. Sign in to see yours.'
+          : owned.length
           ? <>{plural(owned.length, 'song')} from <Text style={styles.strong}>{plural(new Set(owned.map((t) => t.artistId)).size, 'artist')}</Text>. Yours to keep.</>
           : 'Everything you buy stays here, yours to keep.'} />
-      <View style={styles.chips}>
-        {VIEWS.map((v) => <Chip key={v} label={v} active={view === v} onPress={() => setView(v)} />)}
-      </View>
+      {!signedIn ? (
+        <EmptyState icon="person-circle-outline" title="Sign in to see your music"
+          body="Your songs follow your phone number, so they’re on any phone you sign in to."
+          action={<Button label="Sign in" onPress={() => askToSignIn()} style={styles.emptyAction} />} />
+      ) : null}
+      {signedIn ? (
+        <View style={styles.chips}>
+          {VIEWS.map((v) => <Chip key={v} label={v} active={view === v} onPress={() => setView(v)} />)}
+        </View>
+      ) : null}
 
-      {view === 'Songs' ? (
+      {signedIn && view === 'Songs' ? (
         <>
           <Pressable onPress={() => liked.length && playQueue(liked, 0, owns)} accessibilityRole="button" accessibilityLabel="Play liked songs" style={styles.liked}>
             <LinearGradient colors={[colors.ink, colors.accent]} start={{ x: 0, y: 1 }} end={{ x: 1, y: 0 }} style={styles.likedArt}>
@@ -76,7 +88,7 @@ export default function Library() {
         </>
       ) : null}
 
-      {view === 'Releases' ? (
+      {signedIn && view === 'Releases' ? (
         ownedReleases.length === 0 ? <EmptyState icon="disc-outline" title="No releases yet" body="Albums, EPs and singles you buy show here."
           action={<Button label="Find music" onPress={() => router.push('/(tabs)/search')} style={styles.emptyAction} />} /> : (
           <View style={styles.grid}>
@@ -94,7 +106,7 @@ export default function Library() {
         )
       ) : null}
 
-      {view === 'Artists' ? (
+      {signedIn && view === 'Artists' ? (
         myArtists.length === 0 ? <EmptyState icon="people-outline" title="No artists yet" body="Follow artists or buy their music to keep them here." /> : (
           myArtists.map((a) => (
             <ListRow key={a.id} seed={a.id} colors={a.colors} round artSize={64} title={a.name}
