@@ -1,7 +1,10 @@
 import { useRef, useState, type ComponentRef } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { listArtists } from '../api';
 import { requestCode, verifyCode } from '../api/account';
+import { Art } from '../components/Art';
+import { Wordmark } from '../components/Wordmark';
 import { Button } from '../components/ui';
 import { formatPhone, normalizeUgPhone } from '../lib/phone';
 import { colors, font, radius, space, type } from '../lib/theme';
@@ -75,21 +78,27 @@ export default function SignIn() {
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={styles.content}>
-          <Text accessibilityRole="header" style={styles.wordmark}>Deegee</Text>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          {step === 'phone' ? <Collage /> : null}
+          <Wordmark size={step === 'phone' ? 52 : 40} />
 
           {step === 'phone' ? (
             <>
               <View style={styles.copy}>
-                <Text style={type.display}>Sign in with your phone</Text>
-                <Text style={[type.body, styles.muted]}>We’ll text you a code. New here? This makes your account.</Text>
+                <Text style={type.hero}>Own the music you love.</Text>
+                <View style={styles.rule} />
+                <Text style={[type.body, styles.muted]}>Buy direct from artists. Keep every song. Play offline.</Text>
               </View>
-              <TextInput value={phone} onChangeText={setPhone} onSubmitEditing={sendCode} autoFocus
-                placeholder="0772 123456" placeholderTextColor={colors.textFaint} keyboardType="phone-pad"
-                autoComplete="tel" textContentType="telephoneNumber" returnKeyType="next"
-                accessibilityLabel="Mobile number" style={styles.input} />
+              <View style={styles.phoneRow}>
+                <View style={styles.prefix}><Text style={styles.prefixText}>🇺🇬 +256</Text></View>
+                <TextInput value={phone} onChangeText={setPhone} onSubmitEditing={sendCode}
+                  placeholder="7XX XXX XXX" placeholderTextColor={colors.textFaint} keyboardType="phone-pad"
+                  autoComplete="tel" textContentType="telephoneNumber" returnKeyType="next"
+                  accessibilityLabel="Mobile number" style={[styles.input, styles.phoneInput]} />
+              </View>
               {error ? <Text style={[type.body, styles.error]}>{error}</Text> : null}
-              <Button label="Send code" onPress={sendCode} loading={busy} disabled={!phone.trim()} />
+              <Button label="Send me a code" onPress={sendCode} loading={busy} disabled={!phone.trim()} />
+              <Text style={[type.small, styles.centered]}>No password. No subscription. New here? This makes your account.</Text>
             </>
           ) : (
             <>
@@ -114,23 +123,46 @@ export default function SignIn() {
               {__DEV__ ? <Text style={[type.small, styles.devNote]}>Development: no SMS is sent. The code is in the API server’s log.</Text> : null}
             </>
           )}
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
+  );
+}
+
+/** Three artists' photos, overlapping, above the welcome. */
+function Collage() {
+  const [a, b, c] = listArtists();
+  if (!a || !b || !c) return null;
+  return (
+    <View style={styles.collage} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <View style={styles.blob}><Art seed={b.id} colors={b.colors} size={92} style={styles.side} /></View>
+      <View style={[styles.blob, styles.middle]}><Art seed={a.id} colors={a.colors} size={150} style={styles.center} /></View>
+      <View style={styles.blob}><Art seed={c.id} colors={c.colors} size={92} style={styles.side} /></View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
-  content: { flex: 1, padding: space.xl, gap: space.lg, justifyContent: 'center', maxWidth: 480, width: '100%', alignSelf: 'center' },
-  wordmark: { fontFamily: font.display, fontSize: 44, letterSpacing: -1.5, color: colors.text, marginBottom: space.xxl },
-  copy: { gap: space.sm },
+  content: { flexGrow: 1, padding: space.xl, gap: space.lg, justifyContent: 'center', maxWidth: 480, width: '100%', alignSelf: 'center' },
+  copy: { gap: space.md, marginTop: -space.sm },
+  rule: { width: 56, height: 4, borderRadius: 2, backgroundColor: colors.accent },
+  centered: { textAlign: 'center' },
+  phoneRow: { flexDirection: 'row', gap: space.sm },
+  prefix: { justifyContent: 'center', paddingHorizontal: space.md, borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.border },
+  prefixText: { fontFamily: font.bold, fontSize: 17, color: colors.text },
+  phoneInput: { flex: 1, minWidth: 0 },
+  collage: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: space.sm },
+  blob: { borderRadius: 40, borderWidth: 4, borderColor: colors.bg, overflow: 'hidden' },
+  middle: { marginHorizontal: -18, zIndex: 1, backgroundColor: colors.accent },
+  side: { borderRadius: 36 },
+  center: { borderRadius: 40 },
   muted: { color: colors.textMuted },
-  input: { backgroundColor: colors.surface, borderRadius: radius.md, padding: space.lg, color: colors.text, fontSize: 20, fontFamily: font.semibold },
+  input: { backgroundColor: colors.surface, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.border, padding: space.lg, color: colors.text, fontSize: 20, fontFamily: font.semibold },
   codeInput: { fontSize: 28, letterSpacing: 12, fontFamily: font.bold },
   error: { color: colors.danger },
   links: { flexDirection: 'row', justifyContent: 'space-between' },
-  link: { color: colors.accent, fontFamily: font.semibold, fontSize: 15 },
+  link: { color: colors.accentText, fontFamily: font.bold, fontSize: 15 },
   devNote: { color: colors.textFaint, marginTop: space.lg },
 });

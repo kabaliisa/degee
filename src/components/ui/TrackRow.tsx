@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   index: { width: 20, alignItems: 'center' },
   indexText: { fontFamily: font.semibold },
   flex: { flex: 1 },
-  current: { color: colors.accent },
+  current: { color: colors.accentText },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
   price: { paddingVertical: 5, paddingHorizontal: 10, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised },
   pricePressed: { backgroundColor: colors.surfacePress },

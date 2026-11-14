@@ -1,6 +1,9 @@
-import { BricolageGrotesque_700Bold, BricolageGrotesque_800ExtraBold } from '@expo-google-fonts/bricolage-grotesque';
-import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold, DMSans_700Bold, useFonts } from '@expo-google-fonts/dm-sans';
+import { Nunito_900Black } from '@expo-google-fonts/nunito';
+import {
+  PlusJakartaSans_400Regular, PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold, useFonts,
+} from '@expo-google-fonts/plus-jakarta-sans';
 import { Stack } from 'expo-router';
+import { Wordmark } from '../components/Wordmark';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { ActivityIndicator, AppState, StyleSheet, Text, View } from 'react-native';
@@ -43,7 +46,7 @@ function AccountSync({ signedIn }: { signedIn: boolean }) {
 function Splash({ error, onRetry }: { error?: string; onRetry?: () => void }) {
   return (
     <View style={[styles.root, styles.splash]}>
-      <Text style={styles.wordmark}>Deegee</Text>
+      <Wordmark size={48} />
       {error ? (
         <>
           <Text style={[type.body, styles.splashText]}>{error}</Text>
@@ -58,8 +61,8 @@ function Splash({ error, onRetry }: { error?: string; onRetry?: () => void }) {
 
 export default function RootLayout() {
   const [loaded] = useFonts({
-    BricolageGrotesque_700Bold, BricolageGrotesque_800ExtraBold,
-    DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold, DMSans_700Bold,
+    Nunito_900Black,
+    PlusJakartaSans_400Regular, PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold,
   });
   const hydrated = useSessionHydrated();
   const signedIn = useSignedIn();
@@ -75,14 +78,14 @@ export default function RootLayout() {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <PlayerEngine />
       <AccountSync signedIn={signedIn} />
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: colors.bg },
           headerTintColor: colors.text,
-          headerTitleStyle: { fontFamily: font.displayBold, fontSize: 17 },
+          headerTitleStyle: { fontFamily: font.display, fontSize: 17 },
           headerShadowVisible: false,
           headerBackButtonDisplayMode: 'minimal',
           contentStyle: { backgroundColor: colors.bg },
@@ -120,7 +123,6 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
   splash: { alignItems: 'center', justifyContent: 'center', gap: space.lg, padding: space.xl },
-  wordmark: { fontFamily: font.display, fontSize: 44, letterSpacing: -1.5, color: colors.text },
   splashText: { color: colors.textMuted, textAlign: 'center', maxWidth: 320 },
   retry: { alignSelf: 'stretch', maxWidth: 320, width: '100%' },
 });

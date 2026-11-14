@@ -1,8 +1,10 @@
 import { router } from 'expo-router';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { getArtist, type Artist, type Release } from '../../api';
-import { colors, space, type } from '../../lib/theme';
+import { getArtist, tracksForRelease, type Artist, type Release } from '../../api';
+import { formatUGX } from '../../lib/money';
+import { useWallet } from '../../store/wallet';
+import { colors, font, radius, space, type } from '../../lib/theme';
 import { Art } from '../Art';
 
 /** A titled horizontal row, the backbone of every browse screen. */
@@ -10,8 +12,8 @@ export function Shelf({ title, subtitle, children }: { title: string; subtitle?:
   return (
     <View style={styles.shelf}>
       <View style={styles.shelfHeader}>
-        {subtitle ? <Text style={type.small}>{subtitle}</Text> : null}
         <Text style={type.heading}>{title}</Text>
+        {subtitle ? <Text style={type.small}>{subtitle}</Text> : null}
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.shelfRow}>
         {children}
@@ -20,14 +22,27 @@ export function Shelf({ title, subtitle, children }: { title: string; subtitle?:
   );
 }
 
-export function ReleaseCard({ release, size = 148, subtitle }: { release: Release; size?: number; subtitle?: string }) {
+/** A price tag, or "Owned" in lime once the fan has every song. */
+export function PriceTag({ release, onDark }: { release: Release; onDark?: boolean }) {
+  const owned = useWallet((s) => tracksForRelease(release.id).every((t) => s.ownedTracks.includes(t.id)));
+  return owned ? (
+    <View style={[styles.tag, styles.tagOwned]}><Text style={styles.tagText}>Owned</Text></View>
+  ) : (
+    <View style={[styles.tag, onDark && styles.tagOnDark]}>
+      <Text style={[styles.tagText, onDark && styles.tagTextOnDark]}>{formatUGX(release.priceUGX)}</Text>
+    </View>
+  );
+}
+
+export function ReleaseCard({ release, size = 148, subtitle, price = true }: { release: Release; size?: number; subtitle?: string; price?: boolean }) {
   const artist = getArtist(release.artistId);
   return (
     <Pressable onPress={() => router.push(`/release/${release.id}`)} accessibilityLabel={`${release.title} by ${artist?.name}`}
       style={({ pressed }) => [{ width: size }, pressed && styles.pressed]}>
-      <Art seed={release.id} colors={release.colors} size={size} />
+      <Art seed={release.id} colors={release.colors} size={size} style={styles.cover} />
       <Text numberOfLines={1} style={[type.bodyBold, styles.cardTitle]}>{release.title}</Text>
-      <Text numberOfLines={2} style={type.small}>{subtitle ?? `${release.type} by ${artist?.name}`}</Text>
+      <Text numberOfLines={1} style={type.small}>{subtitle ?? artist?.name}</Text>
+      {price ? <PriceTag release={release} /> : null}
     </Pressable>
   );
 }
@@ -62,11 +77,17 @@ export function ListRow({ seed, colors: art, round, title, subtitle, onPress, ar
 const styles = StyleSheet.create({
   shelf: { marginTop: space.xl },
   shelfHeader: { paddingHorizontal: space.lg, marginBottom: space.md },
-  shelfRow: { gap: space.lg, paddingHorizontal: space.lg },
+  shelfRow: { gap: space.md, paddingHorizontal: space.lg },
+  cover: { borderRadius: radius.md },
+  tag: { alignSelf: 'flex-start', marginTop: space.sm, paddingVertical: 3, paddingHorizontal: 10, borderRadius: radius.pill, borderWidth: 1.5, borderColor: colors.text },
+  tagOwned: { backgroundColor: colors.lime, borderColor: colors.lime },
+  tagText: { fontFamily: font.bold, fontSize: 12, color: colors.text },
+  tagOnDark: { marginTop: 0, paddingVertical: 8, paddingHorizontal: 14, borderColor: '#FFFFFF' },
+  tagTextOnDark: { color: '#FFFFFF', fontSize: 14 },
   cardTitle: { marginTop: space.sm },
   centered: { textAlign: 'center' },
   pressed: { opacity: 0.75 },
   listRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.sm, paddingHorizontal: space.lg },
-  listRowPressed: { backgroundColor: colors.surface },
+  listRowPressed: { backgroundColor: colors.surfaceRaised },
   flex: { flex: 1 },
 });

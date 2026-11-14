@@ -38,15 +38,15 @@ export default function Search() {
 
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + space.md }]} keyboardShouldPersistTaps="handled" stickyHeaderIndices={[1]}>
-      <Text style={[type.display, styles.title]}>Search</Text>
+      <Text accessibilityRole="header" style={[type.hero, styles.title]}>Discover</Text>
       <View style={styles.searchBarWrap}>
         <View style={styles.searchBar}>
-          <Ionicons name="search" size={20} color={colors.bg} />
-          <TextInput value={q} onChangeText={setQ} placeholder="What do you want to hear?" placeholderTextColor={colors.textFaint}
+          <Ionicons name="search" size={20} color={colors.text} />
+          <TextInput value={q} onChangeText={setQ} placeholder="Artists, songs, albums" placeholderTextColor={colors.textFaint}
             style={styles.input} autoCorrect={false} returnKeyType="search" accessibilityLabel="Search" />
           {q ? (
             <Pressable onPress={() => setQ('')} hitSlop={8} accessibilityLabel="Clear search">
-              <Ionicons name="close" size={20} color={colors.bg} />
+              <Ionicons name="close" size={20} color={colors.textMuted} />
             </Pressable>
           ) : null}
         </View>
@@ -85,8 +85,8 @@ const styles = StyleSheet.create({
   content: { paddingBottom: layout.tabScreenBottom },
   title: { paddingHorizontal: space.lg, marginBottom: space.md },
   searchBarWrap: { paddingHorizontal: space.lg, paddingBottom: space.md, backgroundColor: colors.bg },
-  searchBar: { flexDirection: 'row', alignItems: 'center', gap: space.sm, backgroundColor: colors.text, borderRadius: radius.md, paddingHorizontal: space.md },
-  input: { flex: 1, color: colors.bg, paddingVertical: 12, fontSize: 16, fontFamily: font.semibold },
+  searchBar: { flexDirection: 'row', alignItems: 'center', gap: space.sm, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.border, borderRadius: radius.lg, paddingHorizontal: space.md },
+  input: { flex: 1, minWidth: 0, color: colors.text, paddingVertical: 12, fontSize: 16, fontFamily: font.semibold },
   browse: { paddingHorizontal: space.lg },
   browseTitle: { marginBottom: space.md },
   genreGrid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -5 },

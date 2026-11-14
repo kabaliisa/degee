@@ -99,5 +99,5 @@ const styles = StyleSheet.create({
   about: { margin: space.lg, marginTop: space.xl, padding: space.lg, borderRadius: radius.lg, backgroundColor: colors.surface },
   bio: { color: colors.textMuted, marginTop: space.sm, fontFamily: font.regular },
   aboutMeta: { marginTop: space.md },
-  link: { color: colors.accent },
+  link: { color: colors.accentText },
 });

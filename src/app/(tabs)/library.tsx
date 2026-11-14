@@ -6,20 +6,20 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getTrack, listArtists, listReleases, tracksForRelease, type Track } from '../../api';
 import { Art } from '../../components/Art';
-import { Button, Chip, EmptyState, ListRow, PlayButton, TrackRow } from '../../components/ui';
-import { colors, layout, radius, space, type } from '../../lib/theme';
+import { Button, Chip, EmptyState, ListRow, PlayButton, PriceTag, TrackRow } from '../../components/ui';
+import { colors, font, layout, radius, space, type } from '../../lib/theme';
 import { useLikes } from '../../store/likes';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
 
-const VIEWS = ['Songs', 'Releases', 'Artists'] as const;
+const VIEWS = ['Releases', 'Songs', 'Artists'] as const;
 type LibraryView = (typeof VIEWS)[number];
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 export default function Library() {
   const insets = useSafeAreaInsets();
-  const [view, setView] = useState<LibraryView>('Songs');
+  const [view, setView] = useState<LibraryView>('Releases');
   const ownedIds = useWallet((s) => s.ownedTracks);
   const owns = useWallet((s) => s.owns);
   const liked = useLikes((s) => s.liked);
@@ -32,7 +32,12 @@ export default function Library() {
 
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + space.md }]}>
-      <Text style={[type.display, styles.padded]}>Your music</Text>
+      <Text accessibilityRole="header" style={[type.hero, styles.padded]}>Your music, forever.</Text>
+      <Text style={[type.body, styles.padded, styles.summary]}>
+        {owned.length
+          ? <>{plural(owned.length, 'song')} from <Text style={styles.strong}>{plural(new Set(owned.map((t) => t.artistId)).size, 'artist')}</Text>. All play offline.</>
+          : 'Everything you buy stays here and plays offline.'}
+      </Text>
       <View style={styles.chips}>
         {VIEWS.map((v) => <Chip key={v} label={v} active={view === v} onPress={() => setView(v)} />)}
       </View>
@@ -40,8 +45,8 @@ export default function Library() {
       {view === 'Songs' ? (
         <>
           <Pressable onPress={() => liked.length && playQueue(liked, 0, owns)} accessibilityRole="button" accessibilityLabel="Play liked songs" style={styles.liked}>
-            <LinearGradient colors={['#0A1A38', colors.accent]} start={{ x: 0, y: 1 }} end={{ x: 1, y: 0 }} style={styles.likedArt}>
-              <Ionicons name="heart" size={28} color={colors.text} />
+            <LinearGradient colors={[colors.ink, colors.accent]} start={{ x: 0, y: 1 }} end={{ x: 1, y: 0 }} style={styles.likedArt}>
+              <Ionicons name="heart" size={28} color="#FFFFFF" />
             </LinearGradient>
             <View style={styles.flex}>
               <Text style={type.bodyBold}>Liked songs</Text>
@@ -73,8 +78,13 @@ export default function Library() {
             {ownedReleases.map((r) => (
               <Pressable key={r.id} onPress={() => router.push(`/release/${r.id}`)} accessibilityLabel={r.title} style={styles.gridCell}>
                 <View style={styles.gridArt}><Art seed={r.id} colors={r.colors} size={170} style={styles.fill} /></View>
-                <Text numberOfLines={1} style={[type.bodyBold, styles.gridTitle]}>{r.title}</Text>
-                <Text numberOfLines={1} style={type.small}>{r.type} · {getArtist(r.artistId)?.name}</Text>
+                <View style={styles.gridMeta}>
+                  <View style={styles.flex}>
+                    <Text numberOfLines={1} style={[type.bodyBold, styles.gridTitle]}>{r.title}</Text>
+                    <Text numberOfLines={1} style={type.small}>{getArtist(r.artistId)?.name}</Text>
+                  </View>
+                  <PriceTag release={r} />
+                </View>
               </Pressable>
             ))}
           </View>
@@ -96,15 +106,18 @@ export default function Library() {
 const styles = StyleSheet.create({
   content: { paddingBottom: layout.tabScreenBottom },
   padded: { paddingHorizontal: space.lg },
-  chips: { flexDirection: 'row', gap: space.sm, paddingHorizontal: space.lg, marginTop: space.md, marginBottom: space.lg },
+  summary: { color: colors.textMuted, marginTop: space.sm },
+  strong: { fontFamily: font.display, color: colors.text },
+  chips: { flexDirection: 'row', gap: space.sm, paddingHorizontal: space.lg, marginTop: space.lg, marginBottom: space.lg },
   liked: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingHorizontal: space.lg, marginBottom: space.lg },
-  likedArt: { width: 64, height: 64, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center' },
+  likedArt: { width: 64, height: 64, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
   flex: { flex: 1 },
   emptyAction: { marginTop: space.md },
   boughtHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.lg, marginBottom: space.sm },
   grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: space.lg - 6 },
   gridCell: { width: '50%', padding: 6 },
-  gridArt: { aspectRatio: 1, width: '100%' },
+  gridArt: { aspectRatio: 1, width: '100%', borderRadius: radius.lg, overflow: 'hidden' },
   fill: { width: '100%', height: '100%' },
-  gridTitle: { marginTop: space.sm },
+  gridMeta: { flexDirection: 'row', alignItems: 'flex-start', gap: space.sm, marginTop: space.sm },
+  gridTitle: {},
 });

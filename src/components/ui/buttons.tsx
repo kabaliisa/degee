@@ -54,7 +54,7 @@ export function Chip({ label, active, onPress }: { label: string; active?: boole
 const variantStyles = StyleSheet.create({
   primary: { backgroundColor: colors.accent },
   secondary: { backgroundColor: colors.surfaceRaised },
-  outline: { borderWidth: 1, borderColor: colors.textFaint },
+  outline: { borderWidth: 1.5, borderColor: colors.text },
   ghost: {},
 });
 
@@ -63,14 +63,14 @@ const styles = StyleSheet.create({
   playPressed: { transform: [{ scale: 0.94 }] },
   icon: { padding: 2 },
   dimmed: { opacity: 0.6 },
-  button: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm, paddingVertical: 14, paddingHorizontal: space.xl, borderRadius: radius.pill },
-  buttonSmall: { paddingVertical: 8, paddingHorizontal: 16 },
+  button: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm, paddingVertical: 15, paddingHorizontal: space.xl, borderRadius: radius.lg },
+  buttonSmall: { paddingVertical: 9, paddingHorizontal: 16, borderRadius: radius.pill },
   buttonPressed: { transform: [{ scale: 0.97 }] },
   disabled: { opacity: 0.45 },
-  buttonLabel: { fontFamily: font.bold, fontSize: 15 },
+  buttonLabel: { fontFamily: font.display, fontSize: 16 },
   buttonLabelSmall: { fontSize: 13 },
-  chip: { paddingVertical: 7, paddingHorizontal: 14, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised },
+  chip: { paddingVertical: 9, paddingHorizontal: 16, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised },
   chipActive: { backgroundColor: colors.accent },
-  chipLabel: { fontFamily: font.semibold, fontSize: 13, color: colors.text },
+  chipLabel: { fontFamily: font.bold, fontSize: 14, color: colors.text },
   chipLabelActive: { color: colors.accentInk },
 });

@@ -141,5 +141,5 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.7 },
   line: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.sm },
   amount: { fontFamily: font.bold, fontSize: 15, color: colors.text },
-  amountIn: { color: colors.accent },
+  amountIn: { color: colors.success },
 });

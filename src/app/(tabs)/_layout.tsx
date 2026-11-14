@@ -35,14 +35,14 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: styles.tabBar,
-        tabBarActiveTintColor: colors.text,
-        tabBarInactiveTintColor: colors.textFaint,
+        tabBarActiveTintColor: colors.accentText,
+        tabBarInactiveTintColor: colors.textMuted,
         tabBarLabelStyle: styles.tabLabel,
         sceneStyle: styles.scene,
       }}>
       <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: tabIcon('home', 'home-outline') }} />
-      <Tabs.Screen name="search" options={{ title: 'Search', tabBarIcon: tabIcon('search', 'search-outline') }} />
-      <Tabs.Screen name="library" options={{ title: 'Your music', tabBarIcon: tabIcon('library', 'library-outline') }} />
+      <Tabs.Screen name="search" options={{ title: 'Discover', tabBarIcon: tabIcon('search', 'search-outline') }} />
+      <Tabs.Screen name="library" options={{ title: 'My music', tabBarIcon: tabIcon('musical-notes', 'musical-notes-outline') }} />
       <Tabs.Screen name="wallet" options={{ title: 'Wallet', tabBarIcon: tabIcon('wallet', 'wallet-outline') }} />
     </Tabs>
   );
@@ -52,6 +52,6 @@ const styles = StyleSheet.create({
   dock: { position: 'absolute', left: 0, right: 0, bottom: 0 },
   fade: { position: 'absolute', left: 0, right: 0, top: -40, bottom: 0 },
   tabBar: { backgroundColor: 'transparent', borderTopWidth: 0, elevation: 0 },
-  tabLabel: { fontFamily: font.semibold, fontSize: 11 },
+  tabLabel: { fontFamily: font.bold, fontSize: 11 },
   scene: { backgroundColor: colors.bg },
 });

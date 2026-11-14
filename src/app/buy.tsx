@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   content: { padding: space.lg, gap: space.lg },
   item: { flexDirection: 'row', gap: space.md, alignItems: 'center' },
   flex: { flex: 1 },
-  price: { color: colors.accent },
+  price: { color: colors.accentText },
   error: { color: colors.danger, marginTop: space.xs },
   centered: { textAlign: 'center' },
 });

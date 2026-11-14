@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   preset: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border },
   presetActive: { borderColor: colors.accent },
   presetLabel: { color: colors.text, fontFamily: font.semibold },
-  presetLabelActive: { color: colors.accent },
+  presetLabelActive: { color: colors.accentText },
   providers: { flexDirection: 'row', gap: space.sm },
   provider: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.sm, padding: space.md, borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 2, borderColor: 'transparent' },
   providerActive: { borderColor: colors.accent },
