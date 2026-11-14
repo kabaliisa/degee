@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getRelease, listArtists, listReleases, releasesInGenre, tracksForRelease, type Artist, type Release } from '../../api';
@@ -12,6 +13,8 @@ import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
 
 export default function Home() {
+  const [heroScrolledAway, setHeroScrolledAway] = useState(false);
+  const insets = useSafeAreaInsets();
   const owned = useWallet((s) => s.ownedTracks);
   const owns = useWallet((s) => s.owns);
   const playQueue = usePlayer((s) => s.playQueue);
@@ -34,7 +37,13 @@ export default function Home() {
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        onScroll={({ nativeEvent }) => {
+          const pastHero = nativeEvent.contentOffset.y >= 400;
+          setHeroScrolledAway((previous) => previous === pastHero ? previous : pastHero);
+        }}
+        scrollEventThrottle={32}>
         <Hero release={featured} playing={currentRelease === featured.id && isPlaying} onPlay={() => playRelease(featured.id)} />
 
         <View style={styles.section}>
@@ -69,7 +78,8 @@ export default function Home() {
           {[...releasesInGenre('Gospel'), ...releasesInGenre('Zouk')].map((r) => <ReleaseCard key={r.id} release={r} size={132} />)}
         </Shelf>
       </ScrollView>
-      <StatusBarStrip />
+      {/* Let the photo extend behind the status bar until the hero scrolls away. */}
+      <StatusBarStrip visible={heroScrolledAway && insets.top > 0} />
     </View>
   );
 }
