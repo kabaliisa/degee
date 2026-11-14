@@ -4,6 +4,7 @@ import { SettingsGroup, SettingsRow } from '../components/profile/SettingsRow';
 import { colors, space, type } from '../lib/theme';
 import { formatPhone } from '../lib/phone';
 import { displayName, useSession } from '../store/session';
+import { formatBytes, useOffline } from '../store/offline';
 import { useSettings, type Language, type Quality } from '../store/settings';
 
 const QUALITIES: Quality[] = ['Low', 'Normal', 'High'];
@@ -13,6 +14,7 @@ const cycle = <T,>(list: T[], current: T) => list[(list.indexOf(current) + 1) % 
 export default function Settings() {
   const p = useSettings();
   const user = useSession((s) => s.user);
+  const offline = useOffline();
 
   const signOut = () => {
     if (router.canDismiss()) router.dismissAll();
@@ -33,7 +35,15 @@ export default function Settings() {
         <SettingsRow icon="musical-note-outline" label="Streaming quality" detail={p.dataSaver ? 'Low (data saver)' : p.streamQuality}
           onPress={() => p.update({ streamQuality: cycle(QUALITIES, p.streamQuality) })} />
         <SettingsRow icon="wifi-outline" label="Download on Wi-Fi only" detail="Save data when downloading songs you own"
-          value={p.downloadOnWifiOnly} onToggle={(v) => p.update({ downloadOnWifiOnly: v })} last />
+          value={p.downloadOnWifiOnly} onToggle={(v) => p.update({ downloadOnWifiOnly: v })} last={!offline.supported} />
+        {offline.supported ? (
+          <SettingsRow icon="cloud-done-outline" label="Saved on this device"
+            detail={offline.saved.length ? `${offline.saved.length} song${offline.saved.length === 1 ? '' : 's'} · ${formatBytes(offline.bytes)}` : 'No songs saved yet'}
+            last={!offline.saved.length} />
+        ) : null}
+        {offline.supported && offline.saved.length ? (
+          <SettingsRow icon="trash-outline" label="Remove saved songs" danger onPress={() => void offline.removeAll()} last />
+        ) : null}
       </SettingsGroup>
 
       <SettingsGroup title="Notifications">

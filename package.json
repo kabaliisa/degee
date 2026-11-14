@@ -45,7 +45,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test src/lib/*.test.ts src/api/*.test.ts",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "build:web": "node scripts/build-web.mjs"
   },
   "private": true
 }

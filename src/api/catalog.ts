@@ -7,7 +7,9 @@ import { placeholderPhoto } from '../lib/photos';
  * memory, so browsing and search are instant. When the catalogue outgrows one response, these
  * getters become TanStack Query hooks over the paged endpoints; screens import from here only.
  */
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { api } from './client';
 import { API_URL } from './config';
 import type { Artist, Release, SearchResults, Track } from './types';
@@ -17,24 +19,45 @@ type Snapshot = { artists: Artist[]; releases: Release[]; tracks: Track[] };
 type CatalogState = Snapshot & {
   status: 'loading' | 'ready' | 'error';
   error?: string;
+  /** Showing the last catalogue we were given because this one couldn't be fetched. */
+  stale: boolean;
   load: () => Promise<void>;
 };
 
-export const useCatalog = create<CatalogState>()((set) => ({
-  artists: [],
-  releases: [],
-  tracks: [],
-  status: 'loading',
-  load: async () => {
-    set({ status: 'loading', error: undefined });
-    try {
-      const snapshot = await api<Snapshot>('GET', '/v1/catalog', { auth: false });
-      set({ ...snapshot, status: 'ready' });
-    } catch (e) {
-      set({ status: 'error', error: (e as Error).message });
-    }
-  },
-}));
+/**
+ * The last catalogue is kept on the device. Without it the app is a white screen on a dead
+ * connection, even for someone whose songs are saved and playable.
+ */
+export const useCatalog = create<CatalogState>()(
+  persist(
+    (set, get) => ({
+      artists: [],
+      releases: [],
+      tracks: [],
+      status: 'loading',
+      stale: false,
+      load: async () => {
+        if (!useCatalog.persist.hasHydrated()) {
+          await useCatalog.persist.rehydrate()?.catch?.(() => {});
+        }
+        const haveCopy = () => get().releases.length > 0;
+        set({ status: haveCopy() ? 'ready' : 'loading', error: undefined });
+        try {
+          const snapshot = await api<Snapshot>('GET', '/v1/catalog', { auth: false });
+          set({ ...snapshot, status: 'ready', stale: false });
+        } catch (e) {
+          if (haveCopy()) set({ status: 'ready', stale: true });
+          else set({ status: 'error', error: (e as Error).message });
+        }
+      },
+    }),
+    {
+      name: 'deegee-catalog',
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: (s) => ({ artists: s.artists, releases: s.releases, tracks: s.tracks }),
+    },
+  ),
+);
 
 const data = () => useCatalog.getState();
 

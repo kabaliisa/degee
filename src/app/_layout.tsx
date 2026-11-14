@@ -1,7 +1,10 @@
-import { Nunito_900Black } from '@expo-google-fonts/nunito';
-import {
-  PlusJakartaSans_400Regular, PlusJakartaSans_500Medium, PlusJakartaSans_600SemiBold, PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold, useFonts,
-} from '@expo-google-fonts/plus-jakarta-sans';
+import { Nunito_900Black } from '@expo-google-fonts/nunito/900Black';
+import { useFonts } from 'expo-font';
+import { PlusJakartaSans_400Regular } from '@expo-google-fonts/plus-jakarta-sans/400Regular';
+import { PlusJakartaSans_500Medium } from '@expo-google-fonts/plus-jakarta-sans/500Medium';
+import { PlusJakartaSans_600SemiBold } from '@expo-google-fonts/plus-jakarta-sans/600SemiBold';
+import { PlusJakartaSans_700Bold } from '@expo-google-fonts/plus-jakarta-sans/700Bold';
+import { PlusJakartaSans_800ExtraBold } from '@expo-google-fonts/plus-jakarta-sans/800ExtraBold';
 import { Stack } from 'expo-router';
 import { Wordmark } from '../components/Wordmark';
 import { StatusBar } from 'expo-status-bar';
@@ -9,6 +12,7 @@ import { useEffect } from 'react';
 import { ActivityIndicator, AppState, StyleSheet, Text, View } from 'react-native';
 import { useCatalog } from '../api/catalog';
 import { API_URL } from '../api/config';
+import { OfflineBar } from '../components/OfflineBar';
 import { PlayerEngine } from '../components/player/PlayerEngine';
 import { Button } from '../components/ui';
 import { colors, font, space, type } from '../lib/theme';
@@ -16,6 +20,7 @@ import { getMe } from '../api/account';
 import { useSession, useSessionHydrated, useSignedIn } from '../store/session';
 import { useLikes } from '../store/likes';
 import { usePlayer } from '../store/player';
+import { useOffline } from '../store/offline';
 import { useWallet } from '../store/wallet';
 
 /**
@@ -28,12 +33,14 @@ function AccountSync({ signedIn }: { signedIn: boolean }) {
     if (!signedIn) {
       // Signing out stops the music and clears what belonged to that account.
       reset();
+      useOffline.getState().reset();
       usePlayer.getState().stop();
       useLikes.getState().clear();
       return;
     }
     const load = () => {
       refresh().catch(() => {}); // screens show the last known values if this fails
+      useOffline.getState().refresh().catch(() => {});
       getMe().then(useSession.getState().setUser).catch(() => {});
     };
     load();
@@ -82,6 +89,7 @@ export default function RootLayout() {
       <StatusBar style={signedIn && hasName ? 'light' : 'dark'} />
       <PlayerEngine />
       <AccountSync signedIn={signedIn} />
+      <OfflineBar />
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: colors.ink },

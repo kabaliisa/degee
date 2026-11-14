@@ -21,7 +21,15 @@
       "package": "app.deegee"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "output": "single",
+      "name": "Deegee",
+      "shortName": "Deegee",
+      "description": "Buy music straight from Ugandan artists with mobile money. Yours to keep.",
+      "themeColor": "#101014",
+      "backgroundColor": "#101014",
+      "display": "standalone",
+      "bundler": "metro"
     },
     "plugins": [
       "expo-router",

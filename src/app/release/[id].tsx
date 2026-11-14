@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, Share, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,6 +10,7 @@ import { PREVIEW_SEC, totalDuration } from '../../lib/format';
 import { formatUGX } from '../../lib/money';
 import { colors, font, layout, onDark, radius, space, type } from '../../lib/theme';
 import { useLikes } from '../../store/likes';
+import { useOffline } from '../../store/offline';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
 
@@ -26,6 +27,10 @@ export default function ReleaseScreen() {
   const isPlaying = usePlayer((s) => s.isPlaying);
   const liked = useLikes((s) => s.liked);
   const toggleLike = useLikes((s) => s.toggleLike);
+  const offlineSupported = useOffline((o) => o.supported);
+  const savedSongs = useOffline((o) => o.saved);
+  const savingSongs = useOffline((o) => o.saving);
+  const saveOffline = useOffline((o) => o.save);
   const artist = release ? getArtist(release.artistId) : undefined;
   if (!release || !artist) return <EmptyState icon="disc-outline" title="Release not found" body="It may have been removed by the artist." />;
 
@@ -40,6 +45,8 @@ export default function ReleaseScreen() {
 
   const play = () => (currentRelease === release.id ? toggle() : playQueue(ids, 0, owns));
   const toggleSaved = () => ids.forEach((t) => { if (saved === liked.includes(t)) toggleLike(t); });
+  const downloading = ids.some((t) => savingSongs.includes(t));
+  const allSaved = offlineSupported && ids.length > 0 && ids.every((t) => savedSongs.includes(t));
   const share = () => Share.share({ message: `Listen to ${release.title} by ${artist.name} on Deegee` });
 
   return (
@@ -61,9 +68,18 @@ export default function ReleaseScreen() {
 
           <View style={styles.buttons}>
             {ownsAll ? (
-              <View style={styles.ownedPill}>
-                <Ionicons name="checkmark-circle" size={18} color={colors.limeInk} />
-                <Text style={styles.ownedText}>Owned · plays in full</Text>
+              <View style={styles.ownedRow}>
+                <View style={styles.ownedPill}>
+                  <Ionicons name="checkmark-circle" size={18} color={colors.limeInk} />
+                  <Text style={styles.ownedText}>Owned{allSaved ? ' · saved offline' : ''}</Text>
+                </View>
+                {offlineSupported && !allSaved ? (
+                  <Pressable onPress={() => void saveOffline(ids)} accessibilityRole="button"
+                    accessibilityLabel={`Save ${release.title} to this device`} style={({ pressed }) => [styles.saveBtn, pressed && styles.pressed]}>
+                    <Ionicons name={downloading ? 'ellipsis-horizontal' : 'arrow-down-circle-outline'} size={18} color={onDark.text} />
+                    <Text style={styles.saveText}>{downloading ? 'Saving…' : 'Save offline'}</Text>
+                  </Pressable>
+                ) : null}
               </View>
             ) : (
               <Button icon="bag-handle" label={`Buy ${release.type === 'EP' ? 'EP' : release.type.toLowerCase()} · ${formatUGX(release.priceUGX)}`}
@@ -122,6 +138,9 @@ const styles = StyleSheet.create({
   listenText: { fontFamily: font.display, fontSize: 15, color: colors.text },
   pressed: { opacity: 0.85 },
   iconRow: { flexDirection: 'row', justifyContent: 'center', gap: space.xl, marginTop: space.xs },
+  ownedRow: { gap: space.sm },
+  saveBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 44, borderRadius: radius.pill, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.4)' },
+  saveText: { fontFamily: font.bold, fontSize: 14, color: onDark.text },
   ownedPill: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm, paddingVertical: 14, borderRadius: radius.lg, backgroundColor: colors.lime },
   ownedText: { fontFamily: font.display, fontSize: 15, color: colors.limeInk },
   noteTop: { marginTop: space.lg },

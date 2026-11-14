@@ -19,6 +19,48 @@ Sign in with any Ugandan mobile number. No SMS is sent in development: the 6-dig
 
 **On your phone:** the phone and the Mac must be on the same Wi-Fi. The app finds the API at port 8080 on the computer running Expo. If macOS asks whether Java may accept incoming connections, allow it. To point the app somewhere else (a tunnel, staging), set `EXPO_PUBLIC_API_URL`, e.g. `EXPO_PUBLIC_API_URL=https://api.example.com npx expo start`.
 
+## The web app (PWA)
+
+The browser build is the one that can take mobile money directly: no store sits between a fan and an
+artist, so there is no 30% cut and no billing rule to work around. It installs to the home screen,
+opens offline, and plays songs the fan has bought.
+
+```bash
+npm run build:web     # exports to dist/ and writes the offline file list
+npx serve dist        # or any static host
+```
+
+The host must rewrite unknown paths to `index.html` (Netlify `_redirects`, Vercel `rewrites`, EAS
+Hosting by default). The service worker falls back to the shell if a host doesn't, so deep links still
+work, but the first visit to one is faster when the host does it.
+
+What makes it an app rather than a website:
+
+| | |
+| --- | --- |
+| `public/manifest.json` | Name, ink theme, standalone display, maskable icon |
+| `public/sw.js` | Caches the app so it opens offline and costs little data to reopen |
+| `scripts/build-web.mjs` | Lists what to hold offline: code and fonts from the start, photos as they are seen |
+| `src/lib/offlineAudio.web.ts` | Bought songs saved in the browser and played from there |
+| `src/lib/mediaSession.web.ts` | Title, artist and cover on the lock screen, with working buttons |
+| `src/lib/install.web.ts` | "Add to home screen", one tap on Android, the share-sheet route on iOS |
+
+Each of these has a `.ts` twin that does nothing, which is what the native builds use.
+
+**Set `DEEGEE_CORS_ORIGINS` on the API to wherever the site is served from**, or the browser blocks every
+request. In development `http://localhost:8081` is already allowed; a production build served elsewhere
+needs its own origin adding.
+
+**iPhone is the open question.** Safari has a long history of stopping a PWA's audio when the screen
+locks. Test it on a real iPhone before relying on it: install to the home screen, play a saved song, lock
+the phone. Android (Chrome) handles background audio, the lock screen and installing properly. If iOS
+can't hold a song through a screen lock, that is the argument for a listen-only native iOS app, which
+Apple's reader rule allows because nothing is sold inside it.
+
+**Checked end to end in a real browser** against a production build: the service worker registers, the
+app installs, a song is bought and saved, and with the network cut the app still opens, still knows what
+you own, and still plays it.
+
 ## Checks (run all three before every commit)
 
 ```bash
@@ -37,7 +79,6 @@ src/
     release/[id].tsx   Single / EP / album page
     player.tsx         Full-screen player
     buy.tsx            Checkout
-    topup.tsx          Add money (mobile money)
     gift.tsx           Send an artist a gift
     profile.tsx        Profile
     settings.tsx       Settings

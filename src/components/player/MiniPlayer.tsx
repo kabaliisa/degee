@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -42,7 +42,7 @@ export function MiniPlayer({ floating }: { floating?: boolean }) {
         </Pressable>
       </View>
       <View style={styles.track}>
-        <View style={[styles.fill, { width: `${progress * 100}%` }]} />
+        <View testID="player-progress" style={[styles.fill, { width: `${progress * 100}%` }]} />
       </View>
     </Pressable>
   );

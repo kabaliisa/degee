@@ -49,7 +49,8 @@ deegee:
     new-artist-hold: ${DEEGEE_NEW_ARTIST_HOLD:30d} # longer hold while an artist is new, in case of rights claims
     new-artist-period: 60d
   cors:
-    # Browsers that may call the API: the Expo web dev server. Phones don't need this.
+    # Browsers that may call the API: the Expo web dev server, and wherever the PWA is hosted.
+    # Phones running the native app don't need this.
     allowed-origins: ${DEEGEE_CORS_ORIGINS:http://localhost:8081,http://localhost:19006}
   security:
     # Signs access tokens. MUST be overridden in every real environment (at least 32 bytes).

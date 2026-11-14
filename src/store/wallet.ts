@@ -1,4 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { getOrder, startCheckout, type CheckoutItem, type Order, type PayWith } from '../api/checkout';
 import { toWalletTx } from '../api/mappers';
 import type { WalletTx } from '../api/types';
@@ -30,7 +32,11 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const empty = { balance: 0, ownedTracks: [] as string[], txs: [] as WalletTx[], loaded: false };
 
-export const useWallet = create<WalletState>()((set, get) => {
+/**
+ * What this account owns is kept on the device too, so a saved song still plays in full when the
+ * server can't be reached. Credit and history are fetched fresh, since they can change elsewhere.
+ */
+export const useWallet = create<WalletState>()(persist((set, get) => {
   /** Applies a finished order straight away, so the song plays in full before the next refresh lands. */
   const apply = (order: Order) => {
     if (order.status === 'WAITING') return;
@@ -70,7 +76,11 @@ export const useWallet = create<WalletState>()((set, get) => {
     owns: (trackId) => get().ownedTracks.includes(trackId),
     reset: () => set(empty),
   };
-});
+}, {
+  name: 'deegee-library',
+  storage: createJSONStorage(() => AsyncStorage),
+  partialize: (s) => ({ ownedTracks: s.ownedTracks }),
+}));
 
 /** Total spent on music and gifts: money that went to artists, songwriters and Deegee. */
 export const sentToArtists = (txs: WalletTx[]) =>

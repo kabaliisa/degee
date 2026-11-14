@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { getTrack } from '../../api';
 import { updateMe } from '../../api/account';
+import { InstallCard } from '../../components/InstallCard';
 import { Avatar } from '../../components/profile/Avatar';
 import { SettingsGroup, SettingsRow } from '../../components/profile/SettingsRow';
 import { Button, ScreenHeader, StatusBarStrip } from '../../components/ui';
@@ -88,6 +89,8 @@ export default function Profile() {
             ))}
           </View>
         </ScreenHeader>
+
+        <InstallCard />
 
         <SettingsGroup>
           <SettingsRow icon="receipt-outline" label="Purchases and gifts" detail={credit > 0 ? `${formatUGX(credit)} credit` : undefined}

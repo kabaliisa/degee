@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors, font, radius, space, type } from '../../lib/theme';
 import type { WalletTx } from '../../store/wallet';
