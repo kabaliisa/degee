@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { getArtist, getTrack, listArtists, listReleases, tracksForRelease, type Track } from '../../api';
 import { Art } from '../../components/Art';
-import { Button, Chip, EmptyState, ListRow, PlayButton, PriceTag, ScreenHeader, StatusBarStrip, TrackRow } from '../../components/ui';
+import { Button, Chip, EmptyState, ListRow, PlayButton, ScreenHeader, StatusBarStrip, TrackRow } from '../../components/ui';
 import { colors, font, layout, radius, space, type } from '../../lib/theme';
 import { useLikes } from '../../store/likes';
 import { usePlayer } from '../../store/player';
@@ -15,6 +15,13 @@ const VIEWS = ['Releases', 'Songs', 'Artists'] as const;
 type LibraryView = (typeof VIEWS)[number];
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+/** "2 of 5 songs" while a release is only part bought; nothing once it's complete. */
+function partOwned(releaseId: string, ownedIds: string[]) {
+  const tracks = tracksForRelease(releaseId);
+  const mine = tracks.filter((t) => ownedIds.includes(t.id)).length;
+  return mine < tracks.length ? `${mine} of ${plural(tracks.length, 'song')}` : null;
+}
 
 export default function Library() {
   const [view, setView] = useState<LibraryView>('Releases');
@@ -77,11 +84,9 @@ export default function Library() {
               <Pressable key={r.id} onPress={() => router.push(`/release/${r.id}`)} accessibilityLabel={r.title} style={styles.gridCell}>
                 <View style={styles.gridArt}><Art seed={r.id} colors={r.colors} size={170} style={styles.fill} /></View>
                 <View style={styles.gridMeta}>
-                  <View style={styles.flex}>
-                    <Text numberOfLines={1} style={[type.bodyBold, styles.gridTitle]}>{r.title}</Text>
-                    <Text numberOfLines={1} style={type.small}>{getArtist(r.artistId)?.name}</Text>
-                  </View>
-                  <PriceTag release={r} />
+                  <Text numberOfLines={1} style={type.bodyBold}>{r.title}</Text>
+                  <Text numberOfLines={1} style={type.small}>{getArtist(r.artistId)?.name}</Text>
+                  {partOwned(r.id, ownedIds) ? <Text style={styles.part}>{partOwned(r.id, ownedIds)}</Text> : null}
                 </View>
               </Pressable>
             ))}
@@ -117,6 +122,6 @@ const styles = StyleSheet.create({
   gridCell: { width: '50%', padding: 6 },
   gridArt: { aspectRatio: 1, width: '100%', borderRadius: radius.lg, overflow: 'hidden' },
   fill: { width: '100%', height: '100%' },
-  gridMeta: { flexDirection: 'row', alignItems: 'flex-start', gap: space.sm, marginTop: space.sm },
-  gridTitle: {},
+  gridMeta: { marginTop: space.sm, gap: 1 },
+  part: { fontFamily: font.bold, fontSize: 12, color: colors.accentText },
 });

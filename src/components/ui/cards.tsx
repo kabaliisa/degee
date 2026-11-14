@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -22,16 +23,21 @@ export function Shelf({ title, subtitle, children }: { title: string; subtitle?:
   );
 }
 
-/** A price tag, or "Owned" in lime once the fan has every song. */
+/**
+ * A price reads as a fact, so it is set as plain type. Owning something is a state, so it gets the one
+ * chip: the lime tick is the only badge in a shelf, which is what makes it carry.
+ */
 export function PriceTag({ release, onDark }: { release: Release; onDark?: boolean }) {
   const owned = useWallet((s) => tracksForRelease(release.id).every((t) => s.ownedTracks.includes(t.id)));
-  return owned ? (
-    <View style={[styles.tag, styles.tagOwned]}><Text style={styles.tagText}>Owned</Text></View>
-  ) : (
-    <View style={[styles.tag, onDark && styles.tagOnDark]}>
-      <Text style={[styles.tagText, onDark && styles.tagTextOnDark]}>{formatUGX(release.priceUGX)}</Text>
-    </View>
-  );
+  if (owned) {
+    return (
+      <View style={[styles.ownedChip, onDark && styles.ownedChipOnDark]}>
+        <Ionicons name="checkmark" size={13} color={colors.limeInk} />
+        <Text style={styles.ownedText}>Owned</Text>
+      </View>
+    );
+  }
+  return <Text style={[styles.price, onDark && styles.priceOnDark]}>{formatUGX(release.priceUGX)}</Text>;
 }
 
 export function ReleaseCard({ release, size = 148, subtitle, price = true }: { release: Release; size?: number; subtitle?: string; price?: boolean }) {
@@ -84,11 +90,11 @@ const styles = StyleSheet.create({
   cover: { borderRadius: radius.md },
   newBadge: { position: 'absolute', left: 8, top: 8, backgroundColor: colors.accent, borderRadius: radius.pill, paddingVertical: 3, paddingHorizontal: 8 },
   newText: { fontFamily: font.display, fontSize: 10, letterSpacing: 0.5, color: colors.accentInk },
-  tag: { alignSelf: 'flex-start', marginTop: space.sm, paddingVertical: 3, paddingHorizontal: 10, borderRadius: radius.pill, borderWidth: 1.5, borderColor: colors.text },
-  tagOwned: { backgroundColor: colors.lime, borderColor: colors.lime },
-  tagText: { fontFamily: font.bold, fontSize: 12, color: colors.text },
-  tagOnDark: { marginTop: 0, paddingVertical: 8, paddingHorizontal: 14, borderColor: '#FFFFFF' },
-  tagTextOnDark: { color: '#FFFFFF', fontSize: 14 },
+  price: { fontFamily: font.bold, fontSize: 13, color: colors.text, marginTop: 2 },
+  priceOnDark: { fontSize: 15, color: '#FFFFFF', marginTop: 0 },
+  ownedChip: { flexDirection: 'row', alignItems: 'center', gap: 3, alignSelf: 'flex-start', marginTop: 4, paddingVertical: 2, paddingLeft: 5, paddingRight: 9, borderRadius: radius.pill, backgroundColor: colors.lime },
+  ownedChipOnDark: { marginTop: 0, paddingVertical: 6, paddingLeft: 10, paddingRight: 14 },
+  ownedText: { fontFamily: font.bold, fontSize: 12, color: colors.limeInk },
   cardTitle: { marginTop: space.sm },
   centered: { textAlign: 'center' },
   pressed: { opacity: 0.75 },

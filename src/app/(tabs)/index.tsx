@@ -7,7 +7,6 @@ import { getArtist, getRelease, listArtists, listReleases, releasesInGenre, trac
 import { Art } from '../../components/Art';
 import { PriceTag, ReleaseCard, Shelf, StatusBarStrip } from '../../components/ui';
 import { Wordmark } from '../../components/Wordmark';
-import { formatUGX } from '../../lib/money';
 import { colors, font, layout, onDark, radius, space, type, withAlpha } from '../../lib/theme';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
@@ -103,9 +102,7 @@ function Hero({ release, playing, onPlay }: { release: Release; playing: boolean
             <Ionicons name={playing ? 'pause' : 'play'} size={16} color={colors.accentInk} />
             <Text style={styles.listenLabel}>{playing ? 'Playing' : 'Listen now'}</Text>
           </Pressable>
-          <Pressable onPress={open} accessibilityRole="button" accessibilityLabel={`Buy ${release.title}, ${formatUGX(release.priceUGX)}`}>
-            <PriceTag release={release} onDark />
-          </Pressable>
+          <PriceTag release={release} onDark />
         </View>
       </View>
     </View>
