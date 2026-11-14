@@ -3,10 +3,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getTrack, listArtists, listReleases, tracksForRelease, type Track } from '../../api';
 import { Art } from '../../components/Art';
-import { Button, Chip, EmptyState, ListRow, PlayButton, PriceTag, TrackRow } from '../../components/ui';
+import { Button, Chip, EmptyState, ListRow, PlayButton, PriceTag, ScreenHeader, StatusBarStrip, TrackRow } from '../../components/ui';
 import { colors, font, layout, radius, space, type } from '../../lib/theme';
 import { useLikes } from '../../store/likes';
 import { usePlayer } from '../../store/player';
@@ -18,7 +17,6 @@ type LibraryView = (typeof VIEWS)[number];
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 export default function Library() {
-  const insets = useSafeAreaInsets();
   const [view, setView] = useState<LibraryView>('Releases');
   const ownedIds = useWallet((s) => s.ownedTracks);
   const owns = useWallet((s) => s.owns);
@@ -31,13 +29,12 @@ export default function Library() {
   const myArtists = listArtists().filter((a) => following.includes(a.id) || owned.some((t) => t.artistId === a.id));
 
   return (
-    <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + space.md }]}>
-      <Text accessibilityRole="header" style={[type.hero, styles.padded]}>Your music, forever.</Text>
-      <Text style={[type.body, styles.padded, styles.summary]}>
-        {owned.length
-          ? <>{plural(owned.length, 'song')} from <Text style={styles.strong}>{plural(new Set(owned.map((t) => t.artistId)).size, 'artist')}</Text>. All play offline.</>
-          : 'Everything you buy stays here and plays offline.'}
-      </Text>
+    <View style={styles.screen}>
+    <ScrollView contentContainerStyle={styles.content}>
+      <ScreenHeader title="Your music, forever."
+        subtitle={owned.length
+          ? <>{plural(owned.length, 'song')} from <Text style={styles.strong}>{plural(new Set(owned.map((t) => t.artistId)).size, 'artist')}</Text>. Yours to keep.</>
+          : 'Everything you buy stays here, yours to keep.'} />
       <View style={styles.chips}>
         {VIEWS.map((v) => <Chip key={v} label={v} active={view === v} onPress={() => setView(v)} />)}
       </View>
@@ -55,7 +52,7 @@ export default function Library() {
           </Pressable>
 
           {owned.length === 0 ? (
-            <EmptyState icon="musical-notes-outline" title="Songs you buy live here" body="Buy once and they're yours: full length, no limits."
+            <EmptyState icon="musical-notes-outline" title="Songs you buy live here" body="Buy once and they’re yours: full length, no limits."
               action={<Button label="Find music" onPress={() => router.push('/(tabs)')} style={styles.emptyAction} />} />
           ) : (
             <>
@@ -73,7 +70,8 @@ export default function Library() {
       ) : null}
 
       {view === 'Releases' ? (
-        ownedReleases.length === 0 ? <EmptyState icon="disc-outline" title="No releases yet" body="Albums, EPs and singles you buy from show here." /> : (
+        ownedReleases.length === 0 ? <EmptyState icon="disc-outline" title="No releases yet" body="Albums, EPs and singles you buy show here."
+          action={<Button label="Find music" onPress={() => router.push('/(tabs)/search')} style={styles.emptyAction} />} /> : (
           <View style={styles.grid}>
             {ownedReleases.map((r) => (
               <Pressable key={r.id} onPress={() => router.push(`/release/${r.id}`)} accessibilityLabel={r.title} style={styles.gridCell}>
@@ -100,14 +98,15 @@ export default function Library() {
         )
       ) : null}
     </ScrollView>
+    <StatusBarStrip />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: { flex: 1 },
   content: { paddingBottom: layout.tabScreenBottom },
-  padded: { paddingHorizontal: space.lg },
-  summary: { color: colors.textMuted, marginTop: space.sm },
-  strong: { fontFamily: font.display, color: colors.text },
+  strong: { fontFamily: font.display, color: '#FFFFFF' },
   chips: { flexDirection: 'row', gap: space.sm, paddingHorizontal: space.lg, marginTop: space.lg, marginBottom: space.lg },
   liked: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingHorizontal: space.lg, marginBottom: space.lg },
   likedArt: { width: 64, height: 64, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },

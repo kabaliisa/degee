@@ -28,7 +28,7 @@ export function SupportCard({ artist }: { artist: Artist }) {
       <Ionicons name="gift" size={26} color={colors.accent} />
       <View style={styles.flex}>
         <Text style={type.bodyBold}>Support {artist.name} directly</Text>
-        <Text style={type.small}>Send a gift from your wallet. {artistSharePct}% goes straight to them.</Text>
+        <Text style={type.small}>Send a gift with mobile money. {artistSharePct}% goes straight to them.</Text>
       </View>
       <Ionicons name="chevron-forward" size={18} color={colors.textFaint} />
     </Pressable>

@@ -11,12 +11,14 @@ import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Adding money to a wallet with mobile money. */
+/** Collecting money by mobile money: wallet top-ups, and the payment leg of a direct checkout. */
 @Service
 public class TopUpService {
 
@@ -26,13 +28,15 @@ public class TopUpService {
     private final MobileMoneyGateway gateway;
     private final Ledger ledger;
     private final Clock clock;
+    private final ApplicationEventPublisher events;
     private final MoneySplits.Terms terms = MoneySplits.Terms.DEFAULT;
 
-    TopUpService(PaymentIntentRepository intents, MobileMoneyGateway gateway, Ledger ledger, Clock clock) {
+    TopUpService(PaymentIntentRepository intents, MobileMoneyGateway gateway, Ledger ledger, Clock clock, ApplicationEventPublisher events) {
         this.intents = intents;
         this.gateway = gateway;
         this.ledger = ledger;
         this.clock = clock;
+        this.events = events;
     }
 
     /** Starts a top-up. Repeating a request with the same idempotency key returns the original top-up. */
@@ -46,6 +50,23 @@ public class TopUpService {
             throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "AMOUNT_OUT_OF_RANGE",
                     "Add between UGX %,d and UGX %,d.".formatted(terms.minTopUp(), terms.maxTopUp()));
         }
+        return request(userId, amountUgx, provider, rawPhone, key);
+    }
+
+    /**
+     * Sends the PIN prompt for a checkout: like a top-up, but for exactly what is owed, however small.
+     * {@code key} must be unique to the order. The caller's transaction decides whether it happens at all.
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    PaymentIntent collect(UUID userId, long amountUgx, Provider provider, String rawPhone, String key) {
+        if (amountUgx > terms.maxTopUp()) {
+            throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "AMOUNT_OUT_OF_RANGE",
+                    "The most you can pay at once is UGX %,d.".formatted(terms.maxTopUp()));
+        }
+        return request(userId, amountUgx, provider, rawPhone, key);
+    }
+
+    private PaymentIntent request(UUID userId, long amountUgx, Provider provider, String rawPhone, String key) {
         String msisdn = PhoneNumbers.normalize(rawPhone)
                 .orElseThrow(() -> ApiException.badRequest("INVALID_PHONE", "Enter a valid Ugandan mobile number, e.g. 0772 123456."));
         PhoneNumbers.provider(msisdn).filter(p -> p == provider).orElseThrow(() -> ApiException.badRequest(
@@ -80,6 +101,7 @@ public class TopUpService {
         }
         if (intent.getStatus() != PaymentIntent.Status.PENDING) return; // already applied
 
+        events.publishEvent(new PaymentSettled(intent.getId())); // a checkout waiting on this payment acts once it's saved
         if (!result.approved()) {
             intent.fail(clock.instant());
             return;

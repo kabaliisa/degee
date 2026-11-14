@@ -6,8 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getRelease, listArtists, listReleases, releasesInGenre, tracksForRelease, type Artist, type Release } from '../../api';
 import { Art } from '../../components/Art';
 import { Avatar } from '../../components/profile/Avatar';
-import { PriceTag, ReleaseCard, Shelf } from '../../components/ui';
-import { LightStatusBar } from '../../components/LightStatusBar';
+import { PriceTag, ReleaseCard, Shelf, StatusBarStrip } from '../../components/ui';
 import { Wordmark } from '../../components/Wordmark';
 import { formatUGX } from '../../lib/money';
 import { colors, font, layout, onDark, radius, space, type, withAlpha } from '../../lib/theme';
@@ -37,7 +36,6 @@ export default function Home() {
 
   return (
     <View style={styles.screen}>
-      <LightStatusBar />
       <ScrollView contentContainerStyle={styles.content}>
         <Hero release={featured} playing={currentRelease === featured.id && isPlaying} onPlay={() => playRelease(featured.id)} />
 
@@ -73,6 +71,7 @@ export default function Home() {
           {[...releasesInGenre('Gospel'), ...releasesInGenre('Zouk')].map((r) => <ReleaseCard key={r.id} release={r} size={132} />)}
         </Shelf>
       </ScrollView>
+      <StatusBarStrip />
     </View>
   );
 }
@@ -91,7 +90,7 @@ function Hero({ release, playing, onPlay }: { release: Release; playing: boolean
         locations={[0, 0.25, 0.55, 1]} style={StyleSheet.absoluteFill} />
       <View style={[styles.heroTop, { paddingTop: insets.top + space.sm }]}>
         <Wordmark size={30} style={styles.flex} />
-        <Pressable onPress={() => router.push('/profile')} accessibilityRole="button" accessibilityLabel="Your profile and settings" hitSlop={6}>
+        <Pressable onPress={() => router.push('/(tabs)/profile')} accessibilityRole="button" accessibilityLabel="Your profile" hitSlop={6}>
           <Avatar size={38} />
         </Pressable>
       </View>
@@ -133,7 +132,7 @@ const styles = StyleSheet.create({
   content: { paddingBottom: layout.tabScreenBottom },
   flex: { flex: 1 },
   pressed: { opacity: 0.85 },
-  hero: { backgroundColor: colors.ink, overflow: 'hidden' },
+  hero: { backgroundColor: colors.ink, overflow: 'hidden', borderBottomLeftRadius: radius.xl, borderBottomRightRadius: radius.xl },
   heroArt: { position: 'absolute', left: 0, top: 0, borderRadius: 0 },
   heroTop: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.lg },
   heroBody: { position: 'absolute', left: space.lg, right: space.lg, bottom: space.xl, gap: space.md },

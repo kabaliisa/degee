@@ -43,7 +43,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: tabIcon('home', 'home-outline') }} />
       <Tabs.Screen name="search" options={{ title: 'Explore', tabBarIcon: tabIcon('search', 'search-outline') }} />
       <Tabs.Screen name="library" options={{ title: 'My music', tabBarIcon: tabIcon('musical-notes', 'musical-notes-outline') }} />
-      <Tabs.Screen name="wallet" options={{ title: 'Wallet', tabBarIcon: tabIcon('wallet', 'wallet-outline') }} />
+      <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarIcon: tabIcon('person', 'person-outline') }} />
     </Tabs>
   );
 }

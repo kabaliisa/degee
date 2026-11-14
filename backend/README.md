@@ -1,6 +1,6 @@
 # Deegee API
 
-The server behind the Deegee app: phone sign-in, the catalogue, wallets, mobile money top-ups, purchases and gifts.
+The server behind the Deegee app: phone sign-in, the catalogue, checkout by mobile money, purchases and gifts.
 
 Java 21 · Spring Boot 4 · PostgreSQL 16 · Flyway · ffmpeg
 
@@ -17,7 +17,7 @@ Without ffmpeg the API still runs, but uploaded songs stay "Processing…" (it s
 
 The API starts on `http://localhost:8080`. Flyway creates the tables and loads the same five artists and six releases the app shows.
 
-In development no SMS is sent: the sign-in code is printed in the server log (`DEV ONLY: sign-in code for … is 123456`). Top-ups are approved automatically about two seconds after you start them, as if you'd entered your PIN.
+In development no SMS is sent: the sign-in code is printed in the server log (`DEV ONLY: sign-in code for … is 123456`). Mobile money prompts are approved automatically about two seconds after they start, as if you'd entered your PIN.
 
 ## Test it
 
@@ -55,7 +55,8 @@ curl -X POST $B/v1/gifts -H "Authorization: Bearer $T" -H 'content-type: applica
 | Me | `GET /v1/me`, `PATCH /v1/me` `{name}` | yes |
 | Whole catalogue | `GET /v1/catalog` → artists, releases, tracks (what the app loads at startup) | no |
 | Catalogue | `GET /v1/catalog/artists`, `/artists/{id}`, `/releases`, `/releases/{id}`, `/tracks?ids=`, `/search?q=` | no |
-| Wallet | `GET /v1/wallet` → balance and activity | yes |
+| Checkout | `POST /v1/checkout` `{kind: TRACK\|RELEASE\|GIFT, id, amountUgx?, note?, provider?, phone?}` with an `Idempotency-Key` → an order; while it is `WAITING`, poll `GET /v1/checkout/{id}` | yes |
+| Credit and history | `GET /v1/wallet` → Deegee credit and activity | yes |
 | Add money | `POST /v1/wallet/topups` `{amountUgx, provider, phone}`, then poll `GET /v1/wallet/topups/{id}` | yes |
 | Buy | `POST /v1/purchases` `{kind: TRACK or RELEASE, id}` | yes |
 | Gift | `POST /v1/gifts` `{artistId, amountUgx, note?}` | yes |
@@ -107,7 +108,8 @@ DEEGEE_ADMIN_PHONES=0772123456 DEEGEE_SALE_HOLD=0s DEEGEE_NEW_ARTIST_HOLD=0s mvn
 
 All money lives in a double-entry ledger (`ledger_accounts`, `ledger_transactions`, `ledger_entries`). Every transaction's entries add up to zero, so money is only ever moved, never created or lost. A user's wallet is one account; each artist has an earnings account; Deegee, UPRS, direct songwriter payouts and the mobile money provider each have one.
 
-- **Top-up:** provider clearing −X, wallet +X, only once the provider confirms.
+- **Checkout:** the app has no wallet to top up. An order uses any Deegee credit first and asks the phone for the rest (never less than UGX 500, mobile money's minimum; anything extra stays as credit). When the provider confirms, the money lands in the user's account and the purchase or gift runs straight away. If it was declined, nothing moves. If it was paid but the order can't be completed (say, the song was bought meanwhile), the money stays as credit for next time. See `CheckoutService.java`.
+- **Top-up:** provider clearing −X, wallet +X, only once the provider confirms. The app no longer offers this; checkout uses the same collection underneath.
 - **Song or release:** wallet −price. The song share (10%) goes to UPRS for society members and to the songwriter otherwise; Deegee keeps 20% of the rest; the artist gets the remainder. Rounding favours the artist. The rules are in `MoneySplits.java` and match `src/lib/money.ts` in the app.
 - **Gift:** wallet −X, artist +95%, Deegee +5%.
 

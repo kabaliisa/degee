@@ -84,6 +84,23 @@ public class PurchaseService {
         return new Result(tx.getId(), sale.price(), balance - sale.price(), sale.grant());
     }
 
+    /**
+     * What buying this costs right now. Refuses up front what {@link #buy} would refuse (not found,
+     * already owned, your own music), so nobody is asked for money for something they can't buy.
+     */
+    @Transactional(readOnly = true)
+    public long quote(UUID userId, ItemKind kind, String itemId) {
+        Set<String> owned = new HashSet<>(entitlements.trackIdsOwnedBy(userId));
+        Sale sale = kind == ItemKind.TRACK ? trackSale(itemId, owned) : releaseSale(itemId, owned);
+        if (isOwnMusic(sale.artistId(), userId)) throw ownMusic("You can already play your own music in full.");
+        return sale.price();
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> trackIdsFrom(UUID transactionId) {
+        return entitlements.trackIdsFrom(transactionId);
+    }
+
     @Transactional(readOnly = true)
     public List<String> library(UUID userId) {
         return entitlements.trackIdsOwnedBy(userId);

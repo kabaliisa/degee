@@ -1,29 +1,22 @@
+import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { getArtist, getRelease, getTrack, tracksForRelease } from '../api';
 import { Art } from '../components/Art';
+import { PayWithPicker, usePayWith } from '../components/checkout/PayWith';
 import { AmountRow, Receipt, ReceiptDivider } from '../components/checkout/Receipt';
-import { ResultState } from '../components/checkout/ResultState';
-import { Button, EmptyState } from '../components/ui';
-import { TERMS, formatUGX, splitRelease, splitSale } from '../lib/money';
-import { newIdempotencyKey } from '../lib/ids';
-import { colors, space, type } from '../lib/theme';
-import { useWallet, type PurchaseResult } from '../store/wallet';
-
-function errorMessage(res: Exclude<PurchaseResult, { ok: true }>) {
-  if (res.reason === 'INSUFFICIENT_FUNDS') return `You need ${formatUGX(res.shortBy ?? 0)} more.`;
-  return res.message;
-}
+import { KeptAsCredit, ResultState, StillWaiting, WaitingForPin } from '../components/checkout/ResultState';
+import { Button, EmptyState, FormScrollView } from '../components/ui';
+import { useCheckout } from '../hooks/useCheckout';
+import { amountDue, formatUGX, splitRelease, splitSale } from '../lib/money';
+import { colors, radius, space, type } from '../lib/theme';
+import { useWallet } from '../store/wallet';
 
 export default function Buy() {
   const { kind, id } = useLocalSearchParams<{ kind: 'track' | 'release'; id: string }>();
-  const balance = useWallet((s) => s.balance);
-  const buy = useWallet((s) => s.buy);
-  const [idempotencyKey] = useState(newIdempotencyKey); // one per checkout, so retries never charge twice
-  const [paying, setPaying] = useState(false);
-  const [done, setDone] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const credit = useWallet((s) => s.balance);
+  const payWith = usePayWith();
+  const checkout = useCheckout();
 
   const track = kind === 'track' ? getTrack(id) : undefined;
   const release = getRelease(kind === 'release' ? id : track?.releaseId ?? '');
@@ -33,39 +26,46 @@ export default function Buy() {
   }
 
   const price = track ? track.priceUGX : release.priceUGX;
-  const title = track ? track.title : `${release.title} (${release.type})`;
+  const title = track ? track.title : release.title;
+  const what = track ? 'Song' : release.type;
   const split = track ? splitSale(price, track.writers) : splitRelease(price, tracksForRelease(release.id));
-  const shortBy = Math.max(0, price - balance);
-  const topUpAmount = Math.max(shortBy, TERMS.minTopUp);
+  const due = amountDue(price, credit);
+  const needsPhone = due.toPay > 0;
+  const extra = due.fromCredit + due.toPay - price; // collected above the price because of the mobile money minimum
 
-  const pay = async () => {
-    setError(null);
-    setPaying(true);
-    const res = await buy(track ? 'TRACK' : 'RELEASE', track ? track.id : release.id, idempotencyKey);
-    setPaying(false);
-    if (res.ok) setDone(true);
-    else setError(errorMessage(res));
+  const pay = () => {
+    if (needsPhone && !payWith.payWith) return checkout.setError('Enter a valid MTN or Airtel number, like 0772 123456.');
+    void checkout.pay({ kind: track ? 'TRACK' : 'RELEASE', id: track ? track.id : release.id }, needsPhone ? payWith.payWith : null);
   };
+  const close = () => router.back();
 
-  if (done) {
+  if (checkout.stage === 'waiting') return <WaitingForPin pay={payWith.payWith} amount={checkout.order?.collectUgx ?? due.toPay} />;
+  if (checkout.stage === 'slow') return <StillWaiting what={`${title} is added to your music`} onDone={close} />;
+  if (checkout.stage === 'credited') {
+    return <KeptAsCredit reason={checkout.order?.failureMessage ?? null} credit={checkout.order?.creditUgx ?? 0} onDone={close} />;
+  }
+  if (checkout.stage === 'done') {
     return (
-      <ResultState icon="checkmark-circle" title="It’s yours" body={`${title} is in your library. ${formatUGX(split.artist)} went to ${artist.name}.`}>
-        <Button label="Go to your music" onPress={() => { router.dismissAll(); router.push('/(tabs)/library'); }} />
-        <Button label="Keep browsing" variant="ghost" onPress={() => router.back()} />
+      <ResultState icon="checkmark" tone="lime" title="It’s yours" art={<Art seed={release.id} colors={release.colors} size={148} />}
+        body={`${title} is in your music, yours to keep. ${formatUGX(split.artist)} went to ${artist.name}.`}>
+        <Button label="Go to my music" onPress={() => { router.dismissAll(); router.push('/(tabs)/library'); }} />
+        <Button label="Keep browsing" variant="ghost" onPress={close} />
       </ResultState>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <FormScrollView contentContainerStyle={styles.content}>
       <View style={styles.item}>
         <Art seed={release.id} colors={release.colors} size={72} />
         <View style={styles.flex}>
           <Text style={type.heading} numberOfLines={2}>{title}</Text>
-          <Text style={type.small}>{artist.name}</Text>
+          <Text style={type.small} numberOfLines={2}>{what} by {artist.name}</Text>
         </View>
-        <Text style={[type.heading, styles.price]}>{formatUGX(price)}</Text>
+        <Text style={type.heading}>{formatUGX(price)}</Text>
       </View>
+
+      {needsPhone ? <PayWithPicker state={payWith} /> : null}
 
       <Receipt title="Where your money goes">
         <AmountRow label={artist.name} value={split.artist} />
@@ -73,32 +73,36 @@ export default function Buy() {
         <AmountRow label="Deegee" value={split.platform} />
         <ReceiptDivider />
         <AmountRow label="Total" value={price} strong />
+        {due.fromCredit > 0 ? <AmountRow label="Paid from your Deegee credit" value={-due.fromCredit} muted /> : null}
+        {due.fromCredit > 0 && needsPhone ? <AmountRow label="To pay now" value={due.toPay} strong /> : null}
+        {extra > 0 ? (
+          <Text style={[type.small, styles.note]}>
+            Mobile money can’t take less than {formatUGX(due.toPay)}. The extra {formatUGX(extra)} stays as Deegee credit for your next purchase.
+          </Text>
+        ) : null}
       </Receipt>
 
-      <Receipt>
-        <AmountRow label="Wallet balance" value={balance} />
-        {shortBy > 0
-          ? <Text style={[type.small, styles.error]}>You need {formatUGX(shortBy)} more. Add money with mobile money first.</Text>
-          : <AmountRow label="After purchase" value={balance - price} />}
-      </Receipt>
+      {checkout.error ? <Text accessibilityRole="alert" style={[type.body, styles.error]}>{checkout.error}</Text> : null}
 
-      {error ? <Text style={[type.body, styles.error]}>{error}</Text> : null}
-
-      {shortBy > 0 ? (
-        <Button label={`Add ${formatUGX(topUpAmount)}`} icon="add" onPress={() => router.push({ pathname: '/topup', params: { amount: String(topUpAmount) } })} />
-      ) : (
-        <Button label={`Pay ${formatUGX(price)}`} icon="lock-closed" onPress={pay} loading={paying} />
-      )}
-      <Text style={[type.small, styles.centered]}>Buy once, keep forever. Play in full any time in your library.</Text>
-    </ScrollView>
+      <View style={styles.footer}>
+        <Button label={needsPhone ? `Pay ${formatUGX(due.toPay)}` : 'Pay with Deegee credit'} icon="lock-closed" onPress={pay} loading={checkout.busy} />
+        <View style={styles.secure}>
+          <Ionicons name="shield-checkmark-outline" size={16} color={colors.textMuted} />
+          <Text style={[type.small, styles.flex]}>
+            {needsPhone ? 'You approve the payment with your PIN on your own phone. Buy once, keep forever.' : 'Buy once, keep forever.'}
+          </Text>
+        </View>
+      </View>
+    </FormScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { padding: space.lg, gap: space.lg },
-  item: { flexDirection: 'row', gap: space.md, alignItems: 'center' },
+  content: { padding: space.lg, gap: space.xl, paddingBottom: space.xxl },
+  item: { flexDirection: 'row', gap: space.md, alignItems: 'center', backgroundColor: colors.surface, borderRadius: radius.lg, padding: space.md },
   flex: { flex: 1 },
-  price: { color: colors.accentText },
-  error: { color: colors.danger, marginTop: space.xs },
-  centered: { textAlign: 'center' },
+  note: { marginTop: space.sm },
+  error: { color: colors.danger },
+  footer: { gap: space.md },
+  secure: { flexDirection: 'row', gap: space.sm, alignItems: 'flex-start', paddingHorizontal: space.xs },
 });

@@ -26,13 +26,14 @@ export function IconButton({ name, onPress, size = 24, color = colors.textMuted,
   );
 }
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
+/** `onDark`: an outline in white, for buttons that sit on the dark headers. */
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'onDark';
 
 export function Button({ label, onPress, variant = 'primary', icon, loading, disabled, style, small }: {
   label: string; onPress: () => void; variant?: ButtonVariant;
   icon?: IconName; loading?: boolean; disabled?: boolean; style?: ViewStyle; small?: boolean;
 }) {
-  const fg = variant === 'primary' ? colors.accentInk : colors.text;
+  const fg = variant === 'primary' ? colors.accentInk : variant === 'onDark' ? '#FFFFFF' : colors.text;
   return (
     <Pressable accessibilityRole="button" onPress={() => { tap(); onPress(); }} disabled={disabled || loading}
       style={({ pressed }) => [styles.button, small && styles.buttonSmall, variantStyles[variant], disabled && styles.disabled, pressed && styles.buttonPressed, style]}>
@@ -55,6 +56,7 @@ const variantStyles = StyleSheet.create({
   primary: { backgroundColor: colors.accent },
   secondary: { backgroundColor: colors.surfaceRaised },
   outline: { borderWidth: 1.5, borderColor: colors.text },
+  onDark: { borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.45)' },
   ghost: {},
 });
 
@@ -65,7 +67,7 @@ const styles = StyleSheet.create({
   icon: { padding: 2 },
   dimmed: { opacity: 0.6 },
   button: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm, paddingVertical: 15, paddingHorizontal: space.xl, borderRadius: radius.lg },
-  buttonSmall: { paddingVertical: 9, paddingHorizontal: 16, borderRadius: radius.pill },
+  buttonSmall: { paddingVertical: 9, paddingHorizontal: 16, borderRadius: radius.pill, minHeight: 36 },
   buttonPressed: { transform: [{ scale: 0.97 }] },
   disabled: { opacity: 0.45 },
   buttonLabel: { fontFamily: font.display, fontSize: 16 },

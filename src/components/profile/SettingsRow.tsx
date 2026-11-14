@@ -14,7 +14,7 @@ export function SettingsGroup({ title, children }: { title?: string; children: R
 }
 
 // react-native-web reads the "on" thumb colour from this prop; native platforms ignore it.
-const webThumb = { activeThumbColor: colors.text } as object;
+const webThumb = { activeThumbColor: '#FFFFFF' } as object;
 
 /** One row: icon, label, optional detail, and either a chevron (onPress) or a switch (onToggle). */
 export function SettingsRow({ icon, label, detail, value, onToggle, onPress, danger, last }: {
@@ -31,7 +31,7 @@ export function SettingsRow({ icon, label, detail, value, onToggle, onPress, dan
       </View>
       {isSwitch ? (
         <Switch value={value} onValueChange={(v) => { tap(); onToggle(v); }} accessibilityLabel={label}
-          trackColor={{ false: colors.surfacePress, true: colors.accent }} thumbColor={colors.text} ios_backgroundColor={colors.surfacePress} {...webThumb} />
+          trackColor={{ false: colors.surfacePress, true: colors.accent }} thumbColor="#FFFFFF" ios_backgroundColor={colors.surfacePress} {...webThumb} />
       ) : (
         <>
           {detail ? <Text style={type.small}>{detail}</Text> : null}
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   group: { marginTop: space.xl },
   groupTitle: { paddingHorizontal: space.lg, marginBottom: space.sm },
   groupBody: { marginHorizontal: space.lg, borderRadius: radius.lg, backgroundColor: colors.surface, overflow: 'hidden' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: 14, paddingHorizontal: space.lg },
+  row: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 56, paddingVertical: 14, paddingHorizontal: space.lg },
   divider: { borderBottomWidth: 1, borderBottomColor: colors.border },
   flex: { flex: 1 },
   danger: { color: colors.danger },

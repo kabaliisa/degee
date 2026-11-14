@@ -1,5 +1,5 @@
 // Deegee: warm ivory screens, ink-black type and dark "stage" moments (the player), coral for
-// actions and what's playing, and a soft lime only for good news (Owned, Saved offline, growth).
+// actions and what's playing, and a soft lime only for good news (Owned, Live, growth).
 export const colors = {
   bg: '#F8F5EE', // warm ivory
   surface: '#FFFFFF',

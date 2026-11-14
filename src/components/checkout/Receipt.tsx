@@ -17,7 +17,7 @@ export function AmountRow({ label, value, strong, muted }: { label: string; valu
   return (
     <View style={styles.row}>
       <Text style={[type.body, styles.label, strong && styles.strong, muted && styles.muted]}>{label}</Text>
-      <Text style={[type.body, styles.value, strong && styles.strong, muted && styles.muted]}>{formatUGX(value)}</Text>
+      <Text style={[type.body, styles.value, strong && styles.strong, muted && styles.muted]}>{value < 0 ? `− ${formatUGX(-value)}` : formatUGX(value)}</Text>
     </View>
   );
 }
@@ -25,7 +25,7 @@ export function AmountRow({ label, value, strong, muted }: { label: string; valu
 export const ReceiptDivider = () => <View style={styles.divider} />;
 
 const styles = StyleSheet.create({
-  panel: { backgroundColor: colors.surface, borderRadius: radius.md, padding: space.lg },
+  panel: { backgroundColor: colors.surface, borderRadius: radius.lg, padding: space.lg },
   title: { marginBottom: space.sm },
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
   label: { color: colors.textMuted, fontFamily: font.regular },

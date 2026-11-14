@@ -2,7 +2,7 @@
 
 Buy music straight from Ugandan artists, paying in UGX with MTN MoMo or Airtel Money. Think Bandcamp for Uganda.
 
-This is the React Native app (Expo, TypeScript). It talks to the Deegee API in [`backend/`](backend/README.md): sign-in, the catalogue, the wallet, purchases and gifts all go through the server. Mobile money is still simulated.
+This is the React Native app (Expo, TypeScript). It talks to the Deegee API in [`backend/`](backend/README.md): sign-in, the catalogue, checkout, purchases and gifts all go through the server. Mobile money is still simulated.
 
 ## Run it
 
@@ -15,7 +15,7 @@ npx expo start        # scan the QR code with Expo Go, or press w for the browse
 
 **Selling music:** Profile → *Artist studio* → apply. To approve yourself, run the API with your number as an admin (see the backend README); *Review queue* then appears in your profile.
 
-Sign in with any Ugandan mobile number. No SMS is sent in development: the 6-digit code is printed in the API server's terminal. New numbers get an account with an empty wallet; add money from the Wallet tab (it's approved automatically after about two seconds).
+Sign in with any Ugandan mobile number. No SMS is sent in development: the 6-digit code is printed in the API server's terminal. There is no wallet to top up: buying a song or sending a gift sends one mobile money PIN prompt for that amount (in development it's approved automatically after about two seconds).
 
 **On your phone:** the phone and the Mac must be on the same Wi-Fi. The app finds the API at port 8080 on the computer running Expo. If macOS asks whether Java may accept incoming connections, allow it. To point the app somewhere else (a tunnel, staging), set `EXPO_PUBLIC_API_URL`, e.g. `EXPO_PUBLIC_API_URL=https://api.example.com npx expo start`.
 
@@ -32,7 +32,7 @@ npm test              # money splits, phone numbers, API mapping
 ```
 src/
   app/                 Screens. Expo Router: every file is a route.
-    (tabs)/            Home, Search, Your music, Wallet + the tab bar layout
+    (tabs)/            Home, Explore, My music, Profile + the tab bar layout
     artist/[id].tsx    Artist page
     release/[id].tsx   Single / EP / album page
     player.tsx         Full-screen player
@@ -49,18 +49,19 @@ src/
     config.ts          API address
     catalog.ts         Catalogue, loaded once at startup and read from memory
     account.ts         Sign-in and profile
-    wallet.ts          Wallet, top-ups, purchases, gifts, library
+    checkout.ts        Pay for a song, release or gift with one PIN prompt
+    wallet.ts          Deegee credit, purchase history, library
     studio.ts          Artist mode, uploads, earnings, withdrawals, play links
     admin.ts           Review queue
     mappers.ts         API JSON ↔ app types
     types.ts           Artist, Release, Track, WalletTx …
   components/
     ui/                Shared building blocks: buttons, cards, rows, empty state
-    home/ artist/ player/ checkout/ wallet/ profile/ studio/   Pieces used by one area
+    artist/ player/ checkout/ profile/ studio/   Pieces used by one area
     Art.tsx            Cover/artist image with pattern fallback
   hooks/               useLoad: fetch data when a screen comes into focus
   lib/                 Pure logic, no React: money, phone numbers, formatting, theme
-  store/               App state (Zustand): session (tokens, in the Keychain), wallet (from the server), player, likes, settings
+  store/               App state (Zustand): session (tokens, in the Keychain), wallet (credit, history and owned songs, from the server), player, likes, settings
 ```
 
 ### Conventions

@@ -3,7 +3,7 @@ import { colors, font } from '../../lib/theme';
 import { initials } from '../../lib/format';
 import { useSession } from '../../store/session';
 
-/** The signed-in user's avatar: their initials on Deegee blue. */
+/** The signed-in user's avatar: their initials on coral. */
 export function Avatar({ size = 34 }: { size?: number }) {
   const name = useSession((s) => s.user?.name) ?? '';
   return (

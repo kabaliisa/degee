@@ -33,6 +33,17 @@ public class GiftService {
         this.clock = clock;
     }
 
+    /** Refuses a gift that can't be sent (no such artist, to yourself, too small) before any money is asked for. */
+    @Transactional(readOnly = true)
+    public Artist check(UUID userId, String artistId, long amountUgx) {
+        Artist artist = artists.findPublicById(artistId).orElseThrow(() -> ApiException.notFound("Artist"));
+        if (userId.equals(artist.getOwnerUserId())) throw PurchaseService.ownMusic("You can't send a gift to yourself.");
+        if (amountUgx < terms.minGift()) {
+            throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "GIFT_TOO_SMALL", "The smallest gift is UGX %,d.".formatted(terms.minGift()));
+        }
+        return artist;
+    }
+
     @Transactional
     public Result send(UUID userId, String artistId, long amountUgx, String note, String idempotencyKey) {
         String key = userId + ":" + idempotencyKey;
@@ -45,11 +56,7 @@ public class GiftService {
             return new Result(txId, amount, MoneySplits.splitGift(amount, terms).artist(), balance);
         }
 
-        Artist artist = artists.findPublicById(artistId).orElseThrow(() -> ApiException.notFound("Artist"));
-        if (userId.equals(artist.getOwnerUserId())) throw PurchaseService.ownMusic("You can't send a gift to yourself.");
-        if (amountUgx < terms.minGift()) {
-            throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "GIFT_TOO_SMALL", "The smallest gift is UGX %,d.".formatted(terms.minGift()));
-        }
+        Artist artist = check(userId, artistId, amountUgx);
         if (balance < amountUgx) {
             throw new ApiException(HttpStatus.CONFLICT, "INSUFFICIENT_FUNDS", "Add money to your wallet first.",
                     Map.of("shortBy", amountUgx - balance, "balanceUgx", balance));

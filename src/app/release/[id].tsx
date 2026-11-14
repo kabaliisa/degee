@@ -4,7 +4,6 @@ import { Pressable, ScrollView, Share, StyleSheet, Text, View, useWindowDimensio
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getRelease, releasesByArtist, tracksForRelease } from '../../api';
 import { Art } from '../../components/Art';
-import { LightStatusBar } from '../../components/LightStatusBar';
 import { MiniPlayer } from '../../components/player/MiniPlayer';
 import { Button, EmptyState, IconButton, PlayButton, ReleaseCard, Shelf, TrackRow } from '../../components/ui';
 import { PREVIEW_SEC, totalDuration } from '../../lib/format';
@@ -46,7 +45,6 @@ export default function ReleaseScreen() {
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
-        <LightStatusBar />
         <View style={styles.stage}>
           <View style={[styles.header, { paddingTop: insets.top + 56 }]}>
             <View style={styles.cover}>
@@ -65,7 +63,7 @@ export default function ReleaseScreen() {
             {ownsAll ? (
               <View style={styles.ownedPill}>
                 <Ionicons name="checkmark-circle" size={18} color={colors.limeInk} />
-                <Text style={styles.ownedText}>Owned · plays offline</Text>
+                <Text style={styles.ownedText}>Owned · plays in full</Text>
               </View>
             ) : (
               <Button icon="bag-handle" label={`Buy ${release.type === 'EP' ? 'EP' : release.type.toLowerCase()} · ${formatUGX(release.priceUGX)}`}

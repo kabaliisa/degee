@@ -87,7 +87,7 @@ export default function SignIn() {
               <View style={styles.copy}>
                 <Text style={type.hero}>Own the music you love.</Text>
                 <View style={styles.rule} />
-                <Text style={[type.body, styles.muted]}>Buy direct from artists. Keep every song. Play offline.</Text>
+                <Text style={[type.body, styles.muted]}>Buy direct from artists. Keep every song.</Text>
               </View>
               <View style={styles.phoneRow}>
                 <View style={styles.prefix}><Text style={styles.prefixText}>🇺🇬 +256</Text></View>

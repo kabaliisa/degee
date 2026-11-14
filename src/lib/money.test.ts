@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatUGX, splitGift, splitRelease, splitSale } from './money.ts';
+import { amountDue, formatUGX, splitGift, splitRelease, splitSale } from './money.ts';
 
 const sum = (s: ReturnType<typeof splitSale>) => s.uprs + s.songwritersDirect + s.artist + s.platform;
 
@@ -74,4 +74,17 @@ test('release: price shared across songs, nothing lost, writers respected', () =
   assert.equal(r.total, 5000);
   assert.equal(r.uprs + r.songwritersDirect + r.artist + r.platform, 5000);
   assert.ok(r.uprs > 0 && r.songwritersDirect > 0);
+});
+
+test('checkout: no credit means the phone pays the whole price', () => {
+  assert.deepEqual(amountDue(2000, 0), { fromCredit: 0, toPay: 2000 });
+});
+
+test('checkout: credit is used first and only the rest is asked for', () => {
+  assert.deepEqual(amountDue(15000, 3000), { fromCredit: 3000, toPay: 12000 });
+  assert.deepEqual(amountDue(2000, 5000), { fromCredit: 2000, toPay: 0 }); // covered: no prompt at all
+});
+
+test('checkout: a remainder below the smallest mobile money payment collects that minimum', () => {
+  assert.deepEqual(amountDue(2000, 1600), { fromCredit: 1600, toPay: 500 }); // same case as the server's test
 });

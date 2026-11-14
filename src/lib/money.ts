@@ -20,12 +20,22 @@ export const TERMS = {
   platformPctOfRest: 20, // platform keeps 20% of what remains; artist gets the rest
   giftPlatformPct: 5, // Deegee's cut of a gift; the artist gets the rest
   minGift: 500,
-  minTopUp: 1000,
-  maxTopUp: 2_000_000,
+  minPayment: 500, // mobile money's smallest payment; anything collected beyond the price stays as Deegee credit
+  maxPayment: 2_000_000,
 };
 
 export function formatUGX(amount: number): string {
   return `UGX ${Math.round(amount).toLocaleString('en-US')}`;
+}
+
+/**
+ * What a checkout asks the phone for. Deegee credit is used first; the rest is paid by mobile money,
+ * never less than its smallest payment. The server works this out the same way (CheckoutService).
+ */
+export function amountDue(price: number, credit: number, terms = TERMS): { fromCredit: number; toPay: number } {
+  const fromCredit = Math.min(Math.max(credit, 0), price);
+  const rest = price - fromCredit;
+  return { fromCredit, toPay: rest === 0 ? 0 : Math.max(rest, terms.minPayment) };
 }
 
 /**

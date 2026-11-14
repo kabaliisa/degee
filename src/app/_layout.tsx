@@ -78,13 +78,14 @@ export default function RootLayout() {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="dark" />
+      {/* Every screen inside the app has a dark top; sign-in and welcome are light. */}
+      <StatusBar style={signedIn && hasName ? 'light' : 'dark'} />
       <PlayerEngine />
       <AccountSync signedIn={signedIn} />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: colors.bg },
-          headerTintColor: colors.text,
+          headerStyle: { backgroundColor: colors.ink },
+          headerTintColor: '#FFFFFF',
           headerTitleStyle: { fontFamily: font.display, fontSize: 17 },
           headerShadowVisible: false,
           headerBackButtonDisplayMode: 'minimal',
@@ -99,13 +100,12 @@ export default function RootLayout() {
         <Stack.Protected guard={signedIn && hasName}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="artist/[id]" options={{ headerTransparent: true, title: '', headerStyle: { backgroundColor: 'transparent' } }} />
-          <Stack.Screen name="release/[id]" options={{ headerTransparent: true, title: '', headerTintColor: '#FFFFFF', headerStyle: { backgroundColor: 'transparent' } }} />
+          <Stack.Screen name="release/[id]" options={{ headerTransparent: true, title: '', headerStyle: { backgroundColor: 'transparent' } }} />
           <Stack.Screen name="player" options={{ presentation: 'fullScreenModal', headerShown: false, animation: 'slide_from_bottom' }} />
-          <Stack.Screen name="buy" options={{ presentation: 'modal', title: 'Checkout' }} />
-          <Stack.Screen name="profile" options={{ title: 'Profile' }} />
+          <Stack.Screen name="buy" options={{ presentation: 'modal', title: 'Complete your purchase' }} />
           <Stack.Screen name="settings" options={{ title: 'Settings' }} />
           <Stack.Screen name="gift" options={{ presentation: 'modal', title: 'Send a gift' }} />
-          <Stack.Screen name="topup" options={{ presentation: 'modal', title: 'Add money' }} />
+          <Stack.Screen name="activity" options={{ title: 'Purchases and gifts' }} />
           <Stack.Screen name="studio/index" options={{ title: 'Artist studio' }} />
           <Stack.Screen name="studio/apply" options={{ title: 'Sell on Deegee' }} />
           <Stack.Screen name="studio/new-release" options={{ presentation: 'modal', title: 'New release' }} />

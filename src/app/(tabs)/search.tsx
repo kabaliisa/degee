@@ -2,13 +2,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, releasesInGenre, search, type Genre } from '../../api';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Art } from '../../components/Art';
-import { LightStatusBar } from '../../components/LightStatusBar';
-import { Wordmark } from '../../components/Wordmark';
-import { EmptyState, ListRow, TrackRow } from '../../components/ui';
+import { EmptyState, ListRow, ScreenHeader, TrackRow } from '../../components/ui';
 import { colors, font, layout, onDark, radius, space, type, withAlpha } from '../../lib/theme';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
@@ -31,7 +28,6 @@ function GenreTile({ genre, onPress }: { genre: Genre; onPress: () => void }) {
 }
 
 export default function Search() {
-  const insets = useSafeAreaInsets();
   const [q, setQ] = useState('');
   const owns = useWallet((s) => s.owns);
   const playQueue = usePlayer((s) => s.playQueue);
@@ -42,21 +38,18 @@ export default function Search() {
 
   return (
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" stickyHeaderIndices={[0]}>
-      <View style={[styles.top, { paddingTop: insets.top + space.sm }]}>
-        <LightStatusBar />
-        <Wordmark size={28} />
-        <Text accessibilityRole="header" style={styles.title}>Explore</Text>
+      <ScreenHeader title="Explore">
         <View style={styles.searchBar}>
           <Ionicons name="search" size={20} color={colors.text} />
           <TextInput value={q} onChangeText={setQ} placeholder="Artists, songs, albums" placeholderTextColor={colors.textFaint}
             style={styles.input} autoCorrect={false} returnKeyType="search" accessibilityLabel="Search" />
           {q ? (
-            <Pressable onPress={() => setQ('')} hitSlop={8} accessibilityLabel="Clear search">
-              <Ionicons name="close" size={20} color={colors.textMuted} />
+            <Pressable onPress={() => setQ('')} hitSlop={12} accessibilityRole="button" accessibilityLabel="Clear search">
+              <Ionicons name="close-circle" size={20} color={colors.textMuted} />
             </Pressable>
           ) : null}
         </View>
-      </View>
+      </ScreenHeader>
 
       {!searching ? (
         <View style={styles.browse}>
@@ -70,7 +63,7 @@ export default function Search() {
       {nothing ? <EmptyState icon="search" title={`No results for “${q}”`} body="Check the spelling, or try an artist or genre." /> : null}
 
       {searching && !nothing ? (
-        <View>
+        <View style={styles.results}>
           {results.artists.map((a) => (
             <ListRow key={a.id} seed={a.id} colors={a.colors} round title={a.name} subtitle="Artist" onPress={() => router.push(`/artist/${a.id}`)} />
           ))}
@@ -89,10 +82,9 @@ export default function Search() {
 
 const styles = StyleSheet.create({
   content: { paddingBottom: layout.tabScreenBottom },
-  top: { backgroundColor: colors.ink, paddingHorizontal: space.lg, paddingBottom: space.lg },
-  title: { fontFamily: font.display, fontSize: 32, letterSpacing: -1, color: onDark.text, marginTop: space.xs, marginBottom: space.md },
-  searchBar: { flexDirection: 'row', alignItems: 'center', gap: space.sm, backgroundColor: colors.surface, borderRadius: radius.md, paddingHorizontal: space.md },
+  searchBar: { flexDirection: 'row', alignItems: 'center', gap: space.sm, backgroundColor: colors.surface, borderRadius: radius.md, paddingHorizontal: space.md, marginTop: space.md, minHeight: 48 },
   input: { flex: 1, minWidth: 0, color: colors.text, paddingVertical: 12, fontSize: 16, fontFamily: font.semibold },
+  results: { paddingTop: space.md },
   browse: { paddingHorizontal: space.lg, paddingTop: space.xl },
   browseTitle: { marginBottom: space.md },
   genreGrid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -5 },
