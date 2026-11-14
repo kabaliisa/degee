@@ -4,7 +4,6 @@ import { Pressable, ScrollView, Share, StyleSheet, Text, View, useWindowDimensio
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getRelease, releasesByArtist, tracksForRelease } from '../../api';
 import { Art } from '../../components/Art';
-import { ArtworkBackdrop } from '../../components/ArtworkBackdrop';
 import { LightStatusBar } from '../../components/LightStatusBar';
 import { MiniPlayer } from '../../components/player/MiniPlayer';
 import { Button, EmptyState, IconButton, PlayButton, ReleaseCard, Shelf, TrackRow } from '../../components/ui';
@@ -49,7 +48,6 @@ export default function ReleaseScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <LightStatusBar />
         <View style={styles.stage}>
-          <ArtworkBackdrop seed={release.id} colors={release.colors} fadeAt={1} tone="dark" />
           <View style={[styles.header, { paddingTop: insets.top + 56 }]}>
             <View style={styles.cover}>
               <Art seed={release.id} colors={release.colors} size={Math.min(width - space.lg * 2, 340)} style={styles.coverArt} />
@@ -70,7 +68,7 @@ export default function ReleaseScreen() {
                 <Text style={styles.ownedText}>Owned · plays offline</Text>
               </View>
             ) : (
-              <Button icon="bag-handle" label={`Buy ${release.type.toLowerCase()} · ${formatUGX(release.priceUGX)}`}
+              <Button icon="bag-handle" label={`Buy ${release.type === 'EP' ? 'EP' : release.type.toLowerCase()} · ${formatUGX(release.priceUGX)}`}
                 onPress={() => router.push({ pathname: '/buy', params: { kind: 'release', id: release.id } })} />
             )}
             <Pressable onPress={play} accessibilityRole="button" style={({ pressed }) => [styles.listen, pressed && styles.pressed]}>

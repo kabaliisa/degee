@@ -6,11 +6,11 @@ import { tap } from './haptics';
 export type IconName = keyof typeof Ionicons.glyphMap;
 
 /** The signature round play button. */
-export function PlayButton({ playing, onPress, size = 56, label }: { playing?: boolean; onPress: () => void; size?: number; label?: string }) {
+export function PlayButton({ playing, onPress, size = 56, label, light }: { playing?: boolean; onPress: () => void; size?: number; label?: string; light?: boolean }) {
   return (
     <Pressable onPress={() => { tap(); onPress(); }} accessibilityRole="button" accessibilityLabel={label ?? (playing ? 'Pause' : 'Play')}
-      style={({ pressed }) => [styles.play, { width: size, height: size, borderRadius: size / 2 }, pressed && styles.playPressed]}>
-      <Ionicons name={playing ? 'pause' : 'play'} size={size * 0.46} color={colors.accentInk} style={{ marginLeft: playing ? 0 : size * 0.05 }} />
+      style={({ pressed }) => [styles.play, { width: size, height: size, borderRadius: size / 2 }, light && styles.playLight, pressed && styles.playPressed]}>
+      <Ionicons name={playing ? 'pause' : 'play'} size={size * 0.46} color={light ? colors.ink : colors.accentInk} style={{ marginLeft: playing ? 0 : size * 0.05 }} />
     </Pressable>
   );
 }
@@ -60,6 +60,7 @@ const variantStyles = StyleSheet.create({
 
 const styles = StyleSheet.create({
   play: { backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
+  playLight: { backgroundColor: '#FFFFFF' },
   playPressed: { transform: [{ scale: 0.94 }] },
   icon: { padding: 2 },
   dimmed: { opacity: 0.6 },

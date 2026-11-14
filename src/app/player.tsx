@@ -3,7 +3,6 @@ import { Pressable, Share, StyleSheet, Text, View, useWindowDimensions } from 'r
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getRelease } from '../api';
 import { Art } from '../components/Art';
-import { ArtworkBackdrop } from '../components/ArtworkBackdrop';
 import { OwnershipBanner } from '../components/player/OwnershipBanner';
 import { SeekBar } from '../components/player/SeekBar';
 import { Button, EmptyState, IconButton, PlayButton } from '../components/ui';
@@ -41,7 +40,6 @@ export default function Player() {
   return (
     <View style={[styles.screen, { paddingTop: insets.top + space.sm, paddingBottom: insets.bottom + space.lg }]}>
       <StatusBar style="light" />
-      <ArtworkBackdrop key={release.id} seed={release.id} colors={release.colors} fadeAt={0.85} tone="dark" />
       <View style={styles.topBar}>
         <IconButton name="chevron-down" color={onDark.text} size={28} label="Close player" onPress={() => router.back()} />
         <View style={styles.source}>
@@ -75,7 +73,7 @@ export default function Player() {
       <View style={styles.controls}>
         <IconButton name="shuffle" color={shuffle ? colors.accent : onDark.textMuted} label={shuffle ? 'Shuffle on' : 'Shuffle off'} onPress={toggleShuffle} />
         <IconButton name="play-skip-back" color={onDark.text} size={34} label="Previous" onPress={() => prev(owns)} />
-        <PlayButton size={68} playing={isPlaying} onPress={toggle} />
+        <PlayButton size={68} playing={isPlaying} onPress={toggle} light />
         <IconButton name="play-skip-forward" color={onDark.text} size={34} label="Next" onPress={() => next(owns)} />
         <View>
           <IconButton name="repeat" color={repeat === 'off' ? onDark.textMuted : colors.accent}
