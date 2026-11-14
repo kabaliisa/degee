@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Image, StyleSheet, View, type ViewStyle } from 'react-native';
-import { photoUrl } from '../api';
+import { Image, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { photoSource } from '../api';
 import Svg, { Circle, Defs, G, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 /**
@@ -22,12 +22,12 @@ function hash(s: string) {
 }
 
 export function Art({ seed, colors: [a, b], size, round, style, photo = true, uri: imageUri }: {
-  seed: string; colors: [string, string]; size: number; round?: boolean; style?: ViewStyle; photo?: boolean;
+  seed: string; colors: [string, string]; size: number; round?: boolean; style?: StyleProp<ViewStyle>; photo?: boolean;
   uri?: string | null; // a specific image (e.g. a draft's uploaded cover) instead of the one looked up by seed
 }) {
   // Mock photos load from the web on top of the pattern; if offline or a photo fails, the pattern stays.
   const [photoFailed, setPhotoFailed] = useState(false);
-  const uri = photoFailed ? null : imageUri ?? (photo ? photoUrl(seed, size) : null);
+  const source = photoFailed ? null : imageUri ? { uri: imageUri } : photo ? photoSource(seed) : null;
   const h = hash(seed);
   const variant = VARIANTS[h % VARIANTS.length];
   const id = `g${h}`;
@@ -87,9 +87,9 @@ export function Art({ seed, colors: [a, b], size, round, style, photo = true, ur
         <Rect x={0} y={0} width={S} height={S} fill={`url(#${id})`} />
         {body}
       </Svg>
-      {uri ? (
-        <Image source={{ uri }} onError={() => setPhotoFailed(true)} accessibilityIgnoresInvertColors
-          style={StyleSheet.absoluteFill} resizeMode="cover" />
+      {source ? (
+        <Image source={source} onError={() => setPhotoFailed(true)} accessibilityIgnoresInvertColors
+          style={[StyleSheet.absoluteFill, { width: size, height: size }]} resizeMode="cover" />
       ) : null}
     </View>
   );

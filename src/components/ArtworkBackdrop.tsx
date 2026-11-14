@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
-import { photoUrl } from '../api';
+import { photoSource } from '../api';
 import { colors, onDark, shade, tint, withAlpha } from '../lib/theme';
 
 /**
@@ -23,7 +23,7 @@ export function ArtworkBackdrop({ seed, colors: [a, b], fadeAt = 0.75, height, t
     <View pointerEvents="none" style={height ? [styles.top, { height }] : StyleSheet.absoluteFill}>
       <LinearGradient colors={base as [string, string, string]} locations={[0, 0.45, fadeAt]} style={StyleSheet.absoluteFill} />
       {failed ? null : (
-        <Image source={{ uri: photoUrl(seed, 160) }} blurRadius={40} resizeMode="cover" onError={() => setFailed(true)}
+        <Image source={photoSource(seed)} blurRadius={40} resizeMode="cover" onError={() => setFailed(true)}
           style={[styles.image, { opacity: dark ? 0.85 : 0.6 }]} accessibilityIgnoresInvertColors />
       )}
       {/* A veil at the top for the status bar and controls, then fade fully into the page. */}

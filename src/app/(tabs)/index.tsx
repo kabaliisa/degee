@@ -86,7 +86,7 @@ function Hero({ release, playing, onPlay }: { release: Release; playing: boolean
   const open = () => router.push(`/release/${release.id}`);
   return (
     <View style={[styles.hero, { height }]}>
-      {artist ? <Art seed={artist.id} colors={artist.colors} size={Math.max(width, height)} style={styles.heroArt} /> : null}
+      {artist ? <Art seed={artist.id} colors={artist.colors} size={Math.max(width, height)} style={[styles.heroArt, { left: (width - Math.max(width, height)) / 2 }]} /> : null}
       <LinearGradient colors={[withAlpha(colors.ink, 0.55), withAlpha(colors.ink, 0), withAlpha(colors.ink, 0.35), withAlpha(colors.ink, 0.95)]}
         locations={[0, 0.25, 0.55, 1]} style={StyleSheet.absoluteFill} />
       <View style={[styles.heroTop, { paddingTop: insets.top + space.sm }]}>

@@ -1,3 +1,5 @@
+import type { ImageSourcePropType } from 'react-native';
+import { placeholderPhoto } from '../lib/photos';
 /**
  * Catalog service: the one place the app gets artists, releases and songs from.
  *
@@ -74,11 +76,10 @@ export const mediaUrl = (path: string) => (path.startsWith('http') ? path : `${A
 
 /**
  * Cover or artist photo for an id: the uploaded cover when a release has one, otherwise a placeholder
- * colour photo from picsum.photos (the demo catalogue and artist photos, until artists can upload them).
+ * photo shipped with the app (the demo catalogue and artist photos, until artists can upload them).
  */
-export const photoUrl = (id: string, size: number) => {
+export const photoSource = (id: string): ImageSourcePropType => {
   const cover = getRelease(id)?.coverUrl;
-  if (cover) return mediaUrl(cover);
-  const px = size <= 64 ? 160 : size <= 160 ? 400 : 800;
-  return `https://picsum.photos/seed/deegee-${id}/${px}/${px}`;
+  if (cover) return { uri: mediaUrl(cover) };
+  return placeholderPhoto(id, getArtist(id) ? 'portrait' : 'cover');
 };

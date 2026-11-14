@@ -88,4 +88,4 @@ Set in `TERMS` in `src/lib/money.ts`:
 
 ## Known placeholders
 
-Help and support and Terms do nothing yet. Songs with an uploaded recording play for real: buyers and the artist hear the full stream, everyone else the 30-second preview the server cuts. The demo songs have no recordings, so their playback is simulated on a timer. Cover photos are placeholder stock photos. Supporter and buyer counts are placeholders.
+Help and support and Terms do nothing yet. Songs with an uploaded recording play for real: buyers and the artist hear the full stream, everyone else the 30-second preview the server cuts. The demo songs have no recordings, so their playback is simulated on a timer. Covers and artist photos are placeholder portraits shipped in `assets/photos` (cropped from the design mockups) until artists upload their own. Supporter and buyer counts are placeholders.
