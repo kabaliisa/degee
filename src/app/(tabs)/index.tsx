@@ -84,9 +84,20 @@ function Hero({ release, playing, onPlay }: { release: Release; playing: boolean
   return (
     <View style={[styles.hero, { height }]}>
       {artist ? <Art seed={artist.id} colors={artist.colors} size={Math.max(width, height)} style={[styles.heroArt, { left: (width - Math.max(width, height)) / 2 }]} /> : null}
-      {/* Near-solid ink at the very top so the wordmark reads like the dark headers on the other tabs. */}
-      <LinearGradient colors={[colors.ink, withAlpha(colors.ink, 0.92), withAlpha(colors.ink, 0), withAlpha(colors.ink, 0.35), withAlpha(colors.ink, 0.95)]}
-        locations={[0, 0.16, 0.38, 0.6, 1]} style={StyleSheet.absoluteFill} />
+      {/* A gentle top scrim keeps the wordmark legible without hiding the artist's face.
+          The stronger fade belongs at the bottom, behind the release details. */}
+      <LinearGradient
+        colors={[
+          withAlpha(colors.ink, 0.62),
+          withAlpha(colors.ink, 0.32),
+          withAlpha(colors.ink, 0.06),
+          withAlpha(colors.ink, 0),
+          withAlpha(colors.ink, 0.4),
+          withAlpha(colors.ink, 0.92),
+        ]}
+        locations={[0, 0.14, 0.3, 0.46, 0.7, 1]}
+        style={StyleSheet.absoluteFill}
+      />
       <View style={[styles.heroTop, { paddingTop: insets.top + space.sm }]}>
         <Wordmark size={30} />
       </View>
