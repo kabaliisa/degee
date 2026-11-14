@@ -5,7 +5,6 @@ import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } fr
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getRelease, listArtists, listReleases, releasesInGenre, tracksForRelease, type Artist, type Release } from '../../api';
 import { Art } from '../../components/Art';
-import { Avatar } from '../../components/profile/Avatar';
 import { PriceTag, ReleaseCard, Shelf, StatusBarStrip } from '../../components/ui';
 import { Wordmark } from '../../components/Wordmark';
 import { formatUGX } from '../../lib/money';
@@ -86,13 +85,11 @@ function Hero({ release, playing, onPlay }: { release: Release; playing: boolean
   return (
     <View style={[styles.hero, { height }]}>
       {artist ? <Art seed={artist.id} colors={artist.colors} size={Math.max(width, height)} style={[styles.heroArt, { left: (width - Math.max(width, height)) / 2 }]} /> : null}
-      <LinearGradient colors={[withAlpha(colors.ink, 0.55), withAlpha(colors.ink, 0), withAlpha(colors.ink, 0.35), withAlpha(colors.ink, 0.95)]}
-        locations={[0, 0.25, 0.55, 1]} style={StyleSheet.absoluteFill} />
+      {/* Near-solid ink at the very top so the wordmark reads like the dark headers on the other tabs. */}
+      <LinearGradient colors={[colors.ink, withAlpha(colors.ink, 0.92), withAlpha(colors.ink, 0), withAlpha(colors.ink, 0.35), withAlpha(colors.ink, 0.95)]}
+        locations={[0, 0.16, 0.38, 0.6, 1]} style={StyleSheet.absoluteFill} />
       <View style={[styles.heroTop, { paddingTop: insets.top + space.sm }]}>
-        <Wordmark size={30} style={styles.flex} />
-        <Pressable onPress={() => router.push('/(tabs)/profile')} accessibilityRole="button" accessibilityLabel="Your profile" hitSlop={6}>
-          <Avatar size={38} />
-        </Pressable>
+        <Wordmark size={30} />
       </View>
       <View style={styles.heroBody}>
         <Pressable onPress={open} accessibilityRole="link" accessibilityLabel={`${release.title} by ${artist?.name}`}>
@@ -130,7 +127,6 @@ function ArtistBubble({ artist, backed }: { artist: Artist; backed: boolean }) {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { paddingBottom: layout.tabScreenBottom },
-  flex: { flex: 1 },
   pressed: { opacity: 0.85 },
   hero: { backgroundColor: colors.ink, overflow: 'hidden', borderBottomLeftRadius: radius.xl, borderBottomRightRadius: radius.xl },
   heroArt: { position: 'absolute', left: 0, top: 0, borderRadius: 0 },

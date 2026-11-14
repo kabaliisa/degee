@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getRelease, releasesByArtist, tracksForRelease } from '../../api';
 import { Art } from '../../components/Art';
 import { MiniPlayer } from '../../components/player/MiniPlayer';
-import { Button, EmptyState, IconButton, PlayButton, ReleaseCard, Shelf, TrackRow } from '../../components/ui';
+import { Button, EmptyState, IconButton, ReleaseCard, Shelf, TrackRow } from '../../components/ui';
 import { PREVIEW_SEC, totalDuration } from '../../lib/format';
 import { formatUGX } from '../../lib/money';
 import { colors, font, layout, onDark, radius, space, type } from '../../lib/theme';
