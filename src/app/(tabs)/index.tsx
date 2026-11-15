@@ -94,25 +94,25 @@ function Hero({ release, playing, onPlay }: { release: Release; playing: boolean
   return (
     <View style={[styles.hero, { height }]}>
       {artist ? <Art seed={artist.id} size={Math.max(width, height)} style={[styles.heroArt, { left: (width - Math.max(width, height)) / 2 }]} /> : null}
-      {/* Keep the logo fully on ink, then ease gradually into the portrait.
-          A separate bottom fade protects the release copy without a dark band through the face. */}
+      {/* Both scrims are the page's own colour, so the photograph dissolves into the page instead of
+          ending at a line. The top one starts part-way and eases at once: held at full it reads as a
+          black bar across her head rather than as light falling away. */}
       <LinearGradient
         colors={[
-          colors.ink,
-          withAlpha(colors.ink, 0.98),
-          withAlpha(colors.ink, 0.9),
-          withAlpha(colors.ink, 0.65),
-          withAlpha(colors.ink, 0.32),
-          withAlpha(colors.ink, 0.1),
-          withAlpha(colors.ink, 0),
+          withAlpha(colors.bg, 0.88),
+          withAlpha(colors.bg, 0.74),
+          withAlpha(colors.bg, 0.46),
+          withAlpha(colors.bg, 0.2),
+          withAlpha(colors.bg, 0.05),
+          withAlpha(colors.bg, 0),
         ]}
-        locations={[0, 0.22, 0.38, 0.55, 0.72, 0.86, 1]}
-        style={[styles.heroTopFade, { height: insets.top + 190 }]}
+        locations={[0, 0.18, 0.45, 0.7, 0.88, 1]}
+        style={[styles.heroTopFade, { height: insets.top + 170 }]}
         pointerEvents="none"
       />
       <LinearGradient
-        colors={[withAlpha(colors.ink, 0), withAlpha(colors.ink, 0.35), withAlpha(colors.ink, 0.92)]}
-        locations={[0, 0.45, 1]}
+        colors={[withAlpha(colors.bg, 0), withAlpha(colors.bg, 0.5), withAlpha(colors.bg, 0.92), colors.bg]}
+        locations={[0, 0.5, 0.82, 1]}
         style={styles.heroBottomFade}
         pointerEvents="none"
       />
@@ -154,10 +154,10 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { paddingBottom: layout.tabScreenBottom },
   pressed: { opacity: 0.85 },
-  hero: { backgroundColor: colors.ink, overflow: 'hidden', borderBottomLeftRadius: radius.xl, borderBottomRightRadius: radius.xl },
+  hero: { backgroundColor: colors.bg, overflow: 'hidden' }, // no rounded corners: it ends in the page, not on it
   heroArt: { position: 'absolute', left: 0, top: 0, borderRadius: 0 },
   heroTopFade: { position: 'absolute', top: 0, left: 0, right: 0 },
-  heroBottomFade: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 230 },
+  heroBottomFade: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 210 },
   heroTop: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.lg },
   heroBody: { position: 'absolute', left: space.lg, right: space.lg, bottom: space.xl, gap: space.md },
   heroKicker: { fontFamily: font.display, fontSize: 20, color: onDark.text },

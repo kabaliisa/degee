@@ -40,8 +40,9 @@ export default function ArtistScreen() {
         {/* Full-bleed hero: the artist's art fills the top, name set large over a fade. */}
         <View style={styles.hero}>
           <Art seed={artist.id} size={600} style={styles.heroArt} />
-          <LinearGradient colors={[withAlpha(colors.ink, 0.5), withAlpha(colors.ink, 0), withAlpha(colors.ink, 0.3), withAlpha(colors.ink, 0.95)]}
-            locations={[0, 0.25, 0.55, 1]} style={StyleSheet.absoluteFill} />
+          {/* Ends on the page's own colour, so the photograph dissolves into it rather than stopping. */}
+          <LinearGradient colors={[withAlpha(colors.bg, 0.6), withAlpha(colors.bg, 0), withAlpha(colors.bg, 0.4), colors.bg]}
+            locations={[0, 0.3, 0.68, 1]} style={StyleSheet.absoluteFill} />
           <View style={styles.heroText}>
             <View style={styles.flex}>
               {artist.verified ? (
@@ -92,7 +93,7 @@ export default function ArtistScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { paddingBottom: layout.detailScreenBottom },
-  hero: { height: 380, overflow: 'hidden', backgroundColor: colors.ink, borderBottomLeftRadius: radius.xl, borderBottomRightRadius: radius.xl },
+  hero: { height: 380, overflow: 'hidden', backgroundColor: colors.bg },
   heroArt: { position: 'absolute', top: -110, left: -100, borderRadius: 0 },
   heroText: { position: 'absolute', left: space.lg, right: space.lg, bottom: space.xl, flexDirection: 'row', alignItems: 'flex-end', gap: space.md },
   verified: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 },
