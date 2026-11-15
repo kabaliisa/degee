@@ -6,7 +6,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } fr
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getRelease, listArtists, listReleases, releasesInGenre, tracksForRelease, type Artist, type Release } from '../../api';
 import { Art } from '../../components/Art';
-import { GreetingBar } from '../../components/home/GreetingBar';
+import { GREETING_HEIGHT, GreetingBar } from '../../components/home/GreetingBar';
 import { Kitenge } from '../../components/home/Kitenge';
 import { ReleaseCard, SectionHeading, Shelf, StatusBarStrip } from '../../components/ui';
 import { askToSignIn } from '../../lib/auth';
@@ -105,13 +105,15 @@ function Hero({ release, playing, onPlay }: { release: Release; playing: boolean
   const artist = getArtist(release.artistId);
   const height = insets.top + Math.min(Math.max(windowHeight * 0.54, 380), 490);
   // The photograph starts below the greeting, so the words have black above her head rather than hair.
-  const artTop = insets.top + 86;
+  // The picture starts just under the question, so the dark begins lifting right where the words
+  // end. Any further down and there is a band of flat black between the two that belongs to neither.
+  const artTop = insets.top + space.md + GREETING_HEIGHT + space.xs;
   const artSize = Math.max(width, height - artTop) * 1.15;
   // The fade stays solid past where the picture begins, so she emerges from the dark instead of
   // starting at a line. Worked out from the inset so it holds whatever the notch does.
   // Long enough that the scrim never has to change fast — a fast ramp is what makes an edge
   // visible — but not so long that it dulls her face, which is the thing the hero is for.
-  const fadeHeight = artTop + 180;
+  const fadeHeight = artTop + 125;
   const topFade = fadeStops(colors.bg, artTop / fadeHeight);
   const bottomFade = fadeStops(colors.bg);
   const openArtist = () => router.push(`/artist/${release.artistId}`);
