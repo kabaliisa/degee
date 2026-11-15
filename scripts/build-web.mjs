@@ -6,7 +6,8 @@
  * is there, not just the ones visited before the signal went.
  */
 import { execFileSync } from 'node:child_process';
-import { readdirSync, statSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
 const DIST = 'dist';
@@ -40,6 +41,16 @@ const later = [];
 })(DIST);
 
 writeFileSync(join(DIST, 'precache.json'), JSON.stringify({ files }, null, 2));
+
+/**
+ * Stamp the build into the service worker. Expo hashes its filenames, so this changes whenever anything
+ * does, which is what makes a browser notice there is a new worker, install it, and throw away the files
+ * it was holding. Left fixed, everyone keeps the build they first visited.
+ */
+const build = createHash('sha256').update(files.concat(later).join('\n')).digest('hex').slice(0, 12);
+const sw = join(DIST, 'sw.js');
+writeFileSync(sw, readFileSync(sw, 'utf8').replace("const VERSION = 'dev';", `const VERSION = '${build}';`));
 const mb = (list) => (list.reduce((n, f) => n + statSync(join(DIST, f.slice(1))).size, 0) / 1024 / 1024).toFixed(1);
-console.log(`\nprecache.json: ${files.length} files, ${mb(files)} MB held from the start`);
+console.log(`\nbuild ${build}`);
+console.log(`precache.json: ${files.length} files, ${mb(files)} MB held from the start`);
 console.log(`${later.length} photos (${mb(later)} MB) cache as they are seen`);

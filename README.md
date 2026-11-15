@@ -73,12 +73,15 @@ What makes it an app rather than a website:
 | --- | --- |
 | `public/manifest.json` | Name, ink theme, standalone display, maskable icon |
 | `public/sw.js` | Caches the app so it opens offline and costs little data to reopen |
-| `scripts/build-web.mjs` | Lists what to hold offline: code and fonts from the start, photos as they are seen |
+| `scripts/build-web.mjs` | Lists what to hold offline (code and fonts from the start, photos as they are seen) and stamps the build into the worker |
 | `src/lib/offlineAudio.web.ts` | Bought songs saved in the browser and played from there |
 | `src/lib/mediaSession.web.ts` | Title, artist and cover on the lock screen, with working buttons |
 | `src/lib/install.web.ts` | "Add to home screen", one tap on Android, the share-sheet route on iOS |
 
 Each of these has a `.ts` twin that does nothing, which is what the native builds use.
+
+A browser only installs a new service worker when `sw.js` itself changes, so the build hash is written
+into it. Without that, everyone keeps the build they first visited however many times you deploy.
 
 **Set `DEEGEE_CORS_ORIGINS` on the API to wherever the site is served from**, or the browser blocks every
 request. In development `http://localhost:8081` is already allowed; a production build served elsewhere

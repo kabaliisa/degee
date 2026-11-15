@@ -5,7 +5,10 @@
  * knows who is signed in and what they have bought. Songs saved for offline live in SONG_CACHE, written by
  * src/lib/offlineAudio.web.ts; this file only takes care not to delete them.
  */
-const VERSION = 'v1';
+// Replaced at build time with a hash of the build's own files (scripts/build-web.mjs). It has to change
+// whenever the site does: a browser only installs a new worker when this file's bytes differ, so a fixed
+// version here means a redeploy is never picked up and people keep the build they first visited.
+const VERSION = 'dev';
 const SHELL_CACHE = `deegee-shell-${VERSION}`;
 const SONG_CACHE = 'deegee-songs';
 const SHELL = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png'];
