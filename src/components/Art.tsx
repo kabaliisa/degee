@@ -26,14 +26,22 @@ function hash(s: string) {
  * server sends a colour pair per release, but those were picked for an older palette, so the pair is
  * chosen here from the seed instead: the same artwork every time, and always of a piece with the rest.
  */
+/**
+ * A sleeve with no photograph should read as a dark sleeve, not as a flag. These pairs stay close
+ * together and close to the background: the pattern arrives as texture caught in low light, and the
+ * title above the tile stays the loudest thing on the shelf. Bright gold at this size turned the
+ * shelves into test cards and made the releases that do have a photograph look like the odd ones out.
+ */
 const PAIRS: [string, string][] = [
-  ['#2A1A08', '#8A5A12'], // burnt earth to amber
-  ['#1C1209', '#C98A1C'], // near-black to warm gold
-  ['#30200E', '#A06A18'], // clay to bronze
-  ['#241508', '#6E4410'], // the deep one
-  ['#1A1206', '#F0A519'], // black to the brand gold
-  ['#2B1C10', '#7A4A1A'], // ochre
+  ['#241708', '#3E2A10'], // burnt earth
+  ['#1C1209', '#36250F'], // near-black, warmed
+  ['#2A1C0C', '#45300F'], // clay
+  ['#1A1206', '#2E2009'], // the deep one
+  ['#221606', '#4A3211'], // ochre
+  ['#15100A', '#2B1E0D'], // almost nothing
 ];
+/** How far any stroke is allowed to lift off the base. */
+const LIFT = 0.6;
 
 export function Art({ seed, size, round, style, photo = true, uri: imageUri }: {
   seed: string; size: number; round?: boolean; style?: StyleProp<ViewStyle>; photo?: boolean;
@@ -43,7 +51,7 @@ export function Art({ seed, size, round, style, photo = true, uri: imageUri }: {
   const [photoFailed, setPhotoFailed] = useState(false);
   const source = photoFailed ? null : imageUri ? { uri: imageUri } : photo ? photoSource(seed) : null;
   const h = hash(seed);
-  const [a, b] = PAIRS[h % PAIRS.length];
+  const [base, b] = PAIRS[h % PAIRS.length];
   const variant = VARIANTS[h % VARIANTS.length];
   const id = `g${h}`;
   const S = 100;
@@ -54,9 +62,9 @@ export function Art({ seed, size, round, style, photo = true, uri: imageUri }: {
     body = (
       <G>
         {[78, 62, 48, 36, 25, 15].map((r, i) => (
-          <Circle key={r} cx={cx} cy={cy} r={r} fill="none" stroke={i % 2 ? b : a} strokeWidth={i === 0 ? 10 : 5} opacity={0.9 - i * 0.08} />
+          <Circle key={r} cx={cx} cy={cy} r={r} fill="none" stroke={b} strokeWidth={i === 0 ? 5 : 2.5} opacity={LIFT - i * 0.05} />
         ))}
-        <Circle cx={cx} cy={cy} r={8} fill={a} />
+        <Circle cx={cx} cy={cy} r={6} fill={b} opacity={LIFT} />
       </G>
     );
   } else if (variant === 'weave') {
@@ -65,7 +73,7 @@ export function Art({ seed, size, round, style, photo = true, uri: imageUri }: {
       <G>
         {rows.map((y, i) => (
           <Path key={y} d={`M-5 ${y + 12} L12 ${y} L29 ${y + 12} L46 ${y} L63 ${y + 12} L80 ${y} L97 ${y + 12} L114 ${y}`}
-            fill="none" stroke={i % 3 === 0 ? a : b} strokeWidth={i % 3 === 0 ? 6 : 3} opacity={i % 3 === 0 ? 1 : 0.55} />
+            fill="none" stroke={b} strokeWidth={i % 3 === 0 ? 3.5 : 2} opacity={i % 3 === 0 ? LIFT : LIFT * 0.55} />
         ))}
       </G>
     );
@@ -73,18 +81,18 @@ export function Art({ seed, size, round, style, photo = true, uri: imageUri }: {
     body = (
       <G transform={`rotate(${-25 - (h % 20)} 50 50)`}>
         {[-30, -8, 14, 36, 58, 80, 102].map((x, i) => (
-          <Rect key={x} x={x} y={-40} width={i % 2 ? 7 : 15} height={190} fill={i % 2 ? b : a} opacity={i % 2 ? 0.6 : 0.95} />
+          <Rect key={x} x={x} y={-40} width={i % 2 ? 6 : 13} height={190} fill={b} opacity={i % 2 ? LIFT * 0.5 : LIFT} />
         ))}
-        <Circle cx={70} cy={30} r={6} fill={a} />
-        <Circle cx={30} cy={74} r={4} fill={a} />
+        <Circle cx={70} cy={30} r={5} fill={b} opacity={LIFT} />
+        <Circle cx={30} cy={74} r={3.5} fill={b} opacity={LIFT} />
       </G>
     );
   } else {
     body = (
       <G>
-        <Circle cx={50 + ((h % 30) - 15)} cy={56} r={30} fill={a} />
+        <Circle cx={50 + ((h % 30) - 15)} cy={56} r={28} fill={b} opacity={LIFT} />
         {[62, 70, 77, 83, 88, 92, 95].map((y, i) => (
-          <Rect key={y} x={0} y={y} width={S} height={Math.max(1.5, 5 - i * 0.6)} fill={`url(#${id})`} />
+          <Rect key={y} x={0} y={y} width={S} height={Math.max(1.2, 4 - i * 0.5)} fill={b} opacity={LIFT * 0.8} />
         ))}
       </G>
     );
@@ -96,7 +104,7 @@ export function Art({ seed, size, round, style, photo = true, uri: imageUri }: {
         <Defs>
           <LinearGradient id={id} x1="0" y1="0" x2="1" y2="1">
             <Stop offset="0" stopColor={b} />
-            <Stop offset="1" stopColor="#000000" />
+            <Stop offset="1" stopColor={base} />
           </LinearGradient>
         </Defs>
         <Rect x={0} y={0} width={S} height={S} fill={`url(#${id})`} />

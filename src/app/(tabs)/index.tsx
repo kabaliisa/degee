@@ -11,6 +11,7 @@ import { Kitenge } from '../../components/home/Kitenge';
 import { ReleaseCard, SectionHeading, Shelf, StatusBarStrip } from '../../components/ui';
 import { askToSignIn } from '../../lib/auth';
 import { formatUGX } from '../../lib/money';
+import { hasPhoto } from '../../lib/photos';
 import { colors, fadeStops, font, layout, radius, space, type, withAlpha } from '../../lib/theme';
 import { usePlayer } from '../../store/player';
 import { useSignedIn } from '../../store/session';
@@ -26,7 +27,12 @@ export default function Home() {
   const isPlaying = usePlayer((s) => s.isPlaying);
 
   const releases = listReleases();
-  const featured = releases.find((r) => r.exclusive) ?? releases[0];
+  // The hero is a photograph the width of the screen, so it leads with a release we actually have a
+  // picture for. Generated art earns its place on a shelf tile; stretched across the top of the app
+  // it only announces that there is no photograph.
+  const withPhoto = releases.filter((r) => hasPhoto(r.id) || hasPhoto(r.artistId));
+  const featured = withPhoto.find((r) => r.exclusive) ?? withPhoto[0]
+    ?? releases.find((r) => r.exclusive) ?? releases[0];
   const newest = [...releases].sort((a, b) => b.year - a.year);
   // The one release put forward to buy, rather than to browse: the newest that isn't already the hero.
   const pick = newest.find((r) => r.id !== featured.id) ?? featured;

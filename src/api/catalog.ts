@@ -105,5 +105,5 @@ export const mediaUrl = (path: string) => (path.startsWith('http') ? path : `${A
 export const photoSource = (id: string): ImageSourcePropType | null => {
   const cover = getRelease(id)?.coverUrl;
   if (cover) return { uri: mediaUrl(cover) };
-  return placeholderPhoto(id, getArtist(id) ? 'portrait' : 'cover');
+  return placeholderPhoto(id);
 };
