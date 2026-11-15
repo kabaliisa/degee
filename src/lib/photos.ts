@@ -1,5 +1,7 @@
 import type { ImageSourcePropType } from 'react-native';
+import kiwa from '../../assets/photos/artist-kiwa.jpg';
 import mukasa from '../../assets/photos/artist-mukasa.jpg';
+import ssalongo from '../../assets/photos/artist-ssalongo.jpg';
 
 /**
  * Real photographs shipped with the app, keyed to the artist or release they belong to.
@@ -13,7 +15,11 @@ import mukasa from '../../assets/photos/artist-mukasa.jpg';
  */
 const REAL: Record<string, ImageSourcePropType> = {
   a5: mukasa, // Mukasa the MC
-  r6: mukasa, // Boda Diaries, his release
+  r6: mukasa, // Boda Diaries
+  a3: kiwa, // Kiwa Rebel
+  r4: kiwa, // Nile Bounce
+  a2: ssalongo, // Ssalongo Beats
+  r3: ssalongo, // Ebyafaayo
 };
 
 /** The photo for an id, or null when we have none and the generated art should stand in. */
