@@ -32,7 +32,7 @@ export function PriceTag({ release, onDark }: { release: Release; onDark?: boole
   if (owned) {
     return (
       <View style={[styles.ownedChip, onDark && styles.ownedChipOnDark]}>
-        <Ionicons name="checkmark" size={13} color={colors.limeInk} />
+        <Ionicons name="checkmark" size={13} color={colors.ownedInk} />
         <Text style={styles.ownedText}>Owned</Text>
       </View>
     );
@@ -94,9 +94,9 @@ const styles = StyleSheet.create({
   newText: { fontFamily: font.display, fontSize: 10, letterSpacing: 0.6, color: colors.accentText },
   price: { fontFamily: font.bold, fontSize: 13, color: colors.text, marginTop: 2 },
   priceOnDark: { fontSize: 15, color: '#FFFFFF', marginTop: 0 },
-  ownedChip: { flexDirection: 'row', alignItems: 'center', gap: 3, alignSelf: 'flex-start', marginTop: 4, paddingVertical: 2, paddingLeft: 5, paddingRight: 9, borderRadius: radius.pill, backgroundColor: colors.lime },
+  ownedChip: { flexDirection: 'row', alignItems: 'center', gap: 3, alignSelf: 'flex-start', marginTop: 4, paddingVertical: 2, paddingLeft: 5, paddingRight: 9, borderRadius: radius.pill, backgroundColor: colors.owned },
   ownedChipOnDark: { marginTop: 0, paddingVertical: 6, paddingLeft: 10, paddingRight: 14 },
-  ownedText: { fontFamily: font.bold, fontSize: 12, color: colors.limeInk },
+  ownedText: { fontFamily: font.bold, fontSize: 12, color: colors.ownedInk },
   cardTitle: { marginTop: space.sm },
   centered: { textAlign: 'center' },
   pressed: { opacity: 0.75 },

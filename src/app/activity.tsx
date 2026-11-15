@@ -19,7 +19,7 @@ export default function Activity() {
     <ScrollView contentContainerStyle={styles.content}>
       {credit > 0 ? (
         <View style={styles.credit}>
-          <Ionicons name="shield-checkmark" size={22} color={colors.limeInk} />
+          <Ionicons name="shield-checkmark" size={22} color={colors.ownedInk} />
           <View style={styles.flex}>
             <Text style={type.bodyBold}>{formatUGX(credit)} Deegee credit</Text>
             <Text style={[type.small, styles.creditText]}>It comes off the next thing you buy or gift.</Text>
@@ -45,8 +45,8 @@ export default function Activity() {
 const styles = StyleSheet.create({
   content: { padding: space.lg, gap: space.md, paddingBottom: space.xxl },
   flex: { flex: 1 },
-  credit: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.lime, borderRadius: radius.lg, padding: space.lg },
-  creditText: { color: colors.limeInk },
+  credit: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.owned, borderRadius: radius.lg, padding: space.lg },
+  creditText: { color: colors.ownedInk },
   list: { backgroundColor: colors.surface, borderRadius: radius.lg, paddingHorizontal: space.lg },
   action: { marginTop: space.md },
 });

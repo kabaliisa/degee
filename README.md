@@ -21,11 +21,14 @@ Sign in with any Ugandan mobile number. No SMS is sent in development: the 6-dig
 
 ## Look
 
-Black and green. The page is a near-black with a trace of green in it, so warm photographs of artists
-sit on it without a colour fight; panels lift off it in charcoal, and the headers carry a deep forest
-wash so a screen still has a top and a body rather than being one black sheet. Green is the money
-colour and is spent only where money is — prices, Buy, Owned, paid out — which is why so little of the
-screen is green and why the green reads as loudly as it does. All of it lives in `src/lib/theme.ts`.
+Black, gold and red — Uganda's own colours. The page is a near-black with a little warmth in it, so
+photographs of artists belong on it rather than being tolerated by it. Gold is the money colour and
+carries every action: Buy, prices, the song that is playing. Red appears only as a short rule under a
+heading, the way a flag shows a stripe — never a fill, never a button, never more than a mark.
+
+Poppins throughout: 400 for reading, 500 for labels, 600 for the greeting and buttons, 700 for titles.
+Artist names are set in spaced capitals, the way a sleeve credits one. It all lives in
+`src/lib/theme.ts`; nothing else names a colour or a font.
 
 ## The web app (PWA)
 

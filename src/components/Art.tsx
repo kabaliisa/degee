@@ -22,18 +22,17 @@ function hash(s: string) {
 }
 
 /**
- * The generated covers stay inside the app's own greens. The server sends a colour pair per release,
- * but those were picked for the old palette and a bright blue square on this background looks like
- * someone else's app, so the pair is chosen here from the seed instead: same artwork every time, and
- * always of a piece with everything around it.
+ * The generated covers stay inside the app's own golds, for a release with no artwork of its own. The
+ * server sends a colour pair per release, but those were picked for an older palette, so the pair is
+ * chosen here from the seed instead: the same artwork every time, and always of a piece with the rest.
  */
 const PAIRS: [string, string][] = [
-  ['#0F3D2A', '#1E7A4E'], // forest to emerald
-  ['#0B3A3A', '#1C7C73'], // deep teal
-  ['#133D1A', '#3C8F2E'], // pine to leaf
-  ['#07312B', '#1B8F72'], // deep teal to sea green, the cool one — still in the family
-  ['#1A3A12', '#5FA524'], // olive to moss
-  ['#082E22', '#2FD96B'], // near-black to the brand green
+  ['#2A1A08', '#8A5A12'], // burnt earth to amber
+  ['#1C1209', '#C98A1C'], // near-black to warm gold
+  ['#30200E', '#A06A18'], // clay to bronze
+  ['#241508', '#6E4410'], // the deep one
+  ['#1A1206', '#F0A519'], // black to the brand gold
+  ['#2B1C10', '#7A4A1A'], // ochre
 ];
 
 export function Art({ seed, size, round, style, photo = true, uri: imageUri }: {

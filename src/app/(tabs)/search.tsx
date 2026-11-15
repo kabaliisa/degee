@@ -38,7 +38,7 @@ export default function Search() {
 
   return (
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" stickyHeaderIndices={[0]}>
-      <ScreenHeader title="Explore">
+      <ScreenHeader title="Discover">
         <View style={styles.searchBar}>
           <Ionicons name="search" size={20} color={colors.text} />
           <TextInput value={q} onChangeText={setQ} placeholder="Artists, songs, albums" placeholderTextColor={colors.textFaint}

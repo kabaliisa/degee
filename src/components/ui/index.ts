@@ -3,5 +3,6 @@ export { ArtistCard, ListRow, PriceTag, ReleaseCard, Shelf } from './cards';
 export { EmptyState } from './EmptyState';
 export { FormScrollView } from './FormScrollView';
 export { ScreenHeader, StatusBarStrip } from './ScreenHeader';
+export { SectionHeading } from './SectionHeading';
 export { tap } from './haptics';
 export { Equalizer, TrackRow } from './TrackRow';

@@ -77,7 +77,7 @@ export default function ReleaseScreen() {
             {ownsAll ? (
               <View style={styles.ownedRow}>
                 <View style={styles.ownedPill}>
-                  <Ionicons name="checkmark-circle" size={18} color={colors.limeInk} />
+                  <Ionicons name="checkmark-circle" size={18} color={colors.ownedInk} />
                   <Text style={styles.ownedText}>Owned{allSaved ? ' · saved offline' : ''}</Text>
                 </View>
                 {offlineSupported && !allSaved ? (
@@ -150,8 +150,8 @@ const styles = StyleSheet.create({
   ownedRow: { gap: space.sm },
   saveBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 44, borderRadius: radius.pill, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.4)' },
   saveText: { fontFamily: font.bold, fontSize: 14, color: onDark.text },
-  ownedPill: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm, paddingVertical: 14, borderRadius: radius.lg, backgroundColor: colors.lime },
-  ownedText: { fontFamily: font.display, fontSize: 15, color: colors.limeInk },
+  ownedPill: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm, paddingVertical: 14, borderRadius: radius.lg, backgroundColor: colors.owned },
+  ownedText: { fontFamily: font.display, fontSize: 15, color: colors.ownedInk },
   noteTop: { marginTop: space.lg },
   flex: { flex: 1 },
   note: { paddingHorizontal: space.lg, marginBottom: space.sm },

@@ -10,7 +10,7 @@ import { Button, type IconName } from '../ui';
 type Tone = 'accent' | 'good' | 'quiet';
 const TONES: Record<Tone, { bg: string; fg: string }> = {
   accent: { bg: colors.accentSoft, fg: colors.accent },
-  good: { bg: colors.lime, fg: colors.limeInk },
+  good: { bg: colors.owned, fg: colors.ownedInk },
   quiet: { bg: colors.surfaceRaised, fg: colors.textMuted },
 };
 

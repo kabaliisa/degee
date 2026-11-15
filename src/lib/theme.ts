@@ -1,63 +1,66 @@
-// Deegee runs black and green. The page is a near-black that leans very slightly green, so warm
-// photographs of artists sit on it without a colour fight. Panels lift off it in charcoal; the dark
-// headers carry a deep forest wash so a screen still has a top and a body rather than being one black
-// sheet. Green is the money colour and is spent only where money is: prices, Buy, Owned, paid out.
+// Black, gold and red — Uganda's own colours. The page is a near-black with a little warmth in it, so
+// the photography of artists belongs on it rather than being tolerated by it. Gold is the money colour
+// and carries every action: Buy, prices, the song that is playing. Red appears only as a short rule
+// under a heading, the way a flag shows a stripe: never a fill, never a button, never more than a mark.
 export const colors = {
-  bg: '#0A0C0A', // near-black, a touch of green in it
-  surface: '#121613', // cards, rows, inputs
-  surfaceRaised: '#1A201B',
-  surfacePress: '#232A24',
-  border: '#232A24',
-  text: '#F1F3EE', // warm off-white, not a clinical white
-  textMuted: '#99A398',
-  textFaint: '#6A7369',
-  accent: '#2FD96B', // the one green: actions and prices
-  accentText: '#58E88A', // lighter, for green set as text on the dark
-  accentInk: '#06130B', // text on a green fill
-  accentSoft: '#123520', // deep forest: tinted fills and the header wash
-  lime: '#2FD96B', // kept for the owned state, now the same green
-  limeInk: '#06130B',
-  ink: '#070907', // the darkest layer: headers, the player, the tab bar
-  success: '#2FD96B',
-  danger: '#FF6B6B', // reds have to be lighter to read on black
+  bg: '#0A0A09',
+  surface: '#17120D', // cards
+  surfaceRaised: '#211810', // the player, lifted rows
+  surfacePress: '#2B2016',
+  border: '#2A2018',
+  text: '#F7F4EF', // warm white
+  textMuted: '#A49A8C',
+  textFaint: '#6F675C',
+  accent: '#F0A519', // gold
+  accentText: '#F0A519', // gold reads cleanly as type on this black, so it needs no lighter twin
+  accentInk: '#140E04', // type on a gold fill
+  accentSoft: '#2A1E08', // gold held back: tinted fills, the pill around an icon
+  flag: '#F41F1E', // the rule under a heading, and the dot on the bell
+  owned: '#211810', // owning something is quiet; buying is the loud one
+  ownedInk: '#F0A519',
+  ink: '#070706', // the darkest layer: the tab bar, a scrim
+  success: '#54C27A',
+  danger: '#FF5A4F', // not the flag red, so an error never reads as a heading rule
   momo: '#FFCB05', // MTN's own yellow
   airtel: '#E40000', // Airtel's own red
 };
 
-/** Was the exception for dark screens; now the app is dark, so these line up with the main palette. */
+/** The app is dark throughout; these stay for the few places that still ask for them by name. */
 export const onDark = {
   bg: colors.ink,
-  surface: '#161C17',
+  surface: colors.surfaceRaised,
   text: colors.text,
   textMuted: colors.textMuted,
-  accentText: colors.accentText,
+  accentText: colors.accent,
 };
 
-// One family does almost everything: Plus Jakarta Sans, heavy and geometric for headings, clean for
-// reading. The wordmark alone is Nunito Black, for its rounded, friendly letters.
+// Poppins throughout: geometric, round, and even in colour, which is what lets a heading sit tight
+// against a photograph without looking busy.
 export const font = {
-  wordmark: 'Nunito_900Black',
-  display: 'PlusJakartaSans_800ExtraBold', // hero and screen titles
-  displayBold: 'PlusJakartaSans_700Bold', // section and card headings
-  regular: 'PlusJakartaSans_400Regular',
-  medium: 'PlusJakartaSans_500Medium',
-  semibold: 'PlusJakartaSans_600SemiBold',
-  bold: 'PlusJakartaSans_700Bold',
+  wordmark: 'Poppins_700Bold',
+  display: 'Poppins_700Bold', // hero and screen titles
+  displayBold: 'Poppins_700Bold',
+  regular: 'Poppins_400Regular',
+  medium: 'Poppins_500Medium',
+  semibold: 'Poppins_600SemiBold',
+  bold: 'Poppins_600SemiBold',
 };
 
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 };
 export const radius = { xs: 6, sm: 10, md: 14, lg: 18, xl: 24, pill: 999 };
 
 export const type = {
-  hero: { fontFamily: font.display, fontSize: 40, lineHeight: 44, letterSpacing: -1.2, color: colors.text },
-  display: { fontFamily: font.display, fontSize: 28, lineHeight: 33, letterSpacing: -0.8, color: colors.text },
-  title: { fontFamily: font.display, fontSize: 23, lineHeight: 28, letterSpacing: -0.5, color: colors.text },
-  heading: { fontFamily: font.display, fontSize: 20, lineHeight: 25, letterSpacing: -0.4, color: colors.text },
-  body: { fontFamily: font.medium, fontSize: 15, lineHeight: 21, color: colors.text },
-  bodyBold: { fontFamily: font.bold, fontSize: 15, lineHeight: 21, color: colors.text },
-  small: { fontFamily: font.medium, fontSize: 13, lineHeight: 18, color: colors.textMuted },
-  smallBold: { fontFamily: font.bold, fontSize: 13, lineHeight: 18, color: colors.textMuted },
-  tiny: { fontFamily: font.semibold, fontSize: 11, lineHeight: 14, color: colors.textMuted },
+  hero: { fontFamily: font.display, fontSize: 36, lineHeight: 42, letterSpacing: -0.8, color: colors.text },
+  display: { fontFamily: font.display, fontSize: 26, lineHeight: 32, letterSpacing: -0.5, color: colors.text },
+  title: { fontFamily: font.display, fontSize: 22, lineHeight: 28, letterSpacing: -0.3, color: colors.text },
+  heading: { fontFamily: font.display, fontSize: 19, lineHeight: 25, letterSpacing: -0.2, color: colors.text },
+  body: { fontFamily: font.regular, fontSize: 15, lineHeight: 22, color: colors.text },
+  bodyBold: { fontFamily: font.semibold, fontSize: 15, lineHeight: 22, color: colors.text },
+  small: { fontFamily: font.regular, fontSize: 13, lineHeight: 19, color: colors.textMuted },
+  smallBold: { fontFamily: font.semibold, fontSize: 13, lineHeight: 19, color: colors.textMuted },
+  tiny: { fontFamily: font.medium, fontSize: 11, lineHeight: 15, color: colors.textMuted },
+  /** An artist's name, spaced out the way a sleeve credits one. */
+  caps: { fontFamily: font.medium, fontSize: 11, lineHeight: 16, letterSpacing: 2.4, color: colors.textMuted },
 };
 
 /** Mix a hex colour toward black (amount 0–1). Used for art-tinted backgrounds. */

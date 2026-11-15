@@ -30,9 +30,9 @@ export function StatusPill({ status, withdrawal }: { status: Status; withdrawal?
 
 const styles = StyleSheet.create({
   pill: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill, backgroundColor: colors.surfaceRaised },
-  good: { backgroundColor: colors.lime },
+  good: { backgroundColor: colors.owned },
   red: { backgroundColor: colors.danger },
   label: { fontFamily: font.bold, fontSize: 12, color: colors.textMuted },
-  labelGood: { color: colors.limeInk },
+  labelGood: { color: colors.ownedInk },
   labelRed: { color: '#FFFFFF' },
 });

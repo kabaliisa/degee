@@ -44,5 +44,5 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   title: { fontFamily: font.display, fontSize: 32, lineHeight: 38, letterSpacing: -1, color: onDark.text, marginTop: space.xs },
   subtitle: { fontFamily: font.medium, fontSize: 15, lineHeight: 21, color: onDark.textMuted, marginTop: space.xs },
-  strip: { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: colors.accentSoft },
+  strip: { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: colors.ink },
 });

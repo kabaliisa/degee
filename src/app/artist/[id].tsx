@@ -47,7 +47,7 @@ export default function ArtistScreen() {
             <View style={styles.flex}>
               {artist.verified ? (
                 <View style={styles.verified}>
-                  <Ionicons name="checkmark-circle" size={18} color={colors.lime} />
+                  <Ionicons name="checkmark-circle" size={18} color={colors.owned} />
                   <Text style={styles.verifiedText}>Verified artist</Text>
                 </View>
               ) : null}

@@ -11,14 +11,14 @@ import rooftop from '../../assets/photos/scene-rooftop.jpg';
 import street from '../../assets/photos/scene-street.jpg';
 
 /**
- * Placeholder photos shipped with the app, for demo artists until they upload their own.
+ * Placeholder photos shipped with the app, for demo artists and releases until they upload their own.
  *
- * They are only used for faces. Every one of them was shot on the same saturated terracotta backdrop,
- * and a grid of them turns a screen into a wall of orange; a release gets the app's own generated cover
- * instead, which is drawn in the app's greens and so always belongs. Artists keep their photographs,
- * because an artist without a face is not an artist.
+ * They were shot warm, on terracotta, under gold light — which is the same light this app is painted in,
+ * so they belong here rather than having to be argued with.
  */
-const PORTRAITS: ImageSourcePropType[] = [portrait1, portrait2, portrait3, portrait4, portrait5, duo1, group1, rooftop, lake, street];
+const PORTRAITS: ImageSourcePropType[] = [portrait1, portrait2, portrait3, portrait4, portrait5, duo1, group1];
+// Covers lean on the scenes (a rooftop in Kampala, Lake Victoria, a busy street at night), then the faces.
+const COVERS: ImageSourcePropType[] = [rooftop, portrait3, lake, portrait5, street, duo1, portrait2, group1, portrait1, portrait4];
 
 function hash(s: string) {
   let h = 2166136261;
@@ -26,7 +26,8 @@ function hash(s: string) {
   return Math.abs(h);
 }
 
-/** The same artist always gets the same face. Releases get no photo: the generated cover draws instead. */
+/** The same id always gets the same photo: a face for artists, a scene or face for covers. */
 export function placeholderPhoto(id: string, kind: 'portrait' | 'cover'): ImageSourcePropType | null {
-  return kind === 'portrait' ? PORTRAITS[hash(id) % PORTRAITS.length] : null;
+  const pool = kind === 'portrait' ? PORTRAITS : COVERS;
+  return pool[hash(id) % pool.length];
 }
