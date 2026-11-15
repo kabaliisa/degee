@@ -7,7 +7,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getRelease, listArtists, listReleases, releasesInGenre, tracksForRelease, type Artist, type Release } from '../../api';
 import { Art } from '../../components/Art';
 import { GreetingBar } from '../../components/home/GreetingBar';
-import { Kitenge } from '../../components/home/Kitenge';
 import { ReleaseCard, SectionHeading, Shelf, StatusBarStrip } from '../../components/ui';
 import { askToSignIn } from '../../lib/auth';
 import { formatUGX } from '../../lib/money';
@@ -18,7 +17,6 @@ import { useWallet } from '../../store/wallet';
 
 export default function Home() {
   const [heroScrolledAway, setHeroScrolledAway] = useState(false);
-  const insets = useSafeAreaInsets();
   const owned = useWallet((s) => s.ownedTracks);
   const owns = useWallet((s) => s.owns);
   const playQueue = usePlayer((s) => s.playQueue);
@@ -44,12 +42,10 @@ export default function Home() {
   return (
     <View style={styles.screen}>
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingTop: insets.top + space.md }]}
+        contentContainerStyle={styles.content}
         scrollEventThrottle={16}
         onScroll={(e) => setHeroScrolledAway(e.nativeEvent.contentOffset.y > 40)}
       >
-        <GreetingBar />
-
         <Hero release={featured} playing={currentRelease === featured.id && isPlaying} onPlay={() => playRelease(featured.id)} />
 
         <View style={styles.section}>
@@ -62,7 +58,6 @@ export default function Home() {
         <View style={styles.section}>
           <SectionHeading title="Made in Uganda" />
           <FeatureCard release={pick} />
-          <PaymentRow />
         </View>
 
         <View style={styles.section}>
@@ -86,19 +81,47 @@ export default function Home() {
   );
 }
 
-/** The artist put forward today: their photograph, their name, and a way into their music. */
+/**
+ * The artist put forward today, running the full width with the greeting over the top of them.
+ *
+ * The header reads as near-solid black that the photograph emerges from, rather than a photograph with
+ * a bar laid on it: the scrim is held opaque only for the height of the greeting, then falls away over
+ * a long ramp with enough stops that there is no edge to find. Nothing darkens the middle of the frame,
+ * so the face keeps its light. A second scrim at the foot carries the picture into the page.
+ *
+ * The height is taken from the window rather than fixed, so the hero is the same shape on an SE as on a
+ * 16 Pro instead of swallowing the smaller screen.
+ */
 function Hero({ release, playing, onPlay }: { release: Release; playing: boolean; onPlay: () => void }) {
-  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const { width, height: windowHeight } = useWindowDimensions();
   const artist = getArtist(release.artistId);
-  const size = width - space.lg * 2;
+  const height = insets.top + Math.min(Math.max(windowHeight * 0.54, 380), 490);
+  // The photograph starts below the greeting, so the words have black above her head rather than hair.
+  const artTop = insets.top + 86;
+  const artSize = Math.max(width, height - artTop) * 1.15;
+  // The fade stays solid past where the picture begins, so she emerges from the dark instead of
+  // starting at a line. Worked out from the inset so it holds whatever the notch does.
+  const fadeHeight = artTop + 150;
+  const solidTo = artTop / fadeHeight;
   const openArtist = () => router.push(`/artist/${release.artistId}`);
   return (
-    <View style={[styles.hero, { height: size * 1.04 }]}>
-      {artist ? <Art seed={artist.id} size={size * 1.35} style={styles.heroArt} /> : null}
+    <View style={[styles.hero, { height }]}>
+      {artist ? <Art seed={artist.id} size={artSize} style={[styles.heroArt, { top: artTop }]} /> : null}
       <LinearGradient
-        colors={[withAlpha(colors.bg, 0.1), withAlpha(colors.bg, 0.55), withAlpha(colors.bg, 0.9), colors.bg]}
-        locations={[0, 0.42, 0.72, 1]} style={StyleSheet.absoluteFill} pointerEvents="none"
+        colors={[colors.bg, colors.bg, withAlpha(colors.bg, 0.86), withAlpha(colors.bg, 0.6),
+          withAlpha(colors.bg, 0.32), withAlpha(colors.bg, 0.12), withAlpha(colors.bg, 0)]}
+        locations={[0, solidTo, solidTo + (1 - solidTo) * 0.22, solidTo + (1 - solidTo) * 0.42,
+          solidTo + (1 - solidTo) * 0.62, solidTo + (1 - solidTo) * 0.82, 1]}
+        style={[styles.heroTopFade, { height: fadeHeight }]} pointerEvents="none"
       />
+      <LinearGradient
+        colors={[withAlpha(colors.bg, 0), withAlpha(colors.bg, 0.3), withAlpha(colors.bg, 0.72), withAlpha(colors.bg, 0.93), colors.bg]}
+        locations={[0, 0.3, 0.6, 0.82, 1]} style={styles.heroBottomFade} pointerEvents="none"
+      />
+      <View style={[styles.heroTop, { paddingTop: insets.top + space.md }]}>
+        <GreetingBar />
+      </View>
       <View style={styles.heroBody}>
         <View style={styles.featuredPill}>
           <Text style={styles.featuredText}>Featured artist</Text>
@@ -134,7 +157,6 @@ function FeatureCard({ release }: { release: Release }) {
     : askToSignIn(`/buy?kind=release&id=${release.id}`));
   return (
     <View style={styles.feature}>
-      <View style={styles.kitenge} pointerEvents="none"><Kitenge size={104} /></View>
       <Pressable onPress={() => router.push(`/release/${release.id}`)} accessibilityRole="link"
         accessibilityLabel={`${release.title} by ${artist?.name}`}>
         <Art seed={release.id} size={116} style={styles.featureArt} />
@@ -159,21 +181,6 @@ function FeatureCard({ release }: { release: Release }) {
   );
 }
 
-/** Says how you pay here, before anyone has to ask. */
-function PaymentRow() {
-  return (
-    <Pressable onPress={() => router.push('/(tabs)/profile')} accessibilityRole="link"
-      accessibilityLabel="How paying works: MTN MoMo and Airtel Money"
-      style={({ pressed }) => [styles.payRow, pressed && styles.pressed]}>
-      <View style={styles.payIcon}>
-        <Ionicons name="phone-portrait-outline" size={17} color={colors.accent} />
-      </View>
-      <Text style={styles.payText}>MTN MoMo · Airtel Money</Text>
-      <Ionicons name="chevron-forward" size={17} color={colors.textMuted} />
-    </Pressable>
-  );
-}
-
 function ArtistBubble({ artist, backed }: { artist: Artist; backed: boolean }) {
   return (
     <Pressable onPress={() => router.push(`/artist/${artist.id}`)} accessibilityRole="button"
@@ -192,9 +199,12 @@ const styles = StyleSheet.create({
   flex: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
   pressed: { opacity: 0.85 },
 
-  hero: { marginHorizontal: space.lg, borderRadius: radius.xl, overflow: 'hidden', backgroundColor: colors.surface },
-  heroArt: { position: 'absolute', top: 0, right: 0, borderRadius: 0 },
-  heroBody: { position: 'absolute', left: space.lg, right: space.lg, bottom: space.lg, gap: space.sm },
+  hero: { overflow: 'hidden', backgroundColor: colors.bg }, // edge to edge: the photograph is the header
+  heroArt: { position: 'absolute', right: 0, borderRadius: 0 },
+  heroTopFade: { position: 'absolute', top: 0, left: 0, right: 0 },
+  heroBottomFade: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '56%' },
+  heroTop: { position: 'absolute', left: 0, right: 0, top: 0 },
+  heroBody: { position: 'absolute', left: space.xl, right: space.xl, bottom: space.lg, gap: space.sm },
   featuredPill: { alignSelf: 'flex-start', borderWidth: 1, borderColor: colors.accent, borderRadius: radius.pill, paddingVertical: 5, paddingHorizontal: 12 },
   featuredText: { fontFamily: font.medium, fontSize: 12, color: colors.accent },
   heroTitle: { fontFamily: font.display, fontSize: 34, lineHeight: 39, letterSpacing: -0.8, color: colors.text },
@@ -209,7 +219,6 @@ const styles = StyleSheet.create({
   row: { gap: space.md, paddingHorizontal: space.lg },
 
   feature: { flexDirection: 'row', gap: space.md, marginHorizontal: space.lg, padding: space.md, borderRadius: radius.lg, backgroundColor: colors.surface, overflow: 'hidden' },
-  kitenge: { position: 'absolute', top: 0, right: 0, opacity: 0.9 },
   featureArt: { borderRadius: radius.md },
   featureBody: { flex: 1, minWidth: 0, justifyContent: 'center', gap: 2 },
   featureTitle: { fontFamily: font.display, fontSize: 20, lineHeight: 26, letterSpacing: -0.3, color: colors.text },
@@ -217,9 +226,6 @@ const styles = StyleSheet.create({
   featurePrice: { fontFamily: font.semibold, fontSize: 17, color: colors.accent },
   buyButton: { minHeight: 40, justifyContent: 'center', paddingHorizontal: 22, borderRadius: radius.pill, backgroundColor: colors.accent },
 
-  payRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginHorizontal: space.lg, marginTop: space.md, paddingVertical: space.sm },
-  payIcon: { width: 34, height: 34, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border },
-  payText: { flex: 1, fontFamily: font.medium, fontSize: 14, color: colors.text },
 
   bubble: { width: 78, alignItems: 'center', gap: space.xs },
   ring: { padding: 3, borderRadius: 40, borderWidth: 2, borderColor: 'transparent' },

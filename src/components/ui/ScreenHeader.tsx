@@ -3,7 +3,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, font, onDark, radius, space } from '../../lib/theme';
-import { Wordmark } from '../Wordmark';
 
 /**
  * The dark top every main screen shares: the wordmark, a big white title, and room for one thing below
@@ -17,10 +16,7 @@ export function ScreenHeader({ title, subtitle, right, children }: {
     <View style={[styles.top, { paddingTop: insets.top + space.sm }]}>
       <LinearGradient colors={[colors.accentSoft, colors.ink]} start={{ x: 0, y: 0 }} end={{ x: 0.6, y: 1 }}
         style={StyleSheet.absoluteFill} pointerEvents="none" />
-      <View style={styles.bar}>
-        <Wordmark size={28} style={styles.flex} />
-        {right}
-      </View>
+      {right ? <View style={styles.bar}><View style={styles.flex} />{right}</View> : null}
       {title ? <Text accessibilityRole="header" style={styles.title}>{title}</Text> : null}
       {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
       {children}

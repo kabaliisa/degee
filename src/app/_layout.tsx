@@ -4,7 +4,6 @@ import { Poppins_500Medium } from '@expo-google-fonts/poppins/500Medium';
 import { Poppins_600SemiBold } from '@expo-google-fonts/poppins/600SemiBold';
 import { Poppins_700Bold } from '@expo-google-fonts/poppins/700Bold';
 import { Stack } from 'expo-router';
-import { Wordmark } from '../components/Wordmark';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { ActivityIndicator, AppState, StyleSheet, Text, View } from 'react-native';
@@ -51,7 +50,7 @@ function AccountSync({ signedIn }: { signedIn: boolean }) {
 function Splash({ error, onRetry }: { error?: string; onRetry?: () => void }) {
   return (
     <View style={[styles.root, styles.splash]}>
-      <Wordmark size={48} />
+      <ActivityIndicator color={colors.accent} />
       {error ? (
         <>
           <Text style={[type.body, styles.splashText]}>{error}</Text>
