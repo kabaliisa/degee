@@ -7,10 +7,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getRelease, listArtists, listReleases, releasesInGenre, tracksForRelease, type Artist, type Release } from '../../api';
 import { Art } from '../../components/Art';
 import { GreetingBar } from '../../components/home/GreetingBar';
+import { Kitenge } from '../../components/home/Kitenge';
 import { ReleaseCard, SectionHeading, Shelf, StatusBarStrip } from '../../components/ui';
 import { askToSignIn } from '../../lib/auth';
 import { formatUGX } from '../../lib/money';
-import { colors, font, layout, radius, space, type, withAlpha } from '../../lib/theme';
+import { colors, fadeStops, font, layout, radius, space, type, withAlpha } from '../../lib/theme';
 import { usePlayer } from '../../store/player';
 import { useSignedIn } from '../../store/session';
 import { useWallet } from '../../store/wallet';
@@ -102,22 +103,24 @@ function Hero({ release, playing, onPlay }: { release: Release; playing: boolean
   const artSize = Math.max(width, height - artTop) * 1.15;
   // The fade stays solid past where the picture begins, so she emerges from the dark instead of
   // starting at a line. Worked out from the inset so it holds whatever the notch does.
-  const fadeHeight = artTop + 150;
-  const solidTo = artTop / fadeHeight;
+  // Long enough that the scrim never has to change fast — a fast ramp is what makes an edge
+  // visible — but not so long that it dulls her face, which is the thing the hero is for.
+  const fadeHeight = artTop + 180;
+  const topFade = fadeStops(colors.bg, artTop / fadeHeight);
+  const bottomFade = fadeStops(colors.bg);
   const openArtist = () => router.push(`/artist/${release.artistId}`);
   return (
     <View style={[styles.hero, { height }]}>
       {artist ? <Art seed={artist.id} size={artSize} style={[styles.heroArt, { top: artTop }]} /> : null}
       <LinearGradient
-        colors={[colors.bg, colors.bg, withAlpha(colors.bg, 0.86), withAlpha(colors.bg, 0.6),
-          withAlpha(colors.bg, 0.32), withAlpha(colors.bg, 0.12), withAlpha(colors.bg, 0)]}
-        locations={[0, solidTo, solidTo + (1 - solidTo) * 0.22, solidTo + (1 - solidTo) * 0.42,
-          solidTo + (1 - solidTo) * 0.62, solidTo + (1 - solidTo) * 0.82, 1]}
+        colors={topFade.colors} locations={topFade.locations}
         style={[styles.heroTopFade, { height: fadeHeight }]} pointerEvents="none"
       />
+      {/* The bottom scrim runs the other way: transparent at the top of the range, solid where the
+          picture meets the shelves below it. */}
       <LinearGradient
-        colors={[withAlpha(colors.bg, 0), withAlpha(colors.bg, 0.3), withAlpha(colors.bg, 0.72), withAlpha(colors.bg, 0.93), colors.bg]}
-        locations={[0, 0.3, 0.6, 0.82, 1]} style={styles.heroBottomFade} pointerEvents="none"
+        colors={[...bottomFade.colors].reverse() as [string, string, ...string[]]} locations={bottomFade.locations}
+        style={styles.heroBottomFade} pointerEvents="none"
       />
       <View style={[styles.heroTop, { paddingTop: insets.top + space.md }]}>
         <GreetingBar />
@@ -157,6 +160,7 @@ function FeatureCard({ release }: { release: Release }) {
     : askToSignIn(`/buy?kind=release&id=${release.id}`));
   return (
     <View style={styles.feature}>
+      <View style={styles.kitenge} pointerEvents="none"><Kitenge size={120} /></View>
       <Pressable onPress={() => router.push(`/release/${release.id}`)} accessibilityRole="link"
         accessibilityLabel={`${release.title} by ${artist?.name}`}>
         <Art seed={release.id} size={116} style={styles.featureArt} />
@@ -207,7 +211,7 @@ const styles = StyleSheet.create({
   heroBody: { position: 'absolute', left: space.xl, right: space.xl, bottom: space.lg, gap: space.sm },
   featuredPill: { alignSelf: 'flex-start', borderWidth: 1, borderColor: colors.accent, borderRadius: radius.pill, paddingVertical: 5, paddingHorizontal: 12 },
   featuredText: { fontFamily: font.medium, fontSize: 12, color: colors.accent },
-  heroTitle: { fontFamily: font.display, fontSize: 34, lineHeight: 39, letterSpacing: -0.8, color: colors.text },
+  heroTitle: { fontFamily: font.display, fontSize: 26, lineHeight: 32, letterSpacing: -0.5, color: colors.text },
   heroArtist: { fontFamily: font.medium, fontSize: 12, letterSpacing: 3, color: colors.text, marginTop: 6 },
   heroRule: { width: 34, height: 3, borderRadius: radius.pill, backgroundColor: colors.flag, marginTop: 8 },
   heroActions: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.xs },
@@ -218,10 +222,11 @@ const styles = StyleSheet.create({
   section: { marginTop: space.xl },
   row: { gap: space.md, paddingHorizontal: space.lg },
 
+  kitenge: { position: 'absolute', top: 0, right: 0 },
   feature: { flexDirection: 'row', gap: space.md, marginHorizontal: space.lg, padding: space.md, borderRadius: radius.lg, backgroundColor: colors.surface, overflow: 'hidden' },
   featureArt: { borderRadius: radius.md },
   featureBody: { flex: 1, minWidth: 0, justifyContent: 'center', gap: 2 },
-  featureTitle: { fontFamily: font.display, fontSize: 20, lineHeight: 26, letterSpacing: -0.3, color: colors.text },
+  featureTitle: { fontFamily: font.display, fontSize: 18, lineHeight: 24, letterSpacing: -0.2, color: colors.text },
   featureFoot: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.sm },
   featurePrice: { fontFamily: font.semibold, fontSize: 17, color: colors.accent },
   buyButton: { minHeight: 40, justifyContent: 'center', paddingHorizontal: 22, borderRadius: radius.pill, backgroundColor: colors.accent },

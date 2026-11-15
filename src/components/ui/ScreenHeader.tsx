@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   top: { backgroundColor: colors.ink, paddingHorizontal: space.lg, paddingBottom: space.xl, borderBottomLeftRadius: radius.xl, borderBottomRightRadius: radius.xl },
   bar: { flexDirection: 'row', alignItems: 'center', minHeight: 44 },
   flex: { flex: 1 },
-  title: { fontFamily: font.display, fontSize: 32, lineHeight: 38, letterSpacing: -1, color: onDark.text, marginTop: space.xs },
+  title: { fontFamily: font.display, fontSize: 28, lineHeight: 34, letterSpacing: -0.7, color: onDark.text, marginTop: space.xs },
   subtitle: { fontFamily: font.medium, fontSize: 15, lineHeight: 21, color: onDark.textMuted, marginTop: space.xs },
   strip: { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: colors.ink },
 });

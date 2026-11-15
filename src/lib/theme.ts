@@ -50,10 +50,13 @@ export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 };
 export const radius = { xs: 6, sm: 10, md: 14, lg: 18, xl: 24, pill: 999 };
 
 export const type = {
-  hero: { fontFamily: font.display, fontSize: 36, lineHeight: 42, letterSpacing: -0.8, color: colors.text },
-  display: { fontFamily: font.display, fontSize: 26, lineHeight: 32, letterSpacing: -0.5, color: colors.text },
-  title: { fontFamily: font.display, fontSize: 22, lineHeight: 28, letterSpacing: -0.3, color: colors.text },
-  heading: { fontFamily: font.display, fontSize: 19, lineHeight: 25, letterSpacing: -0.2, color: colors.text },
+  // The display sizes sit a step below where they were: Poppins carries a large x-height and wide
+  // round forms, so a heading set at the same number as another face reads a size bigger than it is,
+  // and the artwork is meant to be the loud thing on a shelf, not the words above it.
+  hero: { fontFamily: font.display, fontSize: 31, lineHeight: 37, letterSpacing: -0.6, color: colors.text },
+  display: { fontFamily: font.display, fontSize: 22, lineHeight: 28, letterSpacing: -0.4, color: colors.text },
+  title: { fontFamily: font.display, fontSize: 19, lineHeight: 25, letterSpacing: -0.2, color: colors.text },
+  heading: { fontFamily: font.display, fontSize: 17, lineHeight: 23, letterSpacing: -0.1, color: colors.text },
   body: { fontFamily: font.regular, fontSize: 15, lineHeight: 22, color: colors.text },
   bodyBold: { fontFamily: font.semibold, fontSize: 15, lineHeight: 22, color: colors.text },
   small: { fontFamily: font.regular, fontSize: 13, lineHeight: 19, color: colors.textMuted },
@@ -79,6 +82,33 @@ export function tint(hex: string, amount: number) {
 }
 export function withAlpha(hex: string, alpha: number) {
   return `${hex}${Math.round(alpha * 255).toString(16).padStart(2, '0')}`;
+}
+
+/**
+ * A scrim that fades out along an S-curve instead of a straight line.
+ *
+ * A linear fade looks wrong over a photograph. Its slope changes abruptly where the ramp starts and
+ * again where it ends, and the eye reads each of those corners as a faint line across the picture.
+ * Smoothstep leaves at zero slope and arrives at zero slope, so there is no corner to see. Enough
+ * stops are emitted to keep 8-bit colour from stepping visibly in the darks, where banding shows most.
+ *
+ * `solidUntil` is the fraction that stays fully opaque before the fade begins — the part that gives
+ * white text something solid to sit on.
+ */
+export function fadeStops(hex: string, solidUntil = 0, steps = 14) {
+  const colors: string[] = [hex];
+  const locations: number[] = [0];
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const alpha = 1 - t * t * (3 - 2 * t); // smoothstep, flat at both ends
+    colors.push(withAlpha(hex, alpha));
+    locations.push(solidUntil + (1 - solidUntil) * t);
+  }
+  // LinearGradient wants at least two stops, which the loop above always produces.
+  return {
+    colors: colors as [string, string, ...string[]],
+    locations: locations as [number, number, ...number[]],
+  };
 }
 
 /** Shared layout measurements. */
