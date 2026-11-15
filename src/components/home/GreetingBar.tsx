@@ -15,6 +15,14 @@ const ON_PHOTO = '#FFFFFF';
 const ON_PHOTO_MUTED = '#A1A1AA';
 const UNREAD = '#D90000';
 
+/**
+ * How tall this bar stands: the greeting's line, the gap, and the question's line.
+ *
+ * The hero starts the photograph directly under it, so the two have to agree. Kept here beside the
+ * styles that decide it, rather than guessed at from the other side.
+ */
+export const GREETING_HEIGHT = 27 + space.xs + 18;
+
 export function GreetingBar() {
   const first = useSession((s) => s.user?.name?.trim().split(' ')[0]);
   const { width } = useWindowDimensions();
