@@ -1,5 +1,6 @@
 import type { ImageSourcePropType } from 'react-native';
 import kiwa from '../../assets/photos/artist-kiwa.jpg';
+import nalu from '../../assets/photos/artist-nalu.jpg';
 import mukasa from '../../assets/photos/artist-mukasa.jpg';
 import ssalongo from '../../assets/photos/artist-ssalongo.jpg';
 
@@ -20,6 +21,9 @@ const REAL: Record<string, ImageSourcePropType> = {
   r4: kiwa, // Nile Bounce
   a2: ssalongo, // Ssalongo Beats
   r3: ssalongo, // Ebyafaayo
+  a1: nalu, // Nalu Kizza
+  r1: nalu, // Enkuba
+  r2: nalu, // Sunday in Ntinda
 };
 
 /** The photo for an id, or null when we have none and the generated art should stand in. */
