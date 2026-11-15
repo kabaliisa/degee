@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { getArtist, tracksForRelease, type Artist, type Release } from '../../api';
 import { formatUGX } from '../../lib/money';
 import { useWallet } from '../../store/wallet';
-import { colors, font, radius, space, type } from '../../lib/theme';
+import { colors, font, radius, space, type, withAlpha } from '../../lib/theme';
 import { Art } from '../Art';
 
 /** A titled horizontal row, the backbone of every browse screen. */
@@ -88,8 +88,10 @@ const styles = StyleSheet.create({
   shelfHeader: { paddingHorizontal: space.lg, marginBottom: space.md },
   shelfRow: { gap: space.md, paddingHorizontal: space.lg },
   cover: { borderRadius: radius.md },
-  newBadge: { position: 'absolute', left: 8, top: 8, backgroundColor: colors.accent, borderRadius: radius.pill, paddingVertical: 3, paddingHorizontal: 8 },
-  newText: { fontFamily: font.display, fontSize: 10, letterSpacing: 0.5, color: colors.accentInk },
+  // On artwork, a solid green pill fights whatever is behind it. A dark pill with green type sits on
+  // any photograph, because the photograph never has to agree with it.
+  newBadge: { position: 'absolute', top: 7, left: 7, paddingVertical: 3, paddingHorizontal: 8, borderRadius: radius.pill, backgroundColor: withAlpha(colors.ink, 0.82) },
+  newText: { fontFamily: font.display, fontSize: 10, letterSpacing: 0.6, color: colors.accentText },
   price: { fontFamily: font.bold, fontSize: 13, color: colors.text, marginTop: 2 },
   priceOnDark: { fontSize: 15, color: '#FFFFFF', marginTop: 0 },
   ownedChip: { flexDirection: 'row', alignItems: 'center', gap: 3, alignSelf: 'flex-start', marginTop: 4, paddingVertical: 2, paddingLeft: 5, paddingRight: 9, borderRadius: radius.pill, backgroundColor: colors.lime },

@@ -31,7 +31,7 @@ const PAIRS: [string, string][] = [
   ['#0F3D2A', '#1E7A4E'], // forest to emerald
   ['#0B3A3A', '#1C7C73'], // deep teal
   ['#133D1A', '#3C8F2E'], // pine to leaf
-  ['#0D2F3C', '#1E6F86'], // petrol, the cool one
+  ['#07312B', '#1B8F72'], // deep teal to sea green, the cool one — still in the family
   ['#1A3A12', '#5FA524'], // olive to moss
   ['#082E22', '#2FD96B'], // near-black to the brand green
 ];

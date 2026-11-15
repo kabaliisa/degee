@@ -102,7 +102,7 @@ export const mediaUrl = (path: string) => (path.startsWith('http') ? path : `${A
  * Cover or artist photo for an id: the uploaded cover when a release has one, otherwise a placeholder
  * photo shipped with the app (the demo catalogue and artist photos, until artists can upload them).
  */
-export const photoSource = (id: string): ImageSourcePropType => {
+export const photoSource = (id: string): ImageSourcePropType | null => {
   const cover = getRelease(id)?.coverUrl;
   if (cover) return { uri: mediaUrl(cover) };
   return placeholderPhoto(id, getArtist(id) ? 'portrait' : 'cover');
