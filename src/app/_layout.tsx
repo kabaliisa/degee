@@ -5,6 +5,7 @@ import { Poppins_600SemiBold } from '@expo-google-fonts/poppins/600SemiBold';
 import { Poppins_700Bold } from '@expo-google-fonts/poppins/700Bold';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { useEffect } from 'react';
 import { ActivityIndicator, AppState, StyleSheet, Text, View } from 'react-native';
 import { useCatalog } from '../api/catalog';
@@ -85,11 +86,19 @@ export default function RootLayout() {
 
   useEffect(() => { void useCatalog.getState().load(); }, []);
 
-  if (!PRERENDERING && (!loaded || !hydrated)) return <View style={styles.root} />;
-  if (catalog === 'loading') return <Splash />;
-  if (catalog === 'error') return <Splash error={__DEV__ ? `${catalogError}\n\nAPI: ${API_URL}` : catalogError} onRetry={() => void useCatalog.getState().load()} />;
+  // Everything below, including the splash, sits inside the provider. Without it useSafeAreaInsets
+  // answers zero everywhere, which is invisible in a browser — the browser's own chrome pushes the
+  // page into the safe region — and wrong the moment the app is installed and owns the whole screen:
+  // the greeting runs under the clock and the tab labels disappear behind the home indicator.
+  const shell = (body: React.ReactNode) => (
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>{body}</SafeAreaProvider>
+  );
 
-  return (
+  if (!PRERENDERING && (!loaded || !hydrated)) return shell(<View style={styles.root} />);
+  if (catalog === 'loading') return shell(<Splash />);
+  if (catalog === 'error') return shell(<Splash error={__DEV__ ? `${catalogError}\n\nAPI: ${API_URL}` : catalogError} onRetry={() => void useCatalog.getState().load()} />);
+
+  return shell(
     <View style={styles.root}>
       {/* The whole app is dark now, top to bottom. */}
       <StatusBar style="light" />
@@ -132,7 +141,7 @@ export default function RootLayout() {
           <Stack.Screen name="admin" options={{ title: 'Review queue' }} />
         </Stack.Protected>
       </Stack>
-    </View>
+    </View>,
   );
 }
 
