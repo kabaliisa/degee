@@ -1,0 +1,46 @@
+# Render reads this when you point it at the repo: Dashboard -> New -> Blueprint.
+#
+# The database is deliberately NOT here. Render's own free Postgres is deleted thirty days after it is
+# created, which would take the demo down without warning; Neon's free tier does not expire. So the
+# database lives at Neon and this service is handed its connection details.
+#
+# Everything marked `sync: false` has to be filled in once in the Render dashboard. They are secrets,
+# and secrets do not belong in a public repository.
+services:
+  - type: web
+    name: deegee-api
+    runtime: docker
+    repo: https://github.com/kabaliisa/degee
+    branch: main
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    # Closest free region to Dallas. Frankfurt would serve Uganda better, and is the right move when
+    # there are listeners rather than a pitch; nothing but this line has to change.
+    region: ohio
+    # Free services sleep after fifteen minutes and take about a minute to wake. Hit this URL once
+    # before a demo and the first visitor does not pay for the wake-up.
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+    envVars:
+      # From Neon. Note the shape: Spring wants a jdbc: URL and the credentials separately, which is
+      # not the postgres://user:pass@host/db that Neon hands you. DEPLOY.md spells out the split.
+      - key: DEEGEE_DB_URL
+        sync: false
+      - key: DEEGEE_DB_USER
+        sync: false
+      - key: DEEGEE_DB_PASSWORD
+        sync: false
+      # Signs access tokens. Anyone holding this can mint a session as any user.
+      - key: DEEGEE_JWT_SECRET
+        generateValue: true
+      # Signs the mock payment provider's webhooks.
+      - key: DEEGEE_WEBHOOK_SECRET
+        generateValue: true
+      # Browsers allowed to call the API: wherever the PWA is served from. Without the site's own
+      # origin here, every request from it fails CORS and the app looks broken while the API is fine.
+      - key: DEEGEE_CORS_ORIGINS
+        sync: false
+      # Phone numbers that get admin rights on sign-in. Yours, so you can see the studio side.
+      - key: DEEGEE_ADMIN_PHONES
+        sync: false

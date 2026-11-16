@@ -1,0 +1,79 @@
+# Checks on every push; the site is published when they pass on main.
+#
+# The API is not deployed from here — Render watches the repo itself and rebuilds the Docker image on
+# each push to main. This workflow owns the web build, which has to happen somewhere that knows the
+# API's public URL: the app is exported to static HTML, so the address is baked in at build time
+# rather than read at runtime.
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+
+  api-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: deegee
+          POSTGRES_USER: deegee
+          POSTGRES_PASSWORD: deegee
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+          cache: maven
+      # The upload pipeline shells out to ffmpeg, so the tests that cover it need it present.
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+      - run: mvn -B verify
+        working-directory: backend
+
+  site:
+    needs: [check, api-tests]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build the site
+        # Baked into the bundle, so the site must be rebuilt if the API ever moves. The build also
+        # tries to refresh its catalogue snapshot from this URL and falls back to the committed copy
+        # when the API is asleep, which on a free tier it usually is.
+        env:
+          EXPO_PUBLIC_API_URL: ${{ secrets.API_URL }}
+        run: npm run build:web
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=deegee --branch=main
