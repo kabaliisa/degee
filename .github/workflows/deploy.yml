@@ -70,6 +70,11 @@ jobs:
         # when the API is asleep, which on a free tier it usually is.
         env:
           EXPO_PUBLIC_API_URL: ${{ secrets.API_URL }}
+          # Where the site actually answers, for canonical links, OG tags and the sitemap. Pointing
+          # these at a domain that does not resolve yet tells crawlers the real pages are somewhere
+          # else and costs exactly the indexing the static export exists to earn. Set the SITE_URL
+          # secret to deegee.ug once that domain is live; until then the Pages address is the truth.
+          EXPO_PUBLIC_SITE_URL: ${{ secrets.SITE_URL || 'https://deegee-drg.pages.dev' }}
         run: npm run build:web
       - name: Publish to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3

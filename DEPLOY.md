@@ -44,8 +44,9 @@ catalogue, the artists and the songs.
 3. Fill in the environment variables it asks for:
 
    - `DEEGEE_DB_URL`, `DEEGEE_DB_USER`, `DEEGEE_DB_PASSWORD` — the three parts from step 1
-   - `DEEGEE_CORS_ORIGINS` — `https://deegee.pages.dev`
-     (the site does not exist yet; its address is predictable, so set it now)
+   - `DEEGEE_CORS_ORIGINS` — `https://deegee-drg.pages.dev`
+     (`deegee.pages.dev` was already taken, so Cloudflare gave us the `-drg` suffix — this exact
+     string, or every request from the app fails CORS)
    - `DEEGEE_ADMIN_PHONES` — your own number, `+256…`, so you can see the artist side
    - `DEEGEE_JWT_SECRET` and `DEEGEE_WEBHOOK_SECRET` fill themselves in
 
@@ -58,8 +59,10 @@ catalogue, the artists and the songs.
 
 ## 3. The site, at Cloudflare Pages
 
-1. Sign up at cloudflare.com. **Workers & Pages → Create → Pages → Direct upload**, name the project
-   **`deegee`**, and skip the upload. You only need the empty project to exist; the workflow fills it.
+1. **Done.** The project `deegee` exists and serves from `https://deegee-drg.pages.dev`. Note the
+   suffix: `deegee.pages.dev` was taken by someone else, and Cloudflare appends a few random letters
+   when the name you want is gone. The project's *name* is still `deegee`, which is what the workflow
+   deploys to; only the public address differs.
 2. Note your **Account ID** from the right-hand side of that page.
 3. **My Profile → API Tokens → Create Token**, template *Edit Cloudflare Workers*, or a custom token
    with `Cloudflare Pages: Edit`. Copy it; it is shown once.
@@ -69,17 +72,18 @@ Then in GitHub, **Settings → Secrets and variables → Actions**, add three re
 | Secret | Value |
 |---|---|
 | `API_URL` | the Render URL from step 2, no trailing slash |
-| `CLOUDFLARE_API_TOKEN` | the token from step 3 |
-| `CLOUDFLARE_ACCOUNT_ID` | the account id from step 2 |
+| `CLOUDFLARE_API_TOKEN` | done |
+| `CLOUDFLARE_ACCOUNT_ID` | done |
+| `SITE_URL` | optional; set it to `https://deegee.ug` once that domain resolves |
 
 Push anything to `main`. The workflow runs the checks, builds the site with the API's address baked
-in, and publishes to `https://deegee.pages.dev`.
+in, and publishes to `https://deegee-drg.pages.dev`.
 
 ---
 
 ## 4. Check it works
 
-On your phone, in Safari or Chrome, open `https://deegee.pages.dev`:
+On your phone, in Safari or Chrome, open `https://deegee-drg.pages.dev`:
 
 - the catalogue loads and the artwork appears
 - **press play** — you should hear music, not just a moving progress bar
