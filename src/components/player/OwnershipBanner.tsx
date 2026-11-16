@@ -2,15 +2,22 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Artist, Track } from '../../api';
+import { askToSignIn } from '../../lib/auth';
 import { formatUGX } from '../../lib/money';
 import { colors, font, onDark, radius, space, type, withAlpha } from '../../lib/theme';
+import { useSignedIn } from '../../store/session';
 
 /** Under the player controls: a buy prompt during a preview, or a quiet note once you own the song. */
 export function OwnershipBanner({ track, artist, isPreview, dark }: { track: Track; artist: Artist; isPreview: boolean; dark?: boolean }) {
+  const signedIn = useSignedIn();
+  // /buy and /gift sit in a signed-in-only group. Pushed to while signed out they match no screen
+  // and the router quietly falls back to the first one, so the button looked like it threw you home.
+  const go = (pathname: '/buy' | '/gift', params: Record<string, string>, next: string) =>
+    signedIn ? router.push({ pathname, params }) : askToSignIn(next);
   if (!isPreview) {
     return (
       <View style={styles.ownedWrap}>
-        <Pressable onPress={() => router.push({ pathname: '/gift', params: { artistId: artist.id } })} accessibilityRole="button"
+        <Pressable onPress={() => go('/gift', { artistId: artist.id }, `/gift?artistId=${artist.id}`)} accessibilityRole="button"
           style={({ pressed }) => [styles.support, pressed && styles.pressed]}>
           <Ionicons name="heart" size={18} color={colors.accent} />
           <Text style={styles.supportText}>Support the artist</Text>
@@ -20,7 +27,7 @@ export function OwnershipBanner({ track, artist, isPreview, dark }: { track: Tra
     );
   }
   return (
-    <Pressable onPress={() => router.push({ pathname: '/buy', params: { kind: 'track', id: track.id } })} accessibilityRole="button"
+    <Pressable onPress={() => go('/buy', { kind: 'track', id: track.id }, `/buy?kind=track&id=${track.id}`)} accessibilityRole="button"
       accessibilityLabel={`Buy ${track.title} for ${formatUGX(track.priceUGX)}`} style={styles.upsell}>
       <Ionicons name="lock-open-outline" size={22} color={colors.accent} />
       <View style={styles.flex}>

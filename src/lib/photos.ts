@@ -1,8 +1,13 @@
 import type { ImageSourcePropType } from 'react-native';
+import grace from '../../assets/photos/artist-grace.jpg';
 import kiwa from '../../assets/photos/artist-kiwa.jpg';
 import nalu from '../../assets/photos/artist-nalu.jpg';
 import mukasa from '../../assets/photos/artist-mukasa.jpg';
 import ssalongo from '../../assets/photos/artist-ssalongo.jpg';
+import coverBoda from '../../assets/photos/cover-boda.jpg';
+import coverEbyafaayo from '../../assets/photos/cover-ebyafaayo.jpg';
+import coverLakwena from '../../assets/photos/cover-lakwena.jpg';
+import coverNile from '../../assets/photos/cover-nile.jpg';
 
 /**
  * Real photographs shipped with the app, keyed to the artist or release they belong to.
@@ -16,11 +21,13 @@ import ssalongo from '../../assets/photos/artist-ssalongo.jpg';
  */
 const REAL: Record<string, ImageSourcePropType> = {
   a5: mukasa, // Mukasa the MC
-  r6: mukasa, // Boda Diaries
+  r6: coverBoda, // Boda Diaries
+  a4: grace, // Grace Atim
+  r5: coverLakwena, // Lakwena
   a3: kiwa, // Kiwa Rebel
-  r4: kiwa, // Nile Bounce
+  r4: coverNile, // Nile Bounce
   a2: ssalongo, // Ssalongo Beats
-  r3: ssalongo, // Ebyafaayo
+  r3: coverEbyafaayo, // Ebyafaayo
   a1: nalu, // Nalu Kizza
   r1: nalu, // Enkuba
   r2: nalu, // Sunday in Ntinda
