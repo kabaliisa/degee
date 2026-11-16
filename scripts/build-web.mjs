@@ -6,8 +6,9 @@
  * is there, not just the ones visited before the signal went.
  */
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
 const DIST = 'dist';
@@ -23,6 +24,47 @@ const SMALL_ENOUGH = 50 * 1024;
 
 execFileSync('node', ['scripts/fetch-catalog.mjs'], { stdio: 'inherit' });
 execFileSync('npx', ['expo', 'export', '--platform', 'web'], { stdio: 'inherit' });
+
+// Expo writes font and icon assets to assets/node_modules/..., and Cloudflare Pages refuses to upload
+// anything under a directory called node_modules. The files vanish silently at deploy: the request
+// then falls through to the single-page fallback, which answers the font with 200 and a page of HTML,
+// and every typeface on the site fails to parse. Nothing in the build or the deploy reports a problem.
+//
+// So the segment is renamed here, before anything is published, and every reference to it rewritten.
+const FROM = 'assets/node_modules';
+const TO = 'assets/vendor';
+const vendorSrc = join(DIST, 'assets', 'node_modules');
+if (existsSync(vendorSrc)) {
+  cpSync(vendorSrc, join(DIST, 'assets', 'vendor'), { recursive: true });
+  rmSync(vendorSrc, { recursive: true, force: true });
+  let rewritten = 0;
+  (function rewrite(dir) {
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry);
+      if (statSync(full).isDirectory()) rewrite(full);
+      else if (/\.(js|css|html|json|map)$/i.test(entry)) {
+        const before = readFileSync(full, 'utf8');
+        if (!before.includes(FROM)) continue;
+        writeFileSync(full, before.split(FROM).join(TO));
+        rewritten++;
+      }
+    }
+  })(DIST);
+  console.log(`assets/node_modules -> assets/vendor (${rewritten} files rewritten)`);
+}
+
+// Fail here rather than ship a site whose fonts quietly do not load. Anything still sitting under a
+// node_modules path will not survive the upload, and nothing downstream will say so.
+(function assertNoVendorDir(dir) {
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry);
+    if (entry === 'node_modules') {
+      throw new Error(`${relative(DIST, full)} would be dropped by Cloudflare Pages. Move it before publishing.`);
+    }
+    if (statSync(full).isDirectory()) assertNoVendorDir(full);
+  }
+})(DIST);
+
 execFileSync('node', ['scripts/seo.mjs'], { stdio: 'inherit' });
 
 const files = [];
