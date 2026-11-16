@@ -2,6 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BottomTabBar, Tabs, type BottomTabBarProps } from 'expo-router/tabs';
 import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MiniPlayer } from '../../components/player/MiniPlayer';
 import type { IconName } from '../../components/ui';
 import { colors, font, withAlpha } from '../../lib/theme';
@@ -29,12 +30,22 @@ function TabBarWithPlayer(props: BottomTabBarProps) {
 }
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
   return (
     <Tabs
       tabBar={(props) => <TabBarWithPlayer {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarStyle: styles.tabBar,
+        // A stacked icon and label need 28 + 15 = 43pt of content box. The default bar leaves less
+        // than that, so flexbox shrinks the label instead of the icon and overflow:hidden slices
+        // Poppins' descenders -- Library and Discover read as cut in half. 66 with 6/8 padding
+        // leaves 52pt, comfortably clear, with the device's own bottom inset added rather than
+        // assumed.
+        tabBarStyle: [styles.tabBar, {
+          height: 66 + insets.bottom,
+          paddingTop: 6,
+          paddingBottom: 8 + insets.bottom,
+        }],
         tabBarActiveTintColor: colors.accentText,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarLabelStyle: styles.tabLabel,
@@ -52,6 +63,9 @@ const styles = StyleSheet.create({
   dock: { position: 'absolute', left: 0, right: 0, bottom: 0 },
   fade: { position: 'absolute', left: 0, right: 0, top: -40, height: 120 },
   tabBar: { backgroundColor: colors.ink, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, elevation: 0 },
-  tabLabel: { fontFamily: font.bold, fontSize: 11 },
+  // lineHeight is not optional here. Without it the label's box is measured tight -- ten pixels for an
+  // eleven pixel font -- and the navigator clips it, so Poppins' descenders are sliced off and the
+  // words read as cut in half. Fifteen leaves room for the g in Discover and the y in Library.
+  tabLabel: { fontFamily: font.bold, fontSize: 11, lineHeight: 15, flexShrink: 0 },
   scene: { backgroundColor: colors.bg },
 });
