@@ -43,21 +43,6 @@
       ]
     },
     {
-      "id": "ark5wcuutp9x",
-      "name": "Nakato Rose",
-      "city": "Entebbe",
-      "bio": "Afrobeat and zouk from the lake shore.",
-      "genres": [
-        "Afrobeat",
-        "Zouk"
-      ],
-      "verified": true,
-      "colors": [
-        "#BDBDBD",
-        "#121212"
-      ]
-    },
-    {
       "id": "a1",
       "name": "Nalu Kizza",
       "city": "Kampala",
@@ -88,20 +73,6 @@
     }
   ],
   "releases": [
-    {
-      "id": "r5w9t7ihi33",
-      "artistId": "ark5wcuutp9x",
-      "title": "Kampala Nights",
-      "type": "Single",
-      "year": 2026,
-      "priceUGX": 20000,
-      "colors": [
-        "#2F7BFF",
-        "#0A1A3A"
-      ],
-      "exclusive": false,
-      "coverUrl": null
-    },
     {
       "id": "r1",
       "artistId": "a1",
@@ -202,8 +173,8 @@
           "society": "UPRS"
         }
       ],
-      "hasAudio": false,
-      "previewUrl": null
+      "hasAudio": true,
+      "previewUrl": "/v1/media/previews/5eed0001-a1a1-4a1a-8a1a-000000000001.m4a"
     },
     {
       "id": "t2",
@@ -224,8 +195,8 @@
           "society": "UPRS"
         }
       ],
-      "hasAudio": false,
-      "previewUrl": null
+      "hasAudio": true,
+      "previewUrl": "/v1/media/previews/5eed0002-a2a2-4a2a-8a2a-000000000002.m4a"
     },
     {
       "id": "t3",
@@ -241,8 +212,8 @@
           "society": "UPRS"
         }
       ],
-      "hasAudio": false,
-      "previewUrl": null
+      "hasAudio": true,
+      "previewUrl": "/v1/media/previews/5eed0003-a3a3-4a3a-8a3a-000000000003.m4a"
     },
     {
       "id": "t4",
@@ -258,8 +229,8 @@
           "society": "UPRS"
         }
       ],
-      "hasAudio": false,
-      "previewUrl": null
+      "hasAudio": true,
+      "previewUrl": "/v1/media/previews/5eed0004-a4a4-4a4a-8a4a-000000000004.m4a"
     },
     {
       "id": "t5",
@@ -275,8 +246,8 @@
           "society": "UPRS"
         }
       ],
-      "hasAudio": false,
-      "previewUrl": null
+      "hasAudio": true,
+      "previewUrl": "/v1/media/previews/5eed0005-a5a5-4a5a-8a5a-000000000005.m4a"
     },
     {
       "id": "t6",
@@ -292,8 +263,8 @@
           "society": null
         }
       ],
-      "hasAudio": false,
-      "previewUrl": null
+      "hasAudio": true,
+      "previewUrl": "/v1/media/previews/5eed0001-a1a1-4a1a-8a1a-000000000001.m4a"
     },
     {
       "id": "t7",
@@ -309,8 +280,8 @@
           "society": null
         }
       ],
-      "hasAudio": false,
-      "previewUrl": null
+      "hasAudio": true,
+      "previewUrl": "/v1/media/previews/5eed0002-a2a2-4a2a-8a2a-000000000002.m4a"
     },
     {
       "id": "t8",
@@ -326,8 +297,8 @@
           "society": null
         }
       ],
-      "hasAudio": false,
-      "previewUrl": null
+      "hasAudio": true,
+      "previewUrl": "/v1/media/previews/5eed0003-a3a3-4a3a-8a3a-000000000003.m4a"
     },
     {
       "id": "t9",
@@ -343,8 +314,8 @@
           "society": null
         }
       ],
-      "hasAudio": false,
-      "previewUrl": null
+      "hasAudio": true,
+      "previewUrl": "/v1/media/previews/5eed0004-a4a4-4a4a-8a4a-000000000004.m4a"
     },
     {
       "id": "t10",
@@ -360,8 +331,8 @@
           "society": null
         }
       ],
-      "hasAudio": false,
-      "previewUrl": null
+      "hasAudio": true,
+      "previewUrl": "/v1/media/previews/5eed0005-a5a5-4a5a-8a5a-000000000005.m4a"
     },
     {
       "id": "t11",
@@ -377,8 +348,8 @@
           "society": "UPRS"
         }
       ],
-      "hasAudio": false,
-      "previewUrl": null
+      "hasAudio": true,
+      "previewUrl": "/v1/media/previews/5eed0001-a1a1-4a1a-8a1a-000000000001.m4a"
     },
     {
       "id": "t12",
@@ -394,8 +365,8 @@
           "society": "UPRS"
         }
       ],
-      "hasAudio": false,
-      "previewUrl": null
+      "hasAudio": true,
+      "previewUrl": "/v1/media/previews/5eed0002-a2a2-4a2a-8a2a-000000000002.m4a"
     },
     {
       "id": "t13",
@@ -411,30 +382,8 @@
           "society": "UPRS"
         }
       ],
-      "hasAudio": false,
-      "previewUrl": null
-    },
-    {
-      "id": "tizfgyepr23",
-      "releaseId": "r5w9t7ihi33",
-      "artistId": "ark5wcuutp9x",
-      "title": "Kampala Nights",
-      "durationSec": 34,
-      "priceUGX": 20000,
-      "writers": [
-        {
-          "name": "Nakato Rose",
-          "sharePct": 70,
-          "society": "UPRS"
-        },
-        {
-          "name": "Producer Ssali",
-          "sharePct": 30,
-          "society": null
-        }
-      ],
       "hasAudio": true,
-      "previewUrl": "/v1/media/previews/67c3dfa2-7437-4ebd-a647-3cc35003ba17.m4a"
+      "previewUrl": "/v1/media/previews/5eed0003-a3a3-4a3a-8a3a-000000000003.m4a"
     },
     {
       "id": "t14",
@@ -450,8 +399,8 @@
           "society": "UPRS"
         }
       ],
-      "hasAudio": false,
-      "previewUrl": null
+      "hasAudio": true,
+      "previewUrl": "/v1/media/previews/5eed0004-a4a4-4a4a-8a4a-000000000004.m4a"
     },
     {
       "id": "t15",
@@ -472,8 +421,8 @@
           "society": "UPRS"
         }
       ],
-      "hasAudio": false,
-      "previewUrl": null
+      "hasAudio": true,
+      "previewUrl": "/v1/media/previews/5eed0005-a5a5-4a5a-8a5a-000000000005.m4a"
     },
     {
       "id": "t16",
@@ -489,8 +438,8 @@
           "society": "UPRS"
         }
       ],
-      "hasAudio": false,
-      "previewUrl": null
+      "hasAudio": true,
+      "previewUrl": "/v1/media/previews/5eed0001-a1a1-4a1a-8a1a-000000000001.m4a"
     }
   ]
 }

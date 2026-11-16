@@ -1,7 +1,9 @@
 package app.deegee.api.wallet;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
@@ -27,7 +29,10 @@ class CatalogApiTest extends ApiTestSupport {
                 .andExpect(jsonPath("$.artists[*].id", hasItems("a1", "a5")))
                 .andExpect(jsonPath("$.releases[*].id", hasItems("r1", "r6")))
                 .andExpect(jsonPath("$.tracks[*].id", hasItems("t1", "t16")))
-                .andExpect(jsonPath("$.tracks[0].hasAudio").value(false));
+                // Every seeded track carries a recording and a public preview (V8). This used to assert
+                // the opposite, from when the catalogue was scaffolding with no music in it.
+                .andExpect(jsonPath("$.tracks[0].hasAudio").value(true))
+                .andExpect(jsonPath("$.tracks[*].previewUrl", everyItem(notNullValue())));
     }
 
     @Test

@@ -43,3 +43,4 @@ yarn-error.*
 # Backend build output
 backend/target/
 backend/media/
+!backend/src/main/resources/seed-media/

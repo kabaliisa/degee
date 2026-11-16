@@ -1,5 +1,4 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -9,6 +8,7 @@ import { colors, font, radius, space, withAlpha } from '../../lib/theme';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
 import { Art } from '../Art';
+import { GLASS_IS_BLURRED, GlassSurface } from './GlassSurface';
 
 /**
  * Bar above the tab bar, or docked at the foot of detail screens (which have no tab bar): there the page
@@ -30,18 +30,23 @@ export function MiniPlayer({ floating }: { floating?: boolean }) {
   const progress = limit ? Math.min(1, positionSec / limit) : 0;
 
   const bar = (
-    <Pressable onPress={() => router.push('/player')} accessibilityLabel={`Now playing ${track.title}. Open player`} style={styles.bar}>
-      {/* Frosted rather than solid: the artwork and the page carry on underneath, which is what stops a
-          bar pinned over the content from reading as a second floor.
-          The bar itself must stay transparent. A blur samples what is painted behind it, so a solid
-          colour on the bar is all the blur would ever see; density comes from the tint laid on top. */}
-      <BlurView intensity={90} tint="dark" style={StyleSheet.absoluteFill} pointerEvents="none" />
-      <View style={styles.tint} pointerEvents="none" />
-      {/* Light catching the top and bottom edges. A pane of glass is read by its edges, not its face. */}
-      <LinearGradient pointerEvents="none" colors={[withAlpha(GLASS_WHITE, 0), withAlpha(GLASS_WHITE, 0.95), withAlpha(GLASS_WHITE, 0)]}
-        start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.edgeTop} />
-      <LinearGradient pointerEvents="none" colors={[withAlpha(colors.accent, 0), withAlpha(colors.accent, 0.85), withAlpha(colors.accent, 0)]}
-        start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.edgeBottom} />
+    // The shadow lives on the outside and the clipping on the inside: a view cannot both hide its
+    // overflow and cast a shadow, because the shadow is overflow.
+    <Pressable onPress={() => router.push('/player')} accessibilityLabel={`Now playing ${track.title}. Open player`} style={styles.lift}>
+      <View style={styles.bar}>
+        {/* Frosted rather than solid: the artwork and the page carry on underneath, which is what stops
+            a bar pinned over the content from reading as a second floor. The pane itself holds no
+            colour — a blur samples what is painted behind it, so a colour of its own is all it would
+            ever see. Density comes from the tint laid on top of it. */}
+        <GlassSurface style={styles.pane} />
+        <View style={[styles.tint, !GLASS_IS_BLURRED && styles.tintFallback]} pointerEvents="none" />
+        {/* The sheen a pane picks up from a light source off to one side. Steep and short: past the
+            first third it is gone, so it reads as a reflection rather than as a gradient. */}
+        <LinearGradient pointerEvents="none" style={styles.sheen}
+          colors={[withAlpha(GLASS_WHITE, 0.12), withAlpha(GLASS_WHITE, 0.035), withAlpha(GLASS_WHITE, 0)]}
+          locations={[0, 0.35, 0.7]} start={{ x: 0.3, y: 0 }} end={{ x: 0.64, y: 0.95 }} />
+        {/* The lit top edge. Glass is read by its edges far more than by its face. */}
+        <View style={styles.topEdge} pointerEvents="none" />
       <View style={styles.row}>
         <Art seed={release.id} size={56} style={styles.art} />
         <View style={styles.flex}>
@@ -69,6 +74,7 @@ export function MiniPlayer({ floating }: { floating?: boolean }) {
           </View>
         </View>
       </View>
+      </View>
     </Pressable>
   );
   if (!floating) return bar;
@@ -83,18 +89,31 @@ export function MiniPlayer({ floating }: { floating?: boolean }) {
 
 /** The glass reads against pure white, not the warm white the rest of the app is set in. */
 const GLASS_WHITE = '#FFFFFF';
+/** Warm charcoal: a brown dark enough to read white type against, warm enough to belong to this app. */
+const GLASS_TINT = '#413029';
+
+const fill = { position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0 };
 
 const styles = StyleSheet.create({
-  bar: {
-    marginHorizontal: space.md, borderRadius: 26, overflow: 'hidden',
-    backgroundColor: 'transparent', // see above: a colour here would be the only thing the blur sees
-    borderWidth: StyleSheet.hairlineWidth, borderColor: withAlpha(GLASS_WHITE, 0.22),
+  lift: {
+    marginHorizontal: space.md,
+    // Floated rather than resting: the gap under it is what says this bar is over the page, not part
+    // of it, and the blur only reads as glass once there is a shadow saying there is a pane at all.
+    shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 32, shadowOffset: { width: 0, height: 12 }, elevation: 12,
   },
+  bar: {
+    borderRadius: 22, overflow: 'hidden',
+    backgroundColor: 'transparent', // see above: a colour here would be the only thing the blur sees
+    borderWidth: 1, borderColor: withAlpha(GLASS_WHITE, 0.18),
+  },
+  pane: fill,
   // Laid over the blur, not under it: deep enough to read white type against, sheer enough that the
   // artwork behind still comes through as colour.
-  tint: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: withAlpha(colors.surfaceRaised, 0.42) },
-  edgeTop: { position: 'absolute', top: 0, left: 20, right: 20, height: 2 },
-  edgeBottom: { position: 'absolute', bottom: 0, left: 56, right: 56, height: 2 },
+  tint: { ...fill, backgroundColor: withAlpha(GLASS_TINT, 0.55) },
+  // With no blur to soften what is behind it, the tint has to carry the legibility on its own.
+  tintFallback: { backgroundColor: withAlpha(GLASS_TINT, 0.92) },
+  sheen: fill,
+  topEdge: { position: 'absolute', top: 0, left: 0, right: 0, height: 1, backgroundColor: withAlpha(GLASS_WHITE, 0.12) },
   dock: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingTop: space.xxl },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.sm + 2, paddingHorizontal: space.sm + 2, paddingVertical: space.sm },
   art: { borderRadius: radius.lg },
@@ -105,12 +124,12 @@ const styles = StyleSheet.create({
   artist: { fontFamily: font.medium, fontSize: 11, lineHeight: 16, letterSpacing: 2.2, color: withAlpha(GLASS_WHITE, 0.72) },
   artistTight: { letterSpacing: 0.6 },
   skip: { width: 26, height: 34, alignItems: 'center', justifyContent: 'center' },
-  // A disc of the same glass with a gold rim and a gold glow around it, rather than a solid button:
-  // solid gold turns the one control you reach for without looking into a sticker on the pane.
+  // A disc of the same glass, tinted amber and ringed in gold, rather than a solid button: solid gold
+  // turns the one control you reach for without looking into a sticker stuck on the pane. No glow —
+  // a lit halo reads as plastic, and the ring alone is enough to find.
   playBtn: {
     width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: colors.accent, backgroundColor: withAlpha(colors.accent, 0.2),
-    shadowColor: colors.accent, shadowOpacity: 0.7, shadowRadius: 14, shadowOffset: { width: 0, height: 0 }, elevation: 8,
+    borderWidth: 1, borderColor: withAlpha(colors.accent, 0.75), backgroundColor: withAlpha(colors.accent, 0.22),
   },
   playNudge: { marginLeft: 2 },
   track: { height: 5, borderRadius: 3, backgroundColor: withAlpha(GLASS_WHITE, 0.45) },
