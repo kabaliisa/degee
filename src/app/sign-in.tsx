@@ -2,7 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useRef, useState, type ComponentRef } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { listArtists } from '../api';
+import { listArtists, photoSource } from '../api';
 import { requestCode, verifyCode } from '../api/account';
 import { Art } from '../components/Art';
 import { Wordmark } from '../components/Wordmark';
@@ -137,7 +137,10 @@ export default function SignIn() {
 
 /** Three artists' photos, overlapping, above the welcome. */
 function Collage() {
-  const [a, b, c] = listArtists();
+  // Only artists we actually have a picture of. Taking the first three blindly put a generated
+  // pattern in the middle tile, the largest one, which is the first thing a new person sees.
+  const withPhoto = listArtists().filter((artist) => photoSource(artist.id));
+  const [a, b, c] = withPhoto;
   if (!a || !b || !c) return null;
   return (
     <View style={styles.collage} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
