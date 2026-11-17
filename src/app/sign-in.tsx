@@ -1,4 +1,5 @@
-import { useLocalSearchParams } from 'expo-router';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useRef, useState, type ComponentRef } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -81,6 +82,13 @@ export default function SignIn() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      {/* The screen has no header, and a phone opening the app straight onto it has nothing to go
+          back to, so without this there is no way out of signing in. */}
+      <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
+        accessibilityRole="button" accessibilityLabel="Close" hitSlop={12}
+        style={({ pressed }) => [styles.close, pressed && styles.closePressed]}>
+        <Ionicons name="close" size={22} color={colors.text} />
+      </Pressable>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           {step === 'phone' ? <Collage /> : null}
@@ -154,6 +162,8 @@ function Collage() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   flex: { flex: 1 },
+  close: { position: 'absolute', zIndex: 2, top: space.sm, left: space.md, width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  closePressed: { backgroundColor: colors.surfacePress },
   content: { flexGrow: 1, padding: space.xl, gap: space.lg, justifyContent: 'center', maxWidth: 480, width: '100%', alignSelf: 'center' },
   copy: { gap: space.md, marginTop: -space.sm },
   rule: { width: 56, height: 4, borderRadius: 2, backgroundColor: colors.accent },

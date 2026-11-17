@@ -6,7 +6,7 @@ import { Poppins_700Bold } from '@expo-google-fonts/poppins/700Bold';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, AppState, StyleSheet, Text, View } from 'react-native';
 import { useCatalog } from '../api/catalog';
 import { API_URL } from '../api/config';
@@ -49,6 +49,14 @@ function AccountSync({ signedIn }: { signedIn: boolean }) {
 }
 
 function Splash({ error, onRetry }: { error?: string; onRetry?: () => void }) {
+  // The API sleeps when nobody has used it for a while and takes the better part of a minute to wake.
+  // A spinner alone on a black screen for that long reads as a broken app, so after a few seconds the
+  // wait explains itself.
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), 4000);
+    return () => clearTimeout(t);
+  }, []);
   return (
     <View style={[styles.root, styles.splash]}>
       <ActivityIndicator color={colors.accent} />
@@ -58,7 +66,9 @@ function Splash({ error, onRetry }: { error?: string; onRetry?: () => void }) {
           {onRetry ? <Button label="Try again" onPress={onRetry} style={styles.retry} /> : null}
         </>
       ) : (
-        <ActivityIndicator color={colors.textMuted} />
+        <Text style={[type.body, styles.splashText]}>
+          {slow ? 'Waking the server. The first load after a quiet spell takes about a minute.' : 'Loading your music…'}
+        </Text>
       )}
     </View>
   );

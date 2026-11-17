@@ -34,7 +34,10 @@ self.addEventListener('install', (event) => {
       // One at a time and forgiving: one missing file shouldn't leave the app with no cache at all.
       const files = await precacheList();
       await Promise.all(files.map((f) => cache.add(f).catch(() => {})));
-      await self.skipWaiting();
+      // Deliberately no skipWaiting. A page that is already open is running the previous build's
+      // JavaScript, and activating takes its cache away while the old files are also gone from the
+      // host -- the next chunk it asks for fails to load and the screen goes blank. The new worker
+      // waits instead, and takes over the next time the app is opened fresh.
     })(),
   );
 });

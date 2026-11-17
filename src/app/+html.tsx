@@ -57,4 +57,17 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(function () {});
   });
 }
+// A script this app asked for and could not get means it is running a build whose files are gone --
+// an installed app left open across a deploy. There is nothing to render without that chunk, so the
+// screen would simply go blank. Reload once instead, which picks up the current build; the flag keeps
+// a genuinely broken deploy from reloading forever.
+window.addEventListener('error', function (e) {
+  var el = e && e.target;
+  if (!el || (el.tagName !== 'SCRIPT' && el.tagName !== 'LINK')) return;
+  try {
+    if (sessionStorage.getItem('deegee-reloaded-for-stale-build')) return;
+    sessionStorage.setItem('deegee-reloaded-for-stale-build', '1');
+  } catch (err) { return; }
+  location.reload();
+}, true);
 `;

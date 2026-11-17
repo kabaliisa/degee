@@ -4,10 +4,6 @@ import kiwa from '../../assets/photos/artist-kiwa.jpg';
 import nalu from '../../assets/photos/artist-nalu.jpg';
 import mukasa from '../../assets/photos/artist-mukasa.jpg';
 import ssalongo from '../../assets/photos/artist-ssalongo.jpg';
-import coverBoda from '../../assets/photos/cover-boda.jpg';
-import coverEbyafaayo from '../../assets/photos/cover-ebyafaayo.jpg';
-import coverLakwena from '../../assets/photos/cover-lakwena.jpg';
-import coverNile from '../../assets/photos/cover-nile.jpg';
 
 /**
  * Real photographs shipped with the app, keyed to the artist or release they belong to.
@@ -17,17 +13,20 @@ import coverNile from '../../assets/photos/cover-nile.jpg';
  * a stand-in face is not, and a fake face attached to a real name and a price is the thing worth
  * avoiding on a storefront.
  *
+ * A release carries its artist's photo rather than one of its own. Giving each release a different
+ * portrait put a stranger's face on an artist's own record, which reads as a bug on their page.
+ *
  * As artists upload their own photos these entries disappear: the server's coverUrl wins first.
  */
 const REAL: Record<string, ImageSourcePropType> = {
   a5: mukasa, // Mukasa the MC
-  r6: coverBoda, // Boda Diaries
+  r6: mukasa, // Boda Diaries
   a4: grace, // Grace Atim
-  r5: coverLakwena, // Lakwena
+  r5: grace, // Lakwena
   a3: kiwa, // Kiwa Rebel
-  r4: coverNile, // Nile Bounce
+  r4: kiwa, // Nile Bounce
   a2: ssalongo, // Ssalongo Beats
-  r3: coverEbyafaayo, // Ebyafaayo
+  r3: ssalongo, // Ebyafaayo
   a1: nalu, // Nalu Kizza
   r1: nalu, // Enkuba
   r2: nalu, // Sunday in Ntinda
