@@ -9,6 +9,7 @@ import { MiniPlayer } from '../../components/player/MiniPlayer';
 import { Button, EmptyState, IconButton, ReleaseCard, Shelf, TrackRow } from '../../components/ui';
 import { PREVIEW_SEC, totalDuration } from '../../lib/format';
 import { formatUGX } from '../../lib/money';
+import { useLayout } from '../../lib/breakpoints';
 import { colors, font, layout, onDark, radius, space, type } from '../../lib/theme';
 import { askToSignIn } from '../../lib/auth';
 import { siteUrl } from '../../lib/site';
@@ -23,6 +24,7 @@ export default function ReleaseScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
+  const { wide } = useLayout();
   const release = getRelease(id);
   const ownedIds = useWallet((s) => s.ownedTracks);
   const owns = useWallet((s) => s.owns);
@@ -59,9 +61,9 @@ export default function ReleaseScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, wide && styles.contentWide]}>
         <View style={styles.stage}>
-          <View style={[styles.header, { paddingTop: insets.top + 56 }]}>
+          <View style={[styles.header, wide && styles.headerWide, { paddingTop: insets.top + 56 }]}>
             <View style={styles.cover}>
               <Art seed={release.id} size={Math.min(width - space.lg * 2, 340)} style={styles.coverArt} />
             </View>
@@ -74,7 +76,7 @@ export default function ReleaseScreen() {
             </Text>
           </View>
 
-          <View style={styles.buttons}>
+          <View style={[styles.buttons, wide && styles.buttonsWide]}>
             {ownsAll ? (
               <View style={styles.ownedRow}>
                 <View style={styles.ownedPill}>
@@ -127,7 +129,8 @@ export default function ReleaseScreen() {
           </Shelf>
         ) : null}
       </ScrollView>
-      <MiniPlayer floating />
+      {/* The wide layout already has a player bar along the foot of the window. */}
+      {wide ? null : <MiniPlayer floating />}
     </View>
   );
 }
@@ -135,6 +138,11 @@ export default function ReleaseScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { paddingBottom: layout.detailScreenBottom },
+  // A buy button the width of a laptop is a banner, not a button, and a title centred over 1,180
+  // pixels has nothing holding it. Wide, the release keeps a column of its own.
+  contentWide: { maxWidth: 1180, width: '100%', alignSelf: 'center' },
+  headerWide: { maxWidth: 560, alignSelf: 'center', width: '100%' },
+  buttonsWide: { maxWidth: 560, alignSelf: 'center', width: '100%' },
   stage: { backgroundColor: onDark.bg, borderBottomLeftRadius: radius.xl, borderBottomRightRadius: radius.xl, overflow: 'hidden', paddingBottom: space.lg },
   header: { paddingHorizontal: space.lg, paddingBottom: space.md },
   cover: { alignSelf: 'center', shadowColor: '#000', shadowOpacity: 0.5, shadowRadius: 24, shadowOffset: { width: 0, height: 12 } },

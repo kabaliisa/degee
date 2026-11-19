@@ -10,6 +10,9 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, AppState, StyleSheet, Text, View } from 'react-native';
 import { useCatalog } from '../api/catalog';
 import { API_URL } from '../api/config';
+import { Sidebar, SIDEBAR_WIDTH } from '../components/nav/Sidebar';
+import { MiniPlayer, PLAYER_BAR_HEIGHT } from '../components/player/MiniPlayer';
+import { useLayout } from '../lib/breakpoints';
 import { OfflineBar } from '../components/OfflineBar';
 import { PlayerEngine } from '../components/player/PlayerEngine';
 import { Button } from '../components/ui';
@@ -93,6 +96,7 @@ export default function RootLayout() {
   const hasName = useSession((s) => Boolean(s.user?.name?.trim()));
   const catalog = useCatalog((s) => s.status);
   const catalogError = useCatalog((s) => s.error);
+  const { wide } = useLayout();
 
   useEffect(() => { void useCatalog.getState().load(); }, []);
 
@@ -116,14 +120,23 @@ export default function RootLayout() {
       {PRERENDERING ? null : <PlayerEngine />}
       <AccountSync signedIn={signedIn} />
       <OfflineBar />
+      {/* On a wide screen the chrome belongs to the app, not to the tabs: an artist page is not a
+          tab, and the sidebar and the player have to stay put while you are on one. Laid over the
+          content with matching padding on the stack, so nothing scrolls underneath and stays. */}
+      {wide ? (
+        <>
+          <View style={styles.sidebarDock}><Sidebar /></View>
+          <View style={styles.playerDock}><MiniPlayer wide /></View>
+        </>
+      ) : null}
       <Stack
         screenOptions={{
+          contentStyle: wide ? styles.contentWide : { backgroundColor: colors.bg },
           headerStyle: { backgroundColor: colors.ink },
           headerTintColor: '#FFFFFF',
           headerTitleStyle: { fontFamily: font.display, fontSize: 17 },
           headerShadowVisible: false,
           headerBackButtonDisplayMode: 'minimal',
-          contentStyle: { backgroundColor: colors.bg },
         }}>
         {/* Open to everyone: the catalogue is what a search result or a shared link lands on, and a
             stranger should hear the music before being asked for a phone number. */}
@@ -159,6 +172,9 @@ export default function RootLayout() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
+  sidebarDock: { position: 'absolute', left: 0, top: 0, bottom: 0, zIndex: 3 },
+  playerDock: { position: 'absolute', left: SIDEBAR_WIDTH, right: 0, bottom: 0, zIndex: 3 },
+  contentWide: { backgroundColor: colors.bg, paddingLeft: SIDEBAR_WIDTH, paddingBottom: PLAYER_BAR_HEIGHT },
   splash: { alignItems: 'center', justifyContent: 'center', gap: space.lg, padding: space.xl },
   splashText: { color: colors.textMuted, textAlign: 'center', maxWidth: 320 },
   retry: { alignSelf: 'stretch', maxWidth: 320, width: '100%' },

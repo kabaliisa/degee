@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { type BottomTabBarProps } from 'expo-router/tabs';
+import { router, usePathname } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { IconName } from '../ui';
 import { colors, font, radius, space, withAlpha } from '../../lib/theme';
@@ -7,36 +7,35 @@ import { colors, font, radius, space, withAlpha } from '../../lib/theme';
 export const SIDEBAR_WIDTH = 232;
 
 /** Matches the tab order. Icons are the filled/outline pair the tab bar uses. */
-const ITEMS: { route: string; label: string; on: IconName; off: IconName }[] = [
-  { route: 'index', label: 'Home', on: 'home', off: 'home-outline' },
-  { route: 'search', label: 'Discover', on: 'compass', off: 'compass-outline' },
-  { route: 'library', label: 'Library', on: 'albums', off: 'albums-outline' },
-  { route: 'profile', label: 'Profile', on: 'person', off: 'person-outline' },
+const ITEMS: { path: string; label: string; on: IconName; off: IconName }[] = [
+  { path: '/', label: 'Home', on: 'home', off: 'home-outline' },
+  { path: '/search', label: 'Discover', on: 'compass', off: 'compass-outline' },
+  { path: '/library', label: 'Library', on: 'albums', off: 'albums-outline' },
+  { path: '/profile', label: 'Profile', on: 'person', off: 'person-outline' },
 ];
 
 /**
  * On a wide screen the four tabs move to the side, where there is room for them to stay visible
- * while the content scrolls. The navigator is the same one the phone uses -- only its presentation
- * changes -- so a route is never in two places at once.
+ * while the content scrolls.
+ *
+ * It navigates by path rather than through the tab navigator, because it lives above the whole app:
+ * an artist page is not a tab, and the sidebar has to stay put and stay correct while you are on
+ * one. That is the difference between a site and a phone app wearing a sidebar.
  */
-export function Sidebar({ state, navigateToTab }: BottomTabBarProps) {
-  const current = state.routes[state.index]?.name;
-  const keyOf = (route: string) => state.routes.find((r) => r.name === route)?.key;
+export function Sidebar() {
+  const pathname = usePathname();
   return (
     <View style={styles.bar}>
       <Text style={styles.wordmark}>deegee</Text>
       <View style={styles.items}>
         {ITEMS.map((item) => {
-          const active = current === item.route;
+          const active = item.path === '/' ? pathname === '/' : pathname.startsWith(item.path);
           return (
             <Pressable
-              key={item.route}
+              key={item.path}
               accessibilityRole="tab"
               accessibilityState={{ selected: active }}
-              onPress={() => {
-                const key = keyOf(item.route);
-                if (key) navigateToTab(key);
-              }}
+              onPress={() => router.navigate(item.path)}
               // hovered is real on the web, where this layout lives, but it is not in React Native's
               // own Pressable types because a touch screen has no hover.
               style={(s) => {

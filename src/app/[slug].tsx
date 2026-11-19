@@ -11,6 +11,7 @@ import { Button, EmptyState, IconButton, PlayButton, ReleaseCard, Shelf, TrackRo
 import { colors, font, layout, onDark, radius, space, type, withAlpha } from '../lib/theme';
 import { siteUrl } from '../lib/site';
 import { artistSlug, artistBySlug } from '../lib/slug';
+import { useLayout } from '../lib/breakpoints';
 import { useLikes } from '../store/likes';
 import { usePlayer } from '../store/player';
 import { useWallet } from '../store/wallet';
@@ -18,6 +19,7 @@ import { useWallet } from '../store/wallet';
 export default function ArtistScreen() {
   // The address is the artist's name (deegee.ug/nalu-kizza). Ids still resolve, so a link made
   // before an artist picked a handle, or one written down from the database, keeps working.
+  const { wide } = useLayout();
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const artist = artistBySlug(slug ?? '', listArtists()) ?? getArtist(slug);
   const owns = useWallet((s) => s.owns);
@@ -39,15 +41,25 @@ export default function ArtistScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Full-bleed hero: the artist's art fills the top, name set large over a fade. */}
-        <View style={styles.hero}>
-          <Art seed={artist.id} size={600} style={styles.heroArt} />
+      <ScrollView contentContainerStyle={[styles.content, wide && styles.contentWide]}>
+        {/* Full-bleed hero: the artist's art fills the top, name set large over a fade. Wide, it
+            turns on its side -- the photograph held right, the name in the clear space beside it --
+            because a tall square crop on a broad window leaves half the banner empty. */}
+        <View style={[styles.hero, wide && styles.heroWide]}>
+          <Art seed={artist.id} size={wide ? 760 : 600} style={wide ? styles.heroArtWide : styles.heroArt} />
           {/* Ends on the page's own colour, so the photograph dissolves into it rather than stopping. */}
-          <LinearGradient colors={[withAlpha(colors.bg, 0.6), withAlpha(colors.bg, 0), withAlpha(colors.bg, 0.4), colors.bg]}
-            locations={[0, 0.3, 0.68, 1]} style={StyleSheet.absoluteFill} />
-          <View style={styles.heroText}>
-            <View style={styles.flex}>
+          {wide ? (
+            <LinearGradient colors={[colors.bg, withAlpha(colors.bg, 0.9), withAlpha(colors.bg, 0.25), withAlpha(colors.bg, 0)]}
+              locations={[0, 0.36, 0.72, 1]} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={StyleSheet.absoluteFill} />
+          ) : (
+            <LinearGradient colors={[withAlpha(colors.bg, 0.6), withAlpha(colors.bg, 0), withAlpha(colors.bg, 0.4), colors.bg]}
+              locations={[0, 0.3, 0.68, 1]} style={StyleSheet.absoluteFill} />
+          )}
+          {wide ? <LinearGradient colors={[withAlpha(colors.bg, 0), colors.bg]} style={styles.heroFootWide} pointerEvents="none" /> : null}
+          <View style={[styles.heroText, wide && styles.heroTextWide]}>
+            {/* Wide, the words take only the room they need so the play button sits beside the name
+                rather than drifting out over the photograph. */}
+            <View style={wide ? undefined : styles.flex}>
               {artist.verified ? (
                 <View style={styles.verified}>
                   <Ionicons name="checkmark-circle" size={18} color={colors.ownedInk} />
@@ -61,10 +73,12 @@ export default function ArtistScreen() {
           </View>
         </View>
 
-        <View style={styles.actions}>
+        <View style={[styles.actions, wide && styles.actionsWide]}>
+          {/* Thumb-sized on a phone, mouse-sized on a desktop: the same 50pt pill next to a cursor
+              reads as a banner rather than a button. */}
           <Button variant={following ? 'secondary' : 'primary'} icon={following ? 'checkmark' : undefined} label={following ? 'Following' : 'Follow'}
-            onPress={() => toggleFollow(artist.id)} style={styles.flex} />
-          <GiftButton artist={artist} style={styles.flex} />
+            small={wide} onPress={() => toggleFollow(artist.id)} style={wide ? undefined : styles.flex} />
+          <GiftButton artist={artist} small={wide} style={wide ? undefined : styles.flex} />
           <IconButton name="share-outline" label="Share artist page" onPress={share} />
         </View>
 
@@ -88,7 +102,8 @@ export default function ArtistScreen() {
           </Pressable>
         </View>
       </ScrollView>
-      <MiniPlayer floating />
+      {/* The wide layout already has a player bar along the foot of the window. */}
+      {wide ? null : <MiniPlayer floating />}
     </View>
   );
 }
@@ -96,7 +111,15 @@ export default function ArtistScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: { paddingBottom: layout.detailScreenBottom },
+  // A track row that runs the whole width of a laptop puts the price a hand's width from the title.
+  // The page keeps a column it can be read in, and the hero still reaches both edges.
+  contentWide: { maxWidth: 1180, width: '100%', alignSelf: 'center', paddingBottom: space.xxl },
   hero: { height: 380, overflow: 'hidden', backgroundColor: colors.bg },
+  heroWide: { height: 420 },
+  heroArtWide: { position: 'absolute', right: 0, top: '50%', transform: [{ translateY: '-50%' }], borderRadius: 0 },
+  heroFootWide: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 110 },
+  heroTextWide: { left: space.xl, right: undefined, maxWidth: 560, bottom: space.xxl },
+  actionsWide: { justifyContent: 'flex-start' },
   heroArt: { position: 'absolute', top: -110, left: -100, borderRadius: 0 },
   heroText: { position: 'absolute', left: space.lg, right: space.lg, bottom: space.xl, flexDirection: 'row', alignItems: 'flex-end', gap: space.md },
   verified: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 },

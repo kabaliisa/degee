@@ -17,10 +17,10 @@ const openGift = (artistId: string) => {
 const artistSharePct = 100 - TERMS.giftPlatformPct;
 
 /** Compact "Send a gift" button for the artist header row. */
-export function GiftButton({ artist, style }: { artist: Artist; style?: StyleProp<ViewStyle> }) {
+export function GiftButton({ artist, style, small }: { artist: Artist; style?: StyleProp<ViewStyle>; small?: boolean }) {
   return (
     <Pressable onPress={() => openGift(artist.id)} accessibilityRole="button" accessibilityLabel={`Send ${artist.name} a gift`}
-      style={({ pressed }) => [styles.button, style, pressed && styles.pressed]}>
+      style={({ pressed }) => [styles.button, small && styles.buttonSmall, style, pressed && styles.pressed]}>
       <Ionicons name="gift" size={16} color={colors.accent} />
       <Text style={styles.buttonLabel}>Send a gift</Text>
     </Pressable>
@@ -43,6 +43,7 @@ export function SupportCard({ artist }: { artist: Artist }) {
 }
 
 const styles = StyleSheet.create({
+  buttonSmall: { paddingVertical: 7, minHeight: 36 },
   button: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 14, borderRadius: radius.pill,
     backgroundColor: colors.surfaceRaised, borderWidth: 1, borderColor: colors.accent },
   buttonLabel: { fontFamily: font.bold, fontSize: 13, color: colors.text },
