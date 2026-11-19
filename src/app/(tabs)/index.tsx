@@ -16,6 +16,7 @@ import { colors, fadeStops, font, layout, radius, space, type, withAlpha } from 
 import { usePlayer } from '../../store/player';
 import { useSignedIn } from '../../store/session';
 import { useWallet } from '../../store/wallet';
+import { artistHref } from '../../lib/slug';
 
 export default function Home() {
   const [heroScrolledAway, setHeroScrolledAway] = useState(false);
@@ -116,7 +117,7 @@ function Hero({ release, playing, onPlay }: { release: Release; playing: boolean
   const fadeHeight = artTop + 125;
   const topFade = fadeStops(colors.bg, artTop / fadeHeight);
   const bottomFade = fadeStops(colors.bg);
-  const openArtist = () => router.push(`/artist/${release.artistId}`);
+  const openArtist = () => (artist ? router.push(artistHref(artist)) : undefined);
   return (
     <View style={[styles.hero, { height }]}>
       {artist ? <Art seed={artist.id} size={artSize} style={[styles.heroArt, { top: artTop }]} /> : null}
@@ -195,7 +196,7 @@ function FeatureCard({ release }: { release: Release }) {
 
 function ArtistBubble({ artist, backed }: { artist: Artist; backed: boolean }) {
   return (
-    <Pressable onPress={() => router.push(`/artist/${artist.id}`)} accessibilityRole="button"
+    <Pressable onPress={() => router.push(artistHref(artist))} accessibilityRole="button"
       accessibilityLabel={backed ? `${artist.name}, you back this artist` : artist.name} style={styles.bubble}>
       <View style={[styles.ring, backed && styles.ringOn]}>
         <Art seed={artist.id} size={64} round />

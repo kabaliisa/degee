@@ -128,7 +128,9 @@ export default function RootLayout() {
         {/* Open to everyone: the catalogue is what a search result or a shared link lands on, and a
             stranger should hear the music before being asked for a phone number. */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="artist/[id]" options={{ headerTransparent: true, title: '', headerStyle: { backgroundColor: 'transparent' } }} />
+        {/* An artist's page is at the top level, so their name is the whole address. */}
+        <Stack.Screen name="[slug]" options={{ headerTransparent: true, title: '', headerStyle: { backgroundColor: 'transparent' } }} />
+        <Stack.Screen name="artist/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="release/[id]" options={{ headerTransparent: true, title: '', headerStyle: { backgroundColor: 'transparent' } }} />
         <Stack.Screen name="player" options={{ presentation: 'fullScreenModal', headerShown: false, animation: 'slide_from_bottom' }} />
         <Stack.Screen name="sign-in" options={{ presentation: 'modal', headerShown: false, animation: 'fade' }} />

@@ -19,6 +19,14 @@ const SITE = (process.env.EXPO_PUBLIC_SITE_URL ?? 'https://deegee.ug').replace(/
 const MEDIA = (process.env.EXPO_PUBLIC_API_URL ?? SITE).replace(/\/$/, '');
 const seed = JSON.parse(readFileSync('src/api/catalog.seed.json', 'utf8'));
 
+// Keep in step with src/lib/slug.ts -- this script is plain JavaScript and can't import it, and the
+// verification suite checks that the pages written here are the ones the app links to.
+const HANDLES = { a5: 'mukasa' };
+const slugify = (name) =>
+  name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+const artistSlug = (a) => HANDLES[a.id] ?? slugify(a.name);
+
 const ugx = (n) => `UGX ${n.toLocaleString('en-US')}`;
 const songsOf = (releaseId) => seed.tracks.filter((t) => t.releaseId === releaseId);
 const artistOf = (id) => seed.artists.find((a) => a.id === id);
@@ -80,7 +88,7 @@ function pages() {
         datePublished: String(r.year),
         albumReleaseType: r.type === 'Album' ? 'AlbumRelease' : r.type === 'EP' ? 'EPRelease' : 'SingleRelease',
         numTracks: songs.length,
-        byArtist: { '@type': 'MusicGroup', name, url: `${SITE}/artist/${r.artistId}` },
+        byArtist: { '@type': 'MusicGroup', name, url: `${SITE}/${artistSlug(artistOf(r.artistId))}` },
         track: songs.map((t, i) => ({
           '@type': 'MusicRecording',
           position: i + 1,
@@ -101,8 +109,8 @@ function pages() {
   for (const a of seed.artists) {
     const releases = seed.releases.filter((r) => r.artistId === a.id);
     list.push({
-      file: join('artist', `${a.id}.html`),
-      path: `/artist/${a.id}`,
+      file: `${artistSlug(a)}.html`,
+      path: `/${artistSlug(a)}`,
       title: `${a.name} · music from ${a.city} · Deegee`,
       description: `${a.name} makes ${a.genres.join(' and ')} in ${a.city}. Hear previews and buy ${releases.length === 1 ? 'their release' : `any of their ${releases.length} releases`} with mobile money, paying the artist directly.`,
       image: cover(releases.find((r) => r.coverUrl)?.coverUrl),
@@ -113,7 +121,7 @@ function pages() {
         '@context': 'https://schema.org',
         '@type': 'MusicGroup',
         name: a.name,
-        url: `${SITE}/artist/${a.id}`,
+        url: `${SITE}/${artistSlug(a)}`,
         description: a.bio,
         genre: a.genres,
         foundingLocation: { '@type': 'Place', name: `${a.city}, Uganda` },
@@ -172,6 +180,14 @@ writeFileSync(
 writeFileSync(
   join(DIST, 'robots.txt'),
   ['User-agent: *', ...PRIVATE.map((p) => `Disallow: /${p}`), '', `Sitemap: ${SITE}/sitemap.xml`, ''].join('\n'),
+);
+
+// Artist pages used to live under /artist/<id>, and links to them are already out in the world. The
+// app redirects too, but a crawler asking for the old address should be told where the page went
+// rather than handed the single-page shell, which looks to it like the home page under another URL.
+writeFileSync(
+  join(DIST, '_redirects'),
+  [...seed.artists.map((a) => `/artist/${a.id}  /${artistSlug(a)}  301`), ''].join('\n'),
 );
 
 console.log(`seo: ${written} pages given a title, description and preview card; sitemap.xml and robots.txt written for ${SITE}`);

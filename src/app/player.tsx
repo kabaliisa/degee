@@ -11,6 +11,7 @@ import { colors, font, onDark, space, type } from '../lib/theme';
 import { useLikes } from '../store/likes';
 import { usePlayer } from '../store/player';
 import { useWallet } from '../store/wallet';
+import { artistHref } from '../lib/slug';
 
 export default function Player() {
   const insets = useSafeAreaInsets();
@@ -35,7 +36,7 @@ export default function Player() {
   }
 
   const artSize = Math.min(width - space.xl * 2, height * 0.42, 420);
-  const openArtist = () => { router.back(); router.push(`/artist/${artist.id}`); };
+  const openArtist = () => { router.back(); router.push(artistHref(artist)); };
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top + space.sm, paddingBottom: insets.bottom + space.lg }]}>

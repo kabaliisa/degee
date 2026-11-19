@@ -7,6 +7,7 @@ import { formatUGX } from '../../lib/money';
 import { useWallet } from '../../store/wallet';
 import { colors, font, radius, space, type, withAlpha } from '../../lib/theme';
 import { Art } from '../Art';
+import { artistHref } from '../../lib/slug';
 
 /** A titled horizontal row, the backbone of every browse screen. */
 export function Shelf({ title, subtitle, children }: { title: string; subtitle?: string; children: ReactNode }) {
@@ -58,7 +59,7 @@ export function ReleaseCard({ release, size = 148, subtitle, price = true }: { r
 
 export function ArtistCard({ artist, size = 132 }: { artist: Artist; size?: number }) {
   return (
-    <Pressable onPress={() => router.push(`/artist/${artist.id}`)} accessibilityLabel={artist.name}
+    <Pressable onPress={() => router.push(artistHref(artist))} accessibilityLabel={artist.name}
       style={({ pressed }) => [{ width: size }, pressed && styles.pressed]}>
       <Art seed={artist.id} size={size} round />
       <Text numberOfLines={1} style={[type.bodyBold, styles.cardTitle, styles.centered]}>{artist.name}</Text>

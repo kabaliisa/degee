@@ -9,6 +9,7 @@ import { EmptyState, ListRow, ScreenHeader, TrackRow } from '../../components/ui
 import { colors, font, layout, onDark, radius, space, type, withAlpha } from '../../lib/theme';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
+import { artistHref } from '../../lib/slug';
 
 const GENRES: Genre[] = ['Afrobeat', 'Kadongo Kamu', 'Dancehall', 'Gospel', 'Zouk', 'Hip Hop'];
 
@@ -65,7 +66,7 @@ export default function Search() {
       {searching && !nothing ? (
         <View style={styles.results}>
           {results.artists.map((a) => (
-            <ListRow key={a.id} seed={a.id} round title={a.name} subtitle="Artist" onPress={() => router.push(`/artist/${a.id}`)} />
+            <ListRow key={a.id} seed={a.id} round title={a.name} subtitle="Artist" onPress={() => router.push(artistHref(a))} />
           ))}
           {results.releases.map((r) => (
             <ListRow key={r.id} seed={r.id} title={r.title} subtitle={`${r.type} · ${getArtist(r.artistId)?.name}`}

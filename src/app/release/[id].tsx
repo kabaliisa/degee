@@ -17,6 +17,7 @@ import { useOffline } from '../../store/offline';
 import { usePlayer } from '../../store/player';
 import { useSignedIn } from '../../store/session';
 import { useWallet } from '../../store/wallet';
+import { artistHref } from '../../lib/slug';
 
 export default function ReleaseScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -65,7 +66,7 @@ export default function ReleaseScreen() {
               <Art seed={release.id} size={Math.min(width - space.lg * 2, 340)} style={styles.coverArt} />
             </View>
             <Text style={[type.display, styles.title]}>{release.title}</Text>
-            <Pressable onPress={() => router.push(`/artist/${artist.id}`)} accessibilityRole="link" style={styles.artist}>
+            <Pressable onPress={() => router.push(artistHref(artist))} accessibilityRole="link" style={styles.artist}>
               <Text style={[type.bodyBold, styles.light]}>{artist.name}</Text>
             </Pressable>
             <Text style={[type.small, styles.meta]}>

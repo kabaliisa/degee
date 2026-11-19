@@ -12,6 +12,7 @@ import { useLikes } from '../../store/likes';
 import { useSignedIn } from '../../store/session';
 import { usePlayer } from '../../store/player';
 import { useWallet } from '../../store/wallet';
+import { artistHref } from '../../lib/slug';
 
 const VIEWS = ['Releases', 'Songs', 'Artists'] as const;
 type LibraryView = (typeof VIEWS)[number];
@@ -110,7 +111,7 @@ export default function Library() {
         myArtists.length === 0 ? <EmptyState icon="people-outline" title="No artists yet" body="Follow artists or buy their music to keep them here." /> : (
           myArtists.map((a) => (
             <ListRow key={a.id} seed={a.id} round artSize={64} title={a.name}
-              subtitle={following.includes(a.id) ? 'Following' : 'Artist'} onPress={() => router.push(`/artist/${a.id}`)} />
+              subtitle={following.includes(a.id) ? 'Following' : 'Artist'} onPress={() => router.push(artistHref(a))} />
           ))
         )
       ) : null}
