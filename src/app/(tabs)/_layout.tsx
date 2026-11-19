@@ -3,8 +3,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BottomTabBar, Tabs, type BottomTabBarProps } from 'expo-router/tabs';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MiniPlayer } from '../../components/player/MiniPlayer';
+import { Sidebar, SIDEBAR_WIDTH } from '../../components/nav/Sidebar';
+import { MiniPlayer, PLAYER_BAR_HEIGHT } from '../../components/player/MiniPlayer';
 import type { IconName } from '../../components/ui';
+import { useLayout } from '../../lib/breakpoints';
 import { colors, font, withAlpha } from '../../lib/theme';
 
 function TabIcon({ on, off, focused, color, size }: { on: IconName; off: IconName; focused: boolean; color: string; size: number }) {
@@ -29,11 +31,31 @@ function TabBarWithPlayer(props: BottomTabBarProps) {
   );
 }
 
+/**
+ * The same four destinations on a wide screen, down the side instead of across the bottom, with the
+ * player as a bar along the foot of the window. Both are positioned over the scene rather than laid
+ * out by the navigator, and the scene is given matching padding, so this holds whatever the
+ * navigator does with a custom tab bar.
+ */
+function SidebarWithPlayer(props: BottomTabBarProps) {
+  return (
+    <>
+      <View style={styles.sidebarDock}>
+        <Sidebar {...props} />
+      </View>
+      <View style={styles.playerDock}>
+        <MiniPlayer wide />
+      </View>
+    </>
+  );
+}
+
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+  const { wide } = useLayout();
   return (
     <Tabs
-      tabBar={(props) => <TabBarWithPlayer {...props} />}
+      tabBar={(props) => (wide ? <SidebarWithPlayer {...props} /> : <TabBarWithPlayer {...props} />)}
       screenOptions={{
         headerShown: false,
         // A stacked icon and label need 28 + 15 = 43pt of content box. The default bar leaves less
@@ -49,7 +71,7 @@ export default function TabsLayout() {
         tabBarActiveTintColor: colors.accentText,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarLabelStyle: styles.tabLabel,
-        sceneStyle: styles.scene,
+        sceneStyle: wide ? [styles.scene, styles.sceneWide] : styles.scene,
       }}>
       <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: tabIcon('home', 'home-outline') }} />
       <Tabs.Screen name="search" options={{ title: 'Discover', tabBarIcon: tabIcon('compass', 'compass-outline') }} />
@@ -68,4 +90,9 @@ const styles = StyleSheet.create({
   // words read as cut in half. Fifteen leaves room for the g in Discover and the y in Library.
   tabLabel: { fontFamily: font.bold, fontSize: 11, lineHeight: 15, flexShrink: 0 },
   scene: { backgroundColor: colors.bg },
+  sidebarDock: { position: 'absolute', left: 0, top: 0, bottom: 0, zIndex: 2 },
+  playerDock: { position: 'absolute', left: SIDEBAR_WIDTH, right: 0, bottom: 0, zIndex: 2 },
+  // Room for the sidebar at the side and the player bar at the foot, so nothing scrolls underneath
+  // them and stays there.
+  sceneWide: { paddingLeft: SIDEBAR_WIDTH, paddingBottom: PLAYER_BAR_HEIGHT },
 });

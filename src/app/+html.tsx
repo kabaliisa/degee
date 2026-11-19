@@ -44,8 +44,10 @@ export default function Root({ children }: PropsWithChildren) {
 const SHELL_CSS = `
 /* Ink while the page loads, so an installed app opens dark rather than flashing white. */
 html, body, #root { background-color: #0A0A09; }
-/* The app is a phone-shaped column; centre it rather than stretching it across a desktop. */
-@media (min-width: 560px) {
+/* Between a phone and the width where the sidebar layout takes over, a full-bleed phone layout is
+   worse than a centred one: rows stretch and their right-hand ends drift away from the eye. Above
+   that the app lays itself out properly and takes the whole window. */
+@media (min-width: 560px) and (max-width: 759px) {
   body { background-color: #050504; }
   #root { width: 100%; max-width: 460px; margin: 0 auto; box-shadow: 0 0 60px rgba(0,0,0,0.45); }
 }

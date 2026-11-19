@@ -14,7 +14,10 @@ import { GLASS_IS_BLURRED, GlassSurface } from './GlassSurface';
  * Bar above the tab bar, or docked at the foot of detail screens (which have no tab bar): there the page
  * fades to black behind it, so it doesn't hang over the content. Hidden when nothing is queued.
  */
-export function MiniPlayer({ floating }: { floating?: boolean }) {
+/** How much room the wide player takes at the foot of the window, so content can clear it. */
+export const PLAYER_BAR_HEIGHT = 84;
+
+export function MiniPlayer({ floating, wide }: { floating?: boolean; wide?: boolean }) {
   const track = usePlayer((s) => s.current());
   const isPlaying = usePlayer((s) => s.isPlaying);
   const isPreview = usePlayer((s) => s.isPreview);
@@ -32,8 +35,8 @@ export function MiniPlayer({ floating }: { floating?: boolean }) {
   const bar = (
     // The shadow lives on the outside and the clipping on the inside: a view cannot both hide its
     // overflow and cast a shadow, because the shadow is overflow.
-    <Pressable onPress={() => router.push('/player')} accessibilityLabel={`Now playing ${track.title}. Open player`} style={styles.lift}>
-      <View style={styles.bar}>
+    <Pressable onPress={() => router.push('/player')} accessibilityLabel={`Now playing ${track.title}. Open player`} style={wide ? styles.liftWide : styles.lift}>
+      <View style={[styles.bar, wide && styles.barWide]}>
         {/* Frosted rather than solid: the artwork and the page carry on underneath, which is what stops
             a bar pinned over the content from reading as a second floor. The pane itself holds no
             colour — a blur samples what is painted behind it, so a colour of its own is all it would
@@ -106,6 +109,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent', // see above: a colour here would be the only thing the blur sees
     borderWidth: 1, borderColor: withAlpha(GLASS_WHITE, 0.18),
   },
+  // Along the foot of a window the bar is furniture, not a floating card: it meets both edges, so
+  // the rounding and the side borders come off and only the lit top edge stays.
+  liftWide: { shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 24, shadowOffset: { width: 0, height: -6 }, elevation: 12 },
+  barWide: { borderRadius: 0, borderWidth: 0, borderTopWidth: 1, height: PLAYER_BAR_HEIGHT, justifyContent: 'center' },
   pane: fill,
   // Laid over the blur, not under it: deep enough to read white type against, sheer enough that the
   // artwork behind still comes through as colour.

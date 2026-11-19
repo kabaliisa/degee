@@ -17,6 +17,8 @@ import { usePlayer } from '../../store/player';
 import { useSignedIn } from '../../store/session';
 import { useWallet } from '../../store/wallet';
 import { artistHref } from '../../lib/slug';
+import { useLayout } from '../../lib/breakpoints';
+import { SIDEBAR_WIDTH } from '../../components/nav/Sidebar';
 
 export default function Home() {
   const [heroScrolledAway, setHeroScrolledAway] = useState(false);
@@ -103,7 +105,12 @@ export default function Home() {
 function Hero({ release, playing, onPlay }: { release: Release; playing: boolean; onPlay: () => void }) {
   const insets = useSafeAreaInsets();
   const { width, height: windowHeight } = useWindowDimensions();
+  const { wide } = useLayout();
   const artist = getArtist(release.artistId);
+  // On a wide screen the hero turns on its side: a banner with the photograph held to the right and
+  // the words in the clear space beside it. Keeping the phone's full-bleed square would push the
+  // subject off the bottom of a short, broad window and leave the top half empty.
+  if (wide) return <WideHero release={release} artist={artist} playing={playing} onPlay={onPlay} />;
   const height = insets.top + Math.min(Math.max(windowHeight * 0.54, 380), 490);
   // The photograph starts below the greeting, so the words have black above her head rather than hair.
   // The picture starts just under the question, so the dark begins lifting right where the words
@@ -140,6 +147,59 @@ function Hero({ release, playing, onPlay }: { release: Release; playing: boolean
         </View>
         <Pressable onPress={openArtist} accessibilityRole="link" accessibilityLabel={`${release.title} by ${artist?.name}`}>
           <Text numberOfLines={2} style={styles.heroTitle}>{release.title}</Text>
+          <Text numberOfLines={1} style={styles.heroArtist}>{artist?.name.toUpperCase()}</Text>
+          <View style={styles.heroRule} />
+        </Pressable>
+        <View style={styles.heroActions}>
+          <Pressable onPress={openArtist} accessibilityRole="button" accessibilityLabel={`Explore ${artist?.name}'s music`}
+            style={({ pressed }) => [styles.goldButton, pressed && styles.pressed]}>
+            <Text style={styles.goldButtonText}>Explore music</Text>
+            <Ionicons name="chevron-forward" size={16} color={colors.accentInk} />
+          </Pressable>
+          <Pressable onPress={onPlay} accessibilityRole="button" accessibilityLabel={playing ? 'Pause' : 'Play'}
+            style={({ pressed }) => [styles.heroPlay, pressed && styles.pressed]}>
+            <Ionicons name={playing ? 'pause' : 'play'} size={18} color={colors.text} />
+          </Pressable>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+/**
+ * The hero as a banner. The photograph sits to the right under a fade that runs sideways rather
+ * than down, so the words have flat colour to sit on and the picture still reaches the edge.
+ */
+function WideHero({ release, artist, playing, onPlay }: { release: Release; artist?: Artist; playing: boolean; onPlay: () => void }) {
+  const { width } = useLayout();
+  const insets = useSafeAreaInsets();
+  const height = 460;
+  // Wide enough to cover from the middle of the banner to its right edge, and tall enough to crop
+  // to a face rather than a full figure.
+  const artSize = Math.max(height * 1.5, (width - SIDEBAR_WIDTH) * 0.62);
+  const openArtist = () => (artist ? router.push(artistHref(artist)) : undefined);
+  return (
+    <View style={[styles.wideHero, { height }]}>
+      {artist ? <Art seed={artist.id} size={artSize} style={styles.wideHeroArt} /> : null}
+      {/* Sideways, so the left half is readable without dulling the photograph's own side. */}
+      <LinearGradient
+        colors={[colors.bg, withAlpha(colors.bg, 0.92), withAlpha(colors.bg, 0.3), withAlpha(colors.bg, 0)]}
+        locations={[0, 0.34, 0.68, 1]} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }}
+        style={StyleSheet.absoluteFill} pointerEvents="none"
+      />
+      <LinearGradient
+        colors={[withAlpha(colors.bg, 0), colors.bg]} locations={[0, 1]}
+        style={styles.wideHeroFoot} pointerEvents="none"
+      />
+      <View style={[styles.wideHeroTop, { paddingTop: insets.top + space.md }]}>
+        <GreetingBar />
+      </View>
+      <View style={styles.wideHeroBody}>
+        <View style={styles.featuredPill}>
+          <Text style={styles.featuredText}>Featured artist</Text>
+        </View>
+        <Pressable onPress={openArtist} accessibilityRole="link" accessibilityLabel={`${release.title} by ${artist?.name}`}>
+          <Text numberOfLines={2} style={styles.wideHeroTitle}>{release.title}</Text>
           <Text numberOfLines={1} style={styles.heroArtist}>{artist?.name.toUpperCase()}</Text>
           <View style={styles.heroRule} />
         </Pressable>
@@ -213,6 +273,12 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.85 },
 
   hero: { overflow: 'hidden', backgroundColor: colors.bg }, // edge to edge: the photograph is the header
+  wideHero: { overflow: 'hidden', backgroundColor: colors.bg, justifyContent: 'center' },
+  wideHeroArt: { position: 'absolute', right: 0, top: '50%', transform: [{ translateY: '-50%' }], borderRadius: 0 },
+  wideHeroFoot: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 120 },
+  wideHeroTop: { position: 'absolute', left: 0, right: 0, top: 0 },
+  wideHeroBody: { position: 'absolute', left: space.xl, bottom: space.xl, maxWidth: 520, gap: space.sm },
+  wideHeroTitle: { fontFamily: font.display, fontSize: 44, lineHeight: 50, letterSpacing: -1.2, color: colors.text },
   heroArt: { position: 'absolute', right: 0, borderRadius: 0 },
   heroTopFade: { position: 'absolute', top: 0, left: 0, right: 0 },
   heroBottomFade: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '56%' },
