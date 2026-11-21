@@ -1,7 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { font, space, withAlpha } from '../../lib/theme';
+import { colors, font, space, withAlpha } from '../../lib/theme';
+import { useLayout } from '../../lib/breakpoints';
 import { useSession } from '../../store/session';
 
 /**
@@ -17,7 +18,7 @@ const ON_PHOTO = '#FFFFFF';
  * How tall this bar stands. The hero starts the photograph directly under it, so the two have to
  * agree; kept here beside the styles that decide it rather than guessed at from the other side.
  */
-export const GREETING_HEIGHT = 36;
+export const GREETING_HEIGHT = 44;
 
 /** Two letters: the initials of a two-part name, or the first two of a single one. */
 function initialsOf(name: string): string {
@@ -27,16 +28,25 @@ function initialsOf(name: string): string {
 }
 
 export function GreetingBar() {
+  const { wide } = useLayout();
   const name = useSession((s) => s.user?.name?.trim());
   const initials = name ? initialsOf(name) : '';
   return (
     <View style={styles.bar}>
       <View style={styles.topRow}>
-        {/* Without "today" -- at 18pt semibold the longer line truncates on a 390pt phone beside
-            the bell and the avatar, and a question cut off mid-word is worse than a shorter one. */}
-        <Text accessibilityRole="header" numberOfLines={1} style={styles.hello}>
-          What are we listening to?
-        </Text>
+        {/* On a phone the app's own name stands here: it is the only place the wordmark appears,
+            since there is no sidebar carrying it. Wide, the sidebar already does, so the question
+            takes the line rather than printing the name twice on one screen. */}
+        {wide ? (
+          <Text accessibilityRole="header" numberOfLines={1} style={styles.hello}>What are we listening to?</Text>
+        ) : (
+          <View style={styles.mark}>
+            <Text accessibilityRole="header" numberOfLines={1} style={styles.wordmark}>deegee</Text>
+            {/* A stranger arriving from a link in a WhatsApp status has no idea what this is. Six
+                words under the name answer that before they have to work it out from the shelves. */}
+            <Text numberOfLines={1} style={styles.tagline}>Buy direct from Ugandan artists</Text>
+          </View>
+        )}
         <View style={styles.spacer} />
         {/* Signed in, the person's own initials; signed out there is nobody to initial, so the
             generic figure stands in rather than two invented letters. */}
@@ -57,6 +67,9 @@ const styles = StyleSheet.create({
   topRow: { flexDirection: 'row', alignItems: 'center', minHeight: GREETING_HEIGHT },
   spacer: { flex: 1, minWidth: space.md },
   hello: { flexShrink: 1, fontFamily: font.semibold, fontSize: 18, lineHeight: 26, color: ON_PHOTO },
+  mark: { flexShrink: 1 },
+  wordmark: { fontFamily: font.display, fontSize: 20, lineHeight: 26, color: colors.accentText, letterSpacing: -0.2 },
+  tagline: { fontFamily: font.regular, fontSize: 11, lineHeight: 15, color: withAlpha(ON_PHOTO, 0.65) },
   // A ring rather than a filled disc, so it reads as the person's mark on the photograph instead of
   // a hole punched in it.
   avatar: {
