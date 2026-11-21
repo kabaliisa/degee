@@ -6,7 +6,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } fr
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getRelease, listArtists, listReleases, releasesInGenre, tracksForRelease, type Artist, type Release } from '../../api';
 import { Art } from '../../components/Art';
-import { GREETING_HEIGHT, GreetingBar } from '../../components/home/GreetingBar';
+import { GreetingBar } from '../../components/home/GreetingBar';
 import { Kitenge } from '../../components/home/Kitenge';
 import { ReleaseCard, SectionHeading, Shelf, StatusBarStrip } from '../../components/ui';
 import { askToSignIn } from '../../lib/auth';
@@ -118,26 +118,15 @@ function Hero({ release, playing, onPlay }: { release: Release; playing: boolean
   // subject off the bottom of a short, broad window and leave the top half empty.
   if (wide) return <WideHero release={release} artist={artist} playing={playing} onPlay={onPlay} />;
   const height = insets.top + Math.min(Math.max(windowHeight * 0.54, 380), 490);
-  // The photograph starts below the greeting, so the words have black above her head rather than hair.
-  // The picture starts just under the question, so the dark begins lifting right where the words
-  // end. Any further down and there is a band of flat black between the two that belongs to neither.
-  const artTop = insets.top + space.md + GREETING_HEIGHT + space.xs;
-  const artSize = Math.max(width, height - artTop) * 1.15;
-  // The fade stays solid past where the picture begins, so she emerges from the dark instead of
-  // starting at a line. Worked out from the inset so it holds whatever the notch does.
-  // Long enough that the scrim never has to change fast — a fast ramp is what makes an edge
-  // visible — but not so long that it dulls her face, which is the thing the hero is for.
-  const fadeHeight = artTop + 125;
-  const topFade = fadeStops(colors.bg, artTop / fadeHeight);
+  // The photograph is the background of the whole hero: it starts at the top of the screen, behind
+  // the status bar and the wordmark, rather than below them. Before this it began under the header
+  // and left a band of flat black above it that belonged to neither the words nor the picture.
+  const artSize = Math.max(width, height) * 1.15;
   const bottomFade = fadeStops(colors.bg);
   const openArtist = () => (artist ? router.push(artistHref(artist)) : undefined);
   return (
     <View style={[styles.hero, { height }]}>
-      {artist ? <Art seed={artist.id} size={artSize} style={[styles.heroArt, { top: artTop }]} /> : null}
-      <LinearGradient
-        colors={topFade.colors} locations={topFade.locations}
-        style={[styles.heroTopFade, { height: fadeHeight }]} pointerEvents="none"
-      />
+      {artist ? <Art seed={artist.id} size={artSize} style={styles.heroArt} /> : null}
       {/* The bottom scrim runs the other way: transparent at the top of the range, solid where the
           picture meets the shelves below it. */}
       <LinearGradient
@@ -154,7 +143,6 @@ function Hero({ release, playing, onPlay }: { release: Release; playing: boolean
         <Pressable onPress={openArtist} accessibilityRole="link" accessibilityLabel={`${release.title} by ${artist?.name}`}>
           <Text numberOfLines={2} style={styles.heroTitle}>{release.title}</Text>
           <Text numberOfLines={1} style={styles.heroArtist}>{artist?.name.toUpperCase()}</Text>
-          <View style={styles.heroRule} />
         </Pressable>
         <View style={styles.heroActions}>
           <Pressable onPress={openArtist} accessibilityRole="button" accessibilityLabel={`Explore ${artist?.name}'s music`}
@@ -207,7 +195,6 @@ function WideHero({ release, artist, playing, onPlay }: { release: Release; arti
         <Pressable onPress={openArtist} accessibilityRole="link" accessibilityLabel={`${release.title} by ${artist?.name}`}>
           <Text numberOfLines={2} style={styles.wideHeroTitle}>{release.title}</Text>
           <Text numberOfLines={1} style={styles.heroArtist}>{artist?.name.toUpperCase()}</Text>
-          <View style={styles.heroRule} />
         </Pressable>
         <View style={styles.heroActions}>
           <Pressable onPress={openArtist} accessibilityRole="button" accessibilityLabel={`Explore ${artist?.name}'s music`}
@@ -285,8 +272,7 @@ const styles = StyleSheet.create({
   wideHeroTop: { position: 'absolute', left: 0, right: 0, top: 0 },
   wideHeroBody: { position: 'absolute', left: space.xl, bottom: space.xl, maxWidth: 520, gap: space.sm },
   wideHeroTitle: { fontFamily: font.display, fontSize: 44, lineHeight: 50, letterSpacing: -1.2, color: colors.text },
-  heroArt: { position: 'absolute', right: 0, borderRadius: 0 },
-  heroTopFade: { position: 'absolute', top: 0, left: 0, right: 0 },
+  heroArt: { position: 'absolute', right: 0, top: 0, borderRadius: 0 },
   heroBottomFade: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '56%' },
   heroTop: { position: 'absolute', left: 0, right: 0, top: 0 },
   heroBody: { position: 'absolute', left: space.xl, right: space.xl, bottom: space.lg, gap: space.sm },
@@ -294,7 +280,6 @@ const styles = StyleSheet.create({
   featuredText: { fontFamily: font.medium, fontSize: 12, color: colors.accent },
   heroTitle: { fontFamily: font.display, fontSize: 26, lineHeight: 32, letterSpacing: -0.5, color: colors.text },
   heroArtist: { fontFamily: font.medium, fontSize: 12, letterSpacing: 3, color: colors.text, marginTop: 6 },
-  heroRule: { width: 34, height: 3, borderRadius: radius.pill, backgroundColor: colors.flag, marginTop: 8 },
   heroActions: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.xs },
   goldButton: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 46, paddingHorizontal: 20, borderRadius: radius.pill, backgroundColor: colors.accent },
   goldButtonText: { fontFamily: font.semibold, fontSize: 15, color: colors.accentInk },

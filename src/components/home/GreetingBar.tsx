@@ -18,7 +18,7 @@ const ON_PHOTO = '#FFFFFF';
  * How tall this bar stands. The hero starts the photograph directly under it, so the two have to
  * agree; kept here beside the styles that decide it rather than guessed at from the other side.
  */
-export const GREETING_HEIGHT = 44;
+export const GREETING_HEIGHT = 36;
 
 /** Two letters: the initials of a two-part name, or the first two of a single one. */
 function initialsOf(name: string): string {
@@ -40,12 +40,7 @@ export function GreetingBar() {
         {wide ? (
           <Text accessibilityRole="header" numberOfLines={1} style={styles.hello}>What are we listening to?</Text>
         ) : (
-          <View style={styles.mark}>
-            <Text accessibilityRole="header" numberOfLines={1} style={styles.wordmark}>deegee</Text>
-            {/* A stranger arriving from a link in a WhatsApp status has no idea what this is. Six
-                words under the name answer that before they have to work it out from the shelves. */}
-            <Text numberOfLines={1} style={styles.tagline}>Buy direct from Ugandan artists</Text>
-          </View>
+          <Text accessibilityRole="header" numberOfLines={1} style={styles.wordmark}>deegee</Text>
         )}
         <View style={styles.spacer} />
         {/* Signed in, the person's own initials; signed out there is nobody to initial, so the
@@ -67,15 +62,19 @@ const styles = StyleSheet.create({
   topRow: { flexDirection: 'row', alignItems: 'center', minHeight: GREETING_HEIGHT },
   spacer: { flex: 1, minWidth: space.md },
   hello: { flexShrink: 1, fontFamily: font.semibold, fontSize: 18, lineHeight: 26, color: ON_PHOTO },
-  mark: { flexShrink: 1 },
-  wordmark: { fontFamily: font.display, fontSize: 20, lineHeight: 26, color: colors.accentText, letterSpacing: -0.2 },
-  tagline: { fontFamily: font.regular, fontSize: 11, lineHeight: 15, color: withAlpha(ON_PHOTO, 0.65) },
+  // The photograph now runs to the top of the screen and passes behind these, so they carry their
+  // own contrast. The shadow is invisible over a dark picture and is the only thing keeping the
+  // wordmark legible over a light one -- which half the catalogue's photographs are.
+  wordmark: {
+    flexShrink: 1, fontFamily: font.display, fontSize: 20, lineHeight: 26, color: colors.accentText, letterSpacing: -0.2,
+    textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 10,
+  },
   // A ring rather than a filled disc, so it reads as the person's mark on the photograph instead of
   // a hole punched in it.
   avatar: {
     width: 34, height: 34, borderRadius: 17, marginLeft: space.md,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1.5, borderColor: withAlpha(ON_PHOTO, 0.65), backgroundColor: withAlpha('#000000', 0.25),
+    borderWidth: 1.5, borderColor: withAlpha(ON_PHOTO, 0.75), backgroundColor: withAlpha('#000000', 0.38),
   },
   initials: { fontFamily: font.bold, fontSize: 13, lineHeight: 17, color: ON_PHOTO, letterSpacing: 0.3 },
   pressed: { opacity: 0.6 },
