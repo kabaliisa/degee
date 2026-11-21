@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, StyleSheet } from 'react-native';
 import Svg, { Defs, Ellipse, RadialGradient, Stop } from 'react-native-svg';
 import { backdropFor } from '../../lib/backdrop';
@@ -14,7 +14,9 @@ import { colors, withAlpha } from '../../lib/theme';
  */
 export function PlayerBackdrop({ ids, artworkColor }: { ids: (string | undefined)[]; artworkColor?: string }) {
   const { glow, floor } = backdropFor(ids, artworkColor);
-  const fade = useRef(new Animated.Value(0)).current;
+  // Lazy useState rather than a ref: the value has to survive re-renders but must not be read
+  // during one, which is what useRef(...).current does.
+  const [fade] = useState(() => new Animated.Value(0));
   const key = `${glow}${floor}`;
 
   useEffect(() => {
