@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import { font, space } from '../../lib/theme';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { font, space, withAlpha } from '../../lib/theme';
 import { useSession } from '../../store/session';
 
 /**
@@ -12,65 +12,66 @@ import { useSession } from '../../store/session';
  * because a filled circle behind each one would punch holes in the picture.
  */
 const ON_PHOTO = '#FFFFFF';
-const ON_PHOTO_MUTED = '#A1A1AA';
 const UNREAD = '#D90000';
 
 /**
- * How tall this bar stands: the greeting's line, the gap, and the question's line.
- *
- * The hero starts the photograph directly under it, so the two have to agree. Kept here beside the
- * styles that decide it, rather than guessed at from the other side.
+ * How tall this bar stands. The hero starts the photograph directly under it, so the two have to
+ * agree; kept here beside the styles that decide it rather than guessed at from the other side.
  */
-export const GREETING_HEIGHT = 27 + space.xs + 18;
+export const GREETING_HEIGHT = 36;
+
+/** Two letters: the initials of a two-part name, or the first two of a single one. */
+function initialsOf(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return (parts[0] ?? '').slice(0, 2).toUpperCase();
+}
 
 export function GreetingBar() {
-  const first = useSession((s) => s.user?.name?.trim().split(' ')[0]);
-  const { width } = useWindowDimensions();
-  // "How are you" needs room it does not have on a small phone, where it would clip the person's own
-  // name. A narrow screen gets the short form rather than a truncated long one. 384 is where the long
-  // form stops fitting beside the two icons, measured rather than guessed; an iPhone SE is 375.
-  // Signed out there is no name to address, and "How are you, there" hails a stranger. A greeting
-  // that stands on its own is warmer than one with a placeholder where a name should be.
-  const greeting = first
-    ? `${width < 384 ? 'Hi,' : 'How are you,'} ${first}`
-    : 'Hello';
+  const name = useSession((s) => s.user?.name?.trim());
+  const initials = name ? initialsOf(name) : '';
   return (
     <View style={styles.bar}>
       <View style={styles.topRow}>
-        {/* The wave sits outside the line that truncates, so a long name shortens itself rather
-            than swallowing the hand. */}
+        {/* Without "today" -- at 18pt semibold the longer line truncates on a 390pt phone beside
+            the bell and the avatar, and a question cut off mid-word is worse than a shorter one. */}
         <Text accessibilityRole="header" numberOfLines={1} style={styles.hello}>
-          {greeting}
+          What are we listening to?
         </Text>
-        <Text style={styles.wave}> 👋</Text>
         <View style={styles.spacer} />
-        <Pressable onPress={() => router.push('/(tabs)/search')} accessibilityRole="button" accessibilityLabel="Search"
-          hitSlop={12} style={({ pressed }) => [styles.icon, pressed && styles.pressed]}>
-          <Ionicons name="search" size={24} color={ON_PHOTO} />
-        </Pressable>
         <Pressable onPress={() => router.push('/settings')} accessibilityRole="button" accessibilityLabel="Notification settings"
           hitSlop={12} style={({ pressed }) => [styles.icon, pressed && styles.pressed]}>
           <Ionicons name="notifications-outline" size={24} color={ON_PHOTO} />
           <View style={styles.dot} />
         </Pressable>
+        {/* Signed in, the person's own initials; signed out there is nobody to initial, so the
+            generic figure stands in rather than two invented letters. */}
+        <Pressable onPress={() => router.push(initials ? '/(tabs)/profile' : '/sign-in')}
+          accessibilityRole="button" accessibilityLabel={initials ? `Your profile, ${name}` : 'Sign in'}
+          hitSlop={12} style={({ pressed }) => [styles.avatar, pressed && styles.pressed]}>
+          {initials
+            ? <Text style={styles.initials}>{initials}</Text>
+            : <Ionicons name="person" size={17} color={ON_PHOTO} />}
+        </Pressable>
       </View>
-      {/* The question runs the full width underneath rather than sharing the line with the icons,
-          which is what used to cut it short on a small phone. */}
-      <Text numberOfLines={1} style={styles.sub}>What are we listening to today?</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  bar: { gap: space.xs, paddingHorizontal: space.xl },
-  // 'How are you, <name>' is a long line to fit beside two icons. The icons keep their 24px size and
-  // a generous hitSlop, but sit closer together so the greeting gets the width instead of truncating.
-  topRow: { flexDirection: 'row', alignItems: 'center' },
+  bar: { paddingHorizontal: space.xl },
+  topRow: { flexDirection: 'row', alignItems: 'center', minHeight: GREETING_HEIGHT },
   spacer: { flex: 1, minWidth: space.md },
-  hello: { flexShrink: 1, fontFamily: font.semibold, fontSize: 20, lineHeight: 27, color: ON_PHOTO },
-  wave: { fontSize: 17 },
-  sub: { fontFamily: font.regular, fontSize: 14, lineHeight: 18, color: ON_PHOTO_MUTED },
+  hello: { flexShrink: 1, fontFamily: font.semibold, fontSize: 18, lineHeight: 26, color: ON_PHOTO },
   icon: { width: 24, height: 24, marginLeft: space.md, alignItems: 'center', justifyContent: 'center' },
+  // A ring rather than a filled disc, so it reads as the person's mark on the photograph instead of
+  // a hole punched in it.
+  avatar: {
+    width: 34, height: 34, borderRadius: 17, marginLeft: space.md,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1.5, borderColor: withAlpha(ON_PHOTO, 0.65), backgroundColor: withAlpha('#000000', 0.25),
+  },
+  initials: { fontFamily: font.bold, fontSize: 13, lineHeight: 17, color: ON_PHOTO, letterSpacing: 0.3 },
   pressed: { opacity: 0.6 },
   dot: { position: 'absolute', top: 0, right: 0, width: 8, height: 8, borderRadius: 4, backgroundColor: UNREAD },
 });

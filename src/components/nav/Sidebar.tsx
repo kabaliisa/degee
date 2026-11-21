@@ -9,8 +9,8 @@ export const SIDEBAR_WIDTH = 232;
 /** Matches the tab order. Icons are the filled/outline pair the tab bar uses. */
 const ITEMS: { path: string; label: string; on: IconName; off: IconName }[] = [
   { path: '/', label: 'Home', on: 'home', off: 'home-outline' },
-  { path: '/search', label: 'Discover', on: 'compass', off: 'compass-outline' },
-  { path: '/library', label: 'Library', on: 'albums', off: 'albums-outline' },
+  { path: '/search', label: 'Discover', on: 'search', off: 'search-outline' },
+  { path: '/library', label: 'Library', on: 'musical-notes', off: 'musical-notes-outline' },
   { path: '/profile', label: 'Profile', on: 'person', off: 'person-outline' },
 ];
 

@@ -56,8 +56,10 @@ export default function TabsLayout() {
         sceneStyle: styles.scene,
       }}>
       <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: tabIcon('home', 'home-outline') }} />
-      <Tabs.Screen name="search" options={{ title: 'Discover', tabBarIcon: tabIcon('compass', 'compass-outline') }} />
-      <Tabs.Screen name="library" options={{ title: 'Library', tabBarIcon: tabIcon('albums', 'albums-outline') }} />
+      {/* The magnifier rather than a compass: searching is what people come to this tab to do, and
+          it is the icon the home screen used to carry before this became its home. */}
+      <Tabs.Screen name="search" options={{ title: 'Discover', tabBarIcon: tabIcon('search', 'search-outline') }} />
+      <Tabs.Screen name="library" options={{ title: 'Library', tabBarIcon: tabIcon('musical-notes', 'musical-notes-outline') }} />
       <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarIcon: tabIcon('person', 'person-outline') }} />
     </Tabs>
   );
