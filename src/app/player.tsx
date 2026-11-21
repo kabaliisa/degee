@@ -3,6 +3,7 @@ import { Pressable, Share, StyleSheet, Text, View, useWindowDimensions } from 'r
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getArtist, getRelease } from '../api';
 import { Art } from '../components/Art';
+import { PlayerBackdrop } from '../components/player/Backdrop';
 import { OwnershipBanner } from '../components/player/OwnershipBanner';
 import { SeekBar } from '../components/player/SeekBar';
 import { Button, EmptyState, IconButton, PlayButton } from '../components/ui';
@@ -40,6 +41,7 @@ export default function Player() {
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top + space.sm, paddingBottom: insets.bottom + space.lg }]}>
+      <PlayerBackdrop ids={[track.id, release.id, artist.id]} artworkColor={artist.colors?.[0]} />
       <StatusBar style="light" />
       <View style={styles.topBar}>
         <IconButton name="chevron-down" color={onDark.text} size={28} label="Close player" onPress={() => router.back()} />
