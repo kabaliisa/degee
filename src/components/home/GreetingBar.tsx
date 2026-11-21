@@ -12,7 +12,6 @@ import { useSession } from '../../store/session';
  * because a filled circle behind each one would punch holes in the picture.
  */
 const ON_PHOTO = '#FFFFFF';
-const UNREAD = '#D90000';
 
 /**
  * How tall this bar stands. The hero starts the photograph directly under it, so the two have to
@@ -39,11 +38,6 @@ export function GreetingBar() {
           What are we listening to?
         </Text>
         <View style={styles.spacer} />
-        <Pressable onPress={() => router.push('/settings')} accessibilityRole="button" accessibilityLabel="Notification settings"
-          hitSlop={12} style={({ pressed }) => [styles.icon, pressed && styles.pressed]}>
-          <Ionicons name="notifications-outline" size={24} color={ON_PHOTO} />
-          <View style={styles.dot} />
-        </Pressable>
         {/* Signed in, the person's own initials; signed out there is nobody to initial, so the
             generic figure stands in rather than two invented letters. */}
         <Pressable onPress={() => router.push(initials ? '/(tabs)/profile' : '/sign-in')}
@@ -63,7 +57,6 @@ const styles = StyleSheet.create({
   topRow: { flexDirection: 'row', alignItems: 'center', minHeight: GREETING_HEIGHT },
   spacer: { flex: 1, minWidth: space.md },
   hello: { flexShrink: 1, fontFamily: font.semibold, fontSize: 18, lineHeight: 26, color: ON_PHOTO },
-  icon: { width: 24, height: 24, marginLeft: space.md, alignItems: 'center', justifyContent: 'center' },
   // A ring rather than a filled disc, so it reads as the person's mark on the photograph instead of
   // a hole punched in it.
   avatar: {
@@ -73,5 +66,4 @@ const styles = StyleSheet.create({
   },
   initials: { fontFamily: font.bold, fontSize: 13, lineHeight: 17, color: ON_PHOTO, letterSpacing: 0.3 },
   pressed: { opacity: 0.6 },
-  dot: { position: 'absolute', top: 0, right: 0, width: 8, height: 8, borderRadius: 4, backgroundColor: UNREAD },
 });

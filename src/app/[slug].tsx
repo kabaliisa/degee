@@ -73,12 +73,12 @@ export default function ArtistScreen() {
           </View>
         </View>
 
-        <View style={[styles.actions, wide && styles.actionsWide]}>
-          {/* Thumb-sized on a phone, mouse-sized on a desktop: the same 50pt pill next to a cursor
-              reads as a banner rather than a button. */}
+        <View style={styles.actions}>
+          {/* Both sized to their words rather than stretched across the row. Follow filling half the
+              screen in solid gold outweighed the music underneath it, which is what the page is for. */}
           <Button variant={following ? 'secondary' : 'primary'} icon={following ? 'checkmark' : undefined} label={following ? 'Following' : 'Follow'}
-            small={wide} onPress={() => toggleFollow(artist.id)} style={wide ? undefined : styles.flex} />
-          <GiftButton artist={artist} small={wide} style={wide ? undefined : styles.flex} />
+            small onPress={() => toggleFollow(artist.id)} />
+          <GiftButton artist={artist} small />
           <IconButton name="share-outline" label="Share artist page" onPress={share} />
         </View>
 
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   heroArtWide: { position: 'absolute', right: 0, top: '50%', transform: [{ translateY: '-50%' }], borderRadius: 0 },
   heroFootWide: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 110 },
   heroTextWide: { left: space.xl, right: undefined, maxWidth: 560, bottom: space.xxl },
-  actionsWide: { justifyContent: 'flex-start' },
+
   heroArt: { position: 'absolute', top: -110, left: -100, borderRadius: 0 },
   heroText: { position: 'absolute', left: space.lg, right: space.lg, bottom: space.xl, flexDirection: 'row', alignItems: 'flex-end', gap: space.md },
   verified: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 },
