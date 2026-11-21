@@ -11,12 +11,21 @@ export function OfflineBar() {
   if (!stale) return null;
   return (
     <View style={styles.bar}>
+      <View style={styles.dot} />
       <Text style={styles.text}>Offline · you can still play songs you’ve saved</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  bar: { backgroundColor: colors.accent, paddingVertical: 4, paddingHorizontal: 12 },
-  text: { fontFamily: font.bold, fontSize: 12, color: colors.accentInk, textAlign: 'center' },
+  // Being offline is a condition, not an alarm. A gold band across the top of the app reads as
+  // something having gone wrong; this says the same thing quietly, and a small amber dot carries
+  // the state without the whole bar having to shout it.
+  bar: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
+    backgroundColor: colors.surface, paddingVertical: 6, paddingHorizontal: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border,
+  },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.accent },
+  text: { fontFamily: font.medium, fontSize: 12, color: colors.textMuted, textAlign: 'center' },
 });

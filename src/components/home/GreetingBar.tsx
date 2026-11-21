@@ -29,14 +29,18 @@ export function GreetingBar() {
   // "How are you" needs room it does not have on a small phone, where it would clip the person's own
   // name. A narrow screen gets the short form rather than a truncated long one. 384 is where the long
   // form stops fitting beside the two icons, measured rather than guessed; an iPhone SE is 375.
-  const greeting = width < 384 ? 'Hi,' : 'How are you,';
+  // Signed out there is no name to address, and "How are you, there" hails a stranger. A greeting
+  // that stands on its own is warmer than one with a placeholder where a name should be.
+  const greeting = first
+    ? `${width < 384 ? 'Hi,' : 'How are you,'} ${first}`
+    : 'Hello';
   return (
     <View style={styles.bar}>
       <View style={styles.topRow}>
         {/* The wave sits outside the line that truncates, so a long name shortens itself rather
             than swallowing the hand. */}
         <Text accessibilityRole="header" numberOfLines={1} style={styles.hello}>
-          {greeting} {first || 'there'}
+          {greeting}
         </Text>
         <Text style={styles.wave}> 👋</Text>
         <View style={styles.spacer} />
