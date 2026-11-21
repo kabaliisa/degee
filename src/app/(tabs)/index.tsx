@@ -20,6 +20,9 @@ import { artistHref } from '../../lib/slug';
 import { useLayout } from '../../lib/breakpoints';
 import { SIDEBAR_WIDTH } from '../../components/nav/Sidebar';
 
+/** Ssalongo Beats. Change the id to change who leads the app. */
+const HEADLINE_ARTIST = 'a2';
+
 export default function Home() {
   const [heroScrolledAway, setHeroScrolledAway] = useState(false);
   const owned = useWallet((s) => s.ownedTracks);
@@ -34,7 +37,10 @@ export default function Home() {
   // picture for. Generated art earns its place on a shelf tile; stretched across the top of the app
   // it only announces that there is no photograph.
   const withPhoto = releases.filter((r) => hasPhoto(r.id) || hasPhoto(r.artistId));
-  const featured = withPhoto.find((r) => r.exclusive) ?? withPhoto[0]
+  // Whoever is being put in front of the house this week. Editorial, not computed -- and the first
+  // thing to move to the server once there is somebody deciding it rather than a constant here.
+  const headline = withPhoto.find((r) => r.artistId === HEADLINE_ARTIST);
+  const featured = headline ?? withPhoto.find((r) => r.exclusive) ?? withPhoto[0]
     ?? releases.find((r) => r.exclusive) ?? releases[0];
   const newest = [...releases].sort((a, b) => b.year - a.year);
   // The one release put forward to buy, rather than to browse: the newest that isn't already the hero.
