@@ -13,7 +13,6 @@ import { API_URL } from '../api/config';
 import { Sidebar, SIDEBAR_WIDTH } from '../components/nav/Sidebar';
 import { MiniPlayer, PLAYER_BAR_HEIGHT } from '../components/player/MiniPlayer';
 import { useLayout } from '../lib/breakpoints';
-import { OfflineBar } from '../components/OfflineBar';
 import { PlayerEngine } from '../components/player/PlayerEngine';
 import { Button } from '../components/ui';
 import { colors, font, space, type } from '../lib/theme';
@@ -119,7 +118,6 @@ export default function RootLayout() {
       {/* Playback is a browser thing; there is no audio on the machine that renders these pages. */}
       {PRERENDERING ? null : <PlayerEngine />}
       <AccountSync signedIn={signedIn} />
-      <OfflineBar />
       {/* On a wide screen the chrome belongs to the app, not to the tabs: an artist page is not a
           tab, and the sidebar and the player have to stay put while you are on one. Laid over the
           content with matching padding on the stack, so nothing scrolls underneath and stays. */}
