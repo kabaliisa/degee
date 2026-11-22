@@ -117,6 +117,9 @@ song is about 3 MB, so roughly 1,500 full plays. Fine for a demo, not for an aud
 
 ## Moving regions
 
+**Done on 22 November 2026: both halves now run in Frankfurt.** Kept because the same work is
+needed for any future move, and because it gets dearer the more real money sits in the ledger.
+
 Uganda is landlocked. Its traffic runs overland to the cable landing station at Mombasa and then
 north through the Red Sea to Europe, so Frankfurt is both the nearest of Render's five regions
 (roughly 5,900 km from Kampala, against 11,900 to Ohio) and the one that cable path already points
@@ -163,6 +166,19 @@ will land on top of it.
    in. If the address is unchanged, there is nothing to do here.
 5. **Check it works.** `https://<new-api>/v1/catalog` returns five artists, and the site loads,
    plays and buys.
+
+### What actually happened, 22 November 2026
+
+Useful if you do this again. Deleting `deegee-api` freed the name, and the Blueprint's next sync
+recreated it in Frankfurt on the same `deegee-api.onrender.com` address, so the GitHub `API_URL`
+secret stayed correct and the site needed no rebuild. There was nothing to copy: two users, no
+purchases, no money movements, so the new database seeded itself from Flyway.
+
+One trap cost a deploy. `DEEGEE_DB_URL` was pasted as the whole Neon string with `jdbc:` prefixed,
+and the driver answered *"claims to not accept jdbcUrl"*. The credentials must come out of the
+middle; they live in their own two variables. Neon also appends `&channel_binding=require`, which
+is libpq's spelling — the JDBC driver does not recognise it, so drop it. `sslmode=require` already
+gets TLS.
 
 ### What this breaks, on purpose
 
