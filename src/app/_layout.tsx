@@ -162,7 +162,8 @@ export default function RootLayout() {
           <Stack.Screen name="studio/rights" options={{ presentation: 'modal', title: 'Rights' }} />
           <Stack.Screen name="studio/withdraw" options={{ presentation: 'modal', title: 'Withdraw' }} />
           <Stack.Screen name="studio/insights" options={{ title: 'Your numbers' }} />
-          <Stack.Screen name="admin" options={{ title: 'Review queue' }} />
+          <Stack.Screen name="admin/index" options={{ title: 'Review queue' }} />
+          <Stack.Screen name="admin/insights" options={{ title: 'Deegee’s numbers' }} />
         </Stack.Protected>
       </Stack>
     </View>,

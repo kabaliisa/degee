@@ -32,17 +32,25 @@ class AdminController {
     private final Roles roles;
     private final ReviewService reviews;
     private final PayoutService payouts;
+    private final AdminInsightsService insights;
 
-    AdminController(Roles roles, ReviewService reviews, PayoutService payouts) {
+    AdminController(Roles roles, ReviewService reviews, PayoutService payouts, AdminInsightsService insights) {
         this.roles = roles;
         this.reviews = reviews;
         this.payouts = payouts;
+        this.insights = insights;
     }
 
     @GetMapping("/queue")
     Queue queue(@AuthenticationPrincipal Jwt jwt) {
         admin(jwt);
         return new Queue(reviews.pendingArtists(), reviews.pendingReleases(), payouts.pending());
+    }
+
+    @GetMapping("/insights")
+    AdminInsights insights(@AuthenticationPrincipal Jwt jwt) {
+        admin(jwt);
+        return insights.get();
     }
 
     @PostMapping("/artists/{id}/approve")

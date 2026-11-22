@@ -17,7 +17,7 @@ function Numbers({ insights }: { insights: Insights }) {
   const { earnedAllTimeUgx, earnedLast30Ugx, daily, supporters, topSupporters, topSongs } = insights;
   const nothingYet = earnedAllTimeUgx === 0 && supporters === 0;
   return (
-    <FormScrollView>
+    <FormScrollView contentContainerStyle={styles.content}>
       <View style={styles.totals}>
         <Total label="Earned, all time" value={formatUGX(earnedAllTimeUgx)} big />
         <View style={styles.pair}>
@@ -130,6 +130,8 @@ function dayLabel(iso?: string): string {
 }
 
 const styles = StyleSheet.create({
+  // Capped: a row of figures whose label and value sit a screen apart is no longer a pair.
+  content: { padding: space.lg, paddingBottom: space.xxl, width: '100%', maxWidth: 880, alignSelf: 'center' },
   totals: { gap: space.sm },
   pair: { flexDirection: 'row', gap: space.sm },
   total: { flex: 1, backgroundColor: colors.surface, borderRadius: radius.lg, padding: space.lg, gap: 2 },

@@ -1,17 +1,17 @@
 import * as Linking from 'expo-linking';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { approve, getReviewQueue, sendBack, type PendingRelease, type ReviewKind } from '../api/admin';
-import { mediaUrl } from '../api/catalog';
-import { Art } from '../components/Art';
-import { AudioPreview } from '../components/studio/AudioPreview';
-import { ErrorText, SectionTitle } from '../components/studio/Form';
-import { Button, EmptyState } from '../components/ui';
-import { useLoad } from '../hooks/useLoad';
-import { formatDuration } from '../lib/format';
-import { formatUGX } from '../lib/money';
-import { formatPhone } from '../lib/phone';
-import { colors, font, radius, space, type } from '../lib/theme';
+import { approve, getReviewQueue, sendBack, type PendingRelease, type ReviewKind } from '../../api/admin';
+import { mediaUrl } from '../../api/catalog';
+import { Art } from '../../components/Art';
+import { AudioPreview } from '../../components/studio/AudioPreview';
+import { ErrorText, SectionTitle } from '../../components/studio/Form';
+import { Button, EmptyState } from '../../components/ui';
+import { useLoad } from '../../hooks/useLoad';
+import { formatDuration } from '../../lib/format';
+import { formatUGX } from '../../lib/money';
+import { formatPhone } from '../../lib/phone';
+import { colors, font, radius, space, type } from '../../lib/theme';
 
 /** Approve or send back one item. Sending back needs a note the artist will read. */
 function Decision({ kind, id, onDone, approveLabel = 'Approve' }: { kind: ReviewKind; id: string; onDone: () => void; approveLabel?: string }) {

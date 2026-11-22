@@ -118,7 +118,8 @@ export default function Profile() {
         {signedIn ? (
         <SettingsGroup title="For artists">
           <SettingsRow icon="mic-outline" label="Artist studio" detail="Sell your music" onPress={() => router.push('/studio')} last={!isAdmin(user)} />
-          {isAdmin(user) ? <SettingsRow icon="shield-checkmark-outline" label="Review queue" onPress={() => router.push('/admin')} last /> : null}
+          {isAdmin(user) ? <SettingsRow icon="shield-checkmark-outline" label="Review queue" onPress={() => router.push('/admin')} /> : null}
+          {isAdmin(user) ? <SettingsRow icon="stats-chart-outline" label="Deegee’s numbers" detail="All artists" onPress={() => router.push('/admin/insights')} last /> : null}
         </SettingsGroup>
         ) : null}
 
