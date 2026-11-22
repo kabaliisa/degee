@@ -49,10 +49,16 @@ The CDN matters more than it looks. Uganda is far from every one of these region
 is fast only because Cloudflare keeps a copy near Kampala. The API has no such copy, which is why
 its region is worth getting right.
 
-Two region problems are open. Render and Neon both sit in Ohio, roughly 200 ms from Kampala on
-every API call; Frankfurt would roughly halve that. Render can be moved. Neon fixes a project's
-region when it is created, so moving means a new project and a data copy — cheap today, expensive
-once real money is in the ledger.
+Both regions are wrong and being moved. Render and Neon sit in Ohio, roughly 11,900 km from
+Kampala; Frankfurt is about 5,900 km and is the only European option either platform offers.
+Uganda is landlocked, so its traffic runs overland to Mombasa and then north through the Red Sea
+cables to Europe — Frankfurt is where that path already goes. Nairobi would be better; nobody
+offers it.
+
+Neither platform can move a running service: Render fixes a region at service creation, Neon at
+project creation. So the move is building both halves again and cutting over, which is cheap while
+the database is still seed data and expensive once real money is in the ledger. `render.yaml` now
+says `frankfurt`; the runbook is in DEPLOY.md.
 
 ## How money moves
 
@@ -237,9 +243,9 @@ well.
 contracted and integrated at the webhook that already exists for it. Nothing else about the money
 path should need to change.
 
-**Both regions are wrong.** Render and Neon sit in Ohio. Neon fixes a region at project creation,
-so moving means a new project and a copy of the data. Doing it before there is real money in the
-ledger is cheap; after, it is not.
+**Both regions are wrong, and the move is half done.** `render.yaml` says `frankfurt`; the
+services themselves are still in Ohio, because neither platform can move a running one. The
+cutover runbook is in DEPLOY.md and has not been run yet.
 
 **Artists cannot edit their own profile.** There is no endpoint and no screen. Name, bio, city and
 genres are fixed at application.

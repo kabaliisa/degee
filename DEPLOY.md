@@ -12,7 +12,9 @@ Do these in order — each step produces something the next one needs. Budget fo
 Render's own free Postgres is **deleted thirty days after you create it**. That is why the database
 lives somewhere else; Neon's free tier does not expire.
 
-1. Sign up at neon.tech and create a project. Any region; `us-east` is fine.
+1. Sign up at neon.tech and create a project. **Choose Frankfurt (`eu-central-1`).** Neon fixes a
+   project's region at creation and will not move it later, and your listeners are in Kampala, not
+   in Ohio — see *Moving regions* at the end of this file for why.
 2. Copy the connection string it shows you. It looks like:
 
    ```
@@ -110,6 +112,67 @@ Cloudflare R2 has a free tier and is the natural next step.
 
 **Bandwidth is 5 GB a month** on Render's free tier, cut from 100 GB in April 2026. A three-minute
 song is about 3 MB, so roughly 1,500 full plays. Fine for a demo, not for an audience.
+
+---
+
+## Moving regions
+
+Uganda is landlocked. Its traffic runs overland to the cable landing station at Mombasa and then
+north through the Red Sea to Europe, so Frankfurt is both the nearest of Render's five regions
+(roughly 5,900 km from Kampala, against 11,900 to Ohio) and the one that cable path already points
+at. Nairobi or Johannesburg would be better; neither Render nor Neon offers them.
+
+**Neither platform can move a running service.** Render's region is fixed when a service is created
+and Neon's is fixed when a project is created. So this is not a setting to change — it is building
+both halves again in the new region and cutting over. Twenty minutes, and the site is down for part
+of it.
+
+### First, decide whether the data matters
+
+The database is seeded by the app itself: Flyway migrates and the catalogue, artists and songs are
+written on first start. If nobody outside the team has signed up, bought anything, or uploaded
+anything you want to keep, **there is nothing to copy** and the clean path below is the whole job.
+
+If there are real sign-ups or purchases, copy the data instead of letting it seed. With both Neon
+connection strings to hand:
+
+```bash
+pg_dump "postgresql://…@…us-east-2.aws.neon.tech/neondb?sslmode=require" \
+  --no-owner --no-acl --format=custom --file=deegee-ohio.dump
+
+pg_restore --no-owner --no-acl --clean --if-exists \
+  --dbname="postgresql://…@…eu-central-1.aws.neon.tech/neondb?sslmode=require" \
+  deegee-ohio.dump
+```
+
+Restore **before** the new API starts, or Flyway will seed an empty database first and the restore
+will land on top of it.
+
+### The cutover
+
+1. **Neon.** Create a new project in Frankfurt (`eu-central-1`). Split the connection string into
+   the three `DEEGEE_DB_*` values exactly as in step 1 above. Copy the data now if you decided to.
+2. **Render.** Delete the old `deegee-api` service. This frees the name, and `render.yaml` already
+   says `region: frankfurt`, so the next Blueprint deploy builds it in the right place. *The site
+   is down from here until step 4.*
+3. **Render.** New → Blueprint → `kabaliisa/degee`. Fill in the same environment variables as step
+   2 above, with the new Neon values. Deploy, and wait for the first build.
+4. **Check the URL.** Render may or may not hand back `deegee-api.onrender.com` — a freed subdomain
+   is not guaranteed. If the new service has a different address, update the `API_URL` repository
+   secret in GitHub and push anything to `main` so the site is rebuilt with the new address baked
+   in. If the address is unchanged, there is nothing to do here.
+5. **Check it works.** `https://<new-api>/v1/catalog` returns five artists, and the site loads,
+   plays and buys.
+
+### What this breaks, on purpose
+
+`DEEGEE_JWT_SECRET` is `generateValue: true`, so the new service mints a new one and **every signed-in
+session is invalidated**. Everyone signs in again with a code. That is correct behaviour, not a
+problem to work around — reusing the old secret would be worse.
+
+Uploaded media does not survive this, for the same reason it does not survive any other restart:
+it is on Render's ephemeral disk. Moving to R2 first would make this step lossless, and is the
+better order if there is anything uploaded worth keeping.
 
 ---
 

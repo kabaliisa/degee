@@ -15,9 +15,14 @@ services:
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     plan: free
-    # Closest free region to Dallas. Frankfurt would serve Uganda better, and is the right move when
-    # there are listeners rather than a pitch; nothing but this line has to change.
-    region: ohio
+    # The listeners are in Kampala, not Dallas. Uganda is landlocked: its traffic runs overland to
+    # Mombasa and then north up the Red Sea cables to Europe, so Frankfurt is both the nearest of
+    # Render's five regions (about 5,900 km, against 11,900 to Ohio) and the one that cable path
+    # already points at. Nairobi would be better; Render does not offer it.
+    #
+    # A region cannot be changed after a service is created. Editing this line does not move the
+    # running service -- it only tells Render where to put the NEXT one. DEPLOY.md has the cutover.
+    region: frankfurt
     # Free services sleep after fifteen minutes and take about a minute to wake. Hit this URL once
     # before a demo and the first visitor does not pay for the wake-up.
     healthCheckPath: /actuator/health
