@@ -4,6 +4,8 @@ Buy music straight from Ugandan artists, paying in UGX with MTN MoMo or Airtel M
 
 This is the React Native app (Expo, TypeScript). It talks to the Deegee API in [`backend/`](backend/README.md): sign-in, the catalogue, checkout, purchases and gifts all go through the server. Mobile money is still simulated.
 
+**[ARCHITECTURE.md](ARCHITECTURE.md)** is the single picture of how the whole thing fits together — hosting, the ledger, the API, the app, and the known gaps. Read that first; this file is how to run it.
+
 ## Run it
 
 Start the API first (see [`backend/README.md`](backend/README.md)), then:
@@ -115,7 +117,7 @@ npm test              # money splits, phone numbers, API mapping
 src/
   app/                 Screens. Expo Router: every file is a route.
     (tabs)/            Home, Explore, My music, Profile + the tab bar layout
-    artist/[id].tsx    Artist page
+    [slug].tsx         Artist page, at the top level: deegee.ug/apass
     release/[id].tsx   Single / EP / album page
     player.tsx         Full-screen player
     buy.tsx            Checkout
@@ -124,14 +126,14 @@ src/
     settings.tsx       Settings
     sign-in.tsx        Phone number + code
     studio/            Artist mode: apply, studio home, new release, release editor, song, rights, withdraw
-    admin.tsx          Review queue (admins only)
+    admin/             Review queue and Deegee's own numbers (admins only)
   api/                 Everything that talks to the server
     client.ts          fetch wrapper: tokens, refresh, errors (ApiError)
     config.ts          API address
     catalog.ts         Catalogue, loaded once at startup and read from memory
     account.ts         Sign-in and profile
     checkout.ts        Pay for a song, release or gift with one PIN prompt
-    wallet.ts          Deegee credit, purchase history, library
+    wallet.ts          Balance, purchase history, library
     studio.ts          Artist mode, uploads, earnings, withdrawals, play links
     admin.ts           Review queue
     mappers.ts         API JSON ↔ app types
@@ -142,7 +144,7 @@ src/
     Art.tsx            Cover/artist image with pattern fallback
   hooks/               useLoad: fetch data when a screen comes into focus
   lib/                 Pure logic, no React: money, phone numbers, formatting, theme
-  store/               App state (Zustand): session (tokens, in the Keychain), wallet (credit, history and owned songs, from the server), player, likes, settings
+  store/               App state (Zustand): session (tokens, in the Keychain), wallet (balance, history and owned songs, from the server), player, likes, offline, settings
 ```
 
 ### Conventions
@@ -152,7 +154,8 @@ src/
 - **The server owns money.** The app shows the balance the API returns and never changes it locally. Every money action sends an `Idempotency-Key` created once per screen (`src/lib/ids.ts`), so retries can't charge twice.
 - **Styles live in `StyleSheet.create`** at the bottom of each file. Only values computed at runtime (sizes, insets, progress) are inline.
 - **Design tokens only.** Colours, fonts, spacing and radii come from `src/lib/theme.ts`; no hard-coded values in screens.
-- **Money is whole Ugandan shillings** (integers). All split rules live in `src/lib/money.ts` and are tested; rounding always favours the artist and never loses a shilling.
+- **Money is whole Ugandan shillings** (integers). All split rules live in `src/lib/money.ts` and are tested; rounding always favours the artist and never loses a shilling. The server keeps a matching copy in `MoneySplits.java`, and the two are tested against the same cases.
+- **Layout is decided at runtime**, not in CSS: `src/lib/breakpoints.ts` returns `phone` / `wide` / `wider` from the window width. React Native has no media queries.
 - **Pure logic gets tests** next to it (`*.test.ts`).
 
 ## Money rules (placeholders until contracts are signed)
@@ -170,4 +173,4 @@ Set in `TERMS` in `src/lib/money.ts`:
 
 ## Known placeholders
 
-Help and support and Terms do nothing yet. Songs with an uploaded recording play for real: buyers and the artist hear the full stream, everyone else the 30-second preview the server cuts. The demo songs have no recordings, so their playback is simulated on a timer. Covers and artist photos are placeholder portraits shipped in `assets/photos` (cropped from the design mockups) until artists upload their own. Supporter and buyer counts are placeholders.
+Help and support and Terms do nothing yet. Songs with an uploaded recording play for real: buyers and the artist hear the full stream, everyone else the 30-second preview the server cuts. The demo songs have no recordings, so their playback is simulated on a timer. Covers and artist photos are placeholder portraits shipped in `assets/photos` (cropped from the design mockups) until artists upload their own. Supporter and buyer counts on public pages are placeholders; the numbers an artist sees in the studio are real.
