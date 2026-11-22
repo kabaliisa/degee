@@ -83,7 +83,16 @@ export const declareRights = (id: string, input: DeclarationInput) => api<Studio
 export const uploadLabelLetter = (id: string, file: PickedFile) => upload<StudioRelease>(`${r(id)}/label-letter`, file);
 export const submitRelease = (id: string) => api<StudioRelease>('POST', `${r(id)}/submit`);
 
+export type InsightsDay = { date: string; ugx: number };
+export type Supporter = { name: string; songs: number; giftedUgx: number; estimatedSpentUgx: number };
+export type TopSong = { trackId: string; title: string; buyers: number; grossUgx: number };
+export type Insights = {
+  earnedAllTimeUgx: number; earnedLast30Ugx: number; daily: InsightsDay[];
+  supporters: number; topSupporters: Supporter[]; topSongs: TopSong[];
+};
+
 export const getEarnings = () => api<Earnings>('GET', '/v1/artist/earnings');
+export const getInsights = () => api<Insights>('GET', '/v1/artist/insights');
 export const withdraw = (amountUgx: number, idempotencyKey: string) =>
   api<Withdrawal>('POST', '/v1/artist/withdrawals', { body: { amountUgx }, idempotencyKey });
 

@@ -87,6 +87,9 @@ export default function StudioHome() {
           {earnings.availableUgx < earnings.minWithdrawalUgx ? (
             <Text style={styles.moneyLabel}>You can withdraw from {formatUGX(earnings.minWithdrawalUgx)}.</Text>
           ) : null}
+          {/* The balance says what is here now; this says where it came from and who sent it. */}
+          <Button small variant="onDark" icon="stats-chart-outline" label="See your numbers"
+            onPress={() => router.push('/studio/insights')} style={styles.insightsBtn} />
         </View>
       ) : null}
 
@@ -145,6 +148,7 @@ const styles = StyleSheet.create({
   balance: { fontFamily: font.display, fontSize: 38, lineHeight: 44, letterSpacing: -1, color: onDark.text },
   moneyActions: { flexDirection: 'row', gap: space.sm, marginTop: space.md, marginBottom: space.xs },
   flexBtn: { flex: 1 },
+  insightsBtn: { alignSelf: 'flex-start', marginTop: space.sm },
   release: { flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.md, borderRadius: radius.lg, backgroundColor: colors.surface },
   ledger: { backgroundColor: colors.surface, borderRadius: radius.lg, paddingHorizontal: space.lg },
   lineDivider: { borderTopWidth: 1, borderTopColor: colors.border },
