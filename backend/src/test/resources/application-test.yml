@@ -1,4 +1,9 @@
 spring:
+  flyway:
+    # The product's own migrations, then a fixture that belongs to the tests. The shipped
+    # migrations no longer leave a catalogue behind -- V10 takes the demo one out -- so the tests
+    # bring their own rather than asserting against data the product is meant to be rid of.
+    locations: classpath:db/migration,classpath:db/testdata
   datasource:
     url: jdbc:h2:mem:deegee;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
     username: sa

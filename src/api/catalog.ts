@@ -35,7 +35,12 @@ export const useCatalog = create<CatalogState>()(
       // The copy taken at build time (scripts/fetch-catalog.mjs). It is what renders the pages into HTML
       // for search engines, and what fills the screen in the first instant before the live one arrives.
       ...(seed as Snapshot),
-      status: seed.releases.length ? 'ready' : 'loading',
+      // An empty snapshot means one of two different things. On a build machine it means there is
+      // genuinely no music yet, and the page should be rendered saying so -- a spinner baked into
+      // every static page is what a search engine would index. In a browser it means only that
+      // the live catalogue has not arrived, and concluding "nothing here" before asking the server
+      // would flash an empty shop at everyone on every cold start.
+      status: seed.releases.length || typeof window === 'undefined' ? 'ready' : 'loading',
       stale: false,
       load: async () => {
         if (!useCatalog.persist.hasHydrated()) {

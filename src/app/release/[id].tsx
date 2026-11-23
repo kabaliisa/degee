@@ -173,6 +173,8 @@ const styles = StyleSheet.create({
  * release/[id] page that says "not found", which is what a search engine would index.
  */
 export async function generateStaticParams(): Promise<{ id: string }[]> {
-  return seed.releases.map((r) => ({ id: r.id }));
+  // Typed rather than inferred: the snapshot is empty until a real artist publishes, and an
+  // empty JSON array infers as never[].
+  return (seed.releases as { id: string }[]).map((r) => ({ id: r.id }));
 }
 

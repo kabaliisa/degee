@@ -137,6 +137,7 @@ const styles = StyleSheet.create({
 
 /** One page per artist, written out as HTML at build time, so searching their name can find them. */
 export async function generateStaticParams(): Promise<{ slug: string }[]> {
-  return seed.artists.map((a) => ({ slug: artistSlug(a) }));
+  // Typed rather than inferred: the snapshot is empty until a real artist is approved.
+  return (seed.artists as { slug: string }[]).map((a) => ({ slug: artistSlug(a) }));
 }
 

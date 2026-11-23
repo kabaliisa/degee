@@ -8,7 +8,7 @@ import { getArtist, getRelease, listArtists, listReleases, releasesInGenre, trac
 import { Art } from '../../components/Art';
 import { GreetingBar } from '../../components/home/GreetingBar';
 import { Kitenge } from '../../components/home/Kitenge';
-import { ReleaseCard, SectionHeading, Shelf, StatusBarStrip } from '../../components/ui';
+import { Button, ReleaseCard, SectionHeading, Shelf, StatusBarStrip } from '../../components/ui';
 import { askToSignIn } from '../../lib/auth';
 import { formatUGX } from '../../lib/money';
 import { hasPhoto } from '../../lib/photos';
@@ -33,6 +33,10 @@ export default function Home() {
   const isPlaying = usePlayer((s) => s.isPlaying);
 
   const releases = listReleases();
+  // Deegee launches with nothing in it, so this is not a rare edge: until the first artist
+  // publishes, it is the only home screen anybody sees. It gets a real page rather than a guard,
+  // because a visitor who arrives to a blank screen does not come back to check later.
+  if (releases.length === 0) return <NothingYet />;
   // The hero is a photograph the width of the screen, so it leads with a release we actually have a
   // picture for. Generated art earns its place on a shelf tile; stretched across the top of the app
   // it only announces that there is no photograph.
@@ -164,6 +168,35 @@ function Hero({ release, playing, onPlay }: { release: Release; playing: boolean
  * The hero as a banner. The photograph sits to the right under a fade that runs sideways rather
  * than down, so the words have flat colour to sit on and the picture still reaches the edge.
  */
+/**
+ * The home screen before there is any music. It has one job: say what Deegee is to somebody who
+ * arrived from a link, and give the only person who can change the situation -- an artist -- a way
+ * in. It deliberately does not apologise or say "check back soon"; there is nothing to come back
+ * for until somebody uploads.
+ */
+function NothingYet() {
+  const signedIn = useSignedIn();
+  return (
+    <ScrollView contentContainerStyle={styles.nothing}>
+      <Text style={styles.nothingMark} accessibilityRole="header">deegee</Text>
+      <Text style={styles.nothingLead}>Buy music straight from Ugandan artists.</Text>
+      <Text style={styles.nothingBody}>
+        No streaming pennies and no middleman: you pay in shillings over mobile money, the artist
+        keeps almost all of it, and the song is yours to keep and play offline.
+      </Text>
+      <View style={styles.nothingRule} />
+      <Text style={styles.nothingTitle}>Nobody has put anything up yet</Text>
+      <Text style={styles.nothingBody}>
+        Deegee is open and empty. The first artist on it gets the whole front page.
+      </Text>
+      <Button
+        label={signedIn ? 'Put your music up' : 'Sign in and put your music up'}
+        onPress={() => (signedIn ? router.push('/studio/apply') : askToSignIn('/studio/apply'))}
+      />
+    </ScrollView>
+  );
+}
+
 function WideHero({ release, artist, playing, onPlay }: { release: Release; artist?: Artist; playing: boolean; onPlay: () => void }) {
   const { width } = useLayout();
   const insets = useSafeAreaInsets();
@@ -260,6 +293,12 @@ function ArtistBubble({ artist, backed }: { artist: Artist; backed: boolean }) {
 }
 
 const styles = StyleSheet.create({
+  nothing: { paddingHorizontal: space.xl, paddingTop: 72, paddingBottom: space.xxl, gap: space.md, maxWidth: 520, width: '100%', alignSelf: 'center' },
+  nothingMark: { fontFamily: font.display, fontSize: 34, lineHeight: 40, color: colors.accentText },
+  nothingLead: { ...type.heading, color: colors.text },
+  nothingBody: { ...type.small, color: colors.textMuted, lineHeight: 21 },
+  nothingRule: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginVertical: space.md },
+  nothingTitle: { ...type.bodyBold, color: colors.text },
   screen: { flex: 1 },
   content: { paddingBottom: layout.tabScreenBottom },
   flex: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
