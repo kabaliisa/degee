@@ -106,6 +106,20 @@ abstract class ApiTestSupport {
         webhook(ref, "SUCCESSFUL").andExpect(status().isNoContent());
     }
 
+    /**
+     * A top-up waiting on the provider, created without asking any provider to prompt anybody.
+     * The DusuPay tests need this: in that mode the outbound call is real, and there is nothing on
+     * the other end of it here. Returns the reference the webhook will name.
+     */
+    String startTopUp(String token, String phone, long amount) throws Exception {
+        UUID userId = userId(token);
+        String msisdn = app.deegee.api.auth.PhoneNumbers.normalize(phone).orElseThrow();
+        String ref = "TEST-" + UUID.randomUUID();
+        intents.save(new PaymentIntent(userId, app.deegee.api.auth.PhoneNumbers.Provider.MTN_MOMO, msisdn, amount, ref,
+                UUID.randomUUID().toString(), java.time.Instant.now()));
+        return ref;
+    }
+
     ResultActions webhook(String providerRef, String status) throws Exception {
         return mvc.perform(post("/v1/webhooks/mock-mobile-money").contentType(MediaType.APPLICATION_JSON)
                 .header(WebhookController.SIGNATURE_HEADER, WebhookController.sign(payments.webhookSecret(), providerRef, status))

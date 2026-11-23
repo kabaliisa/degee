@@ -125,7 +125,8 @@ The endpoints worth knowing:
 | `POST /v1/auth/otp`, `/verify`, `/refresh` | Sign in with a phone number and a code |
 | `GET /v1/catalog` | The whole catalogue in one response, cached in the app |
 | `POST /v1/checkout` | Buy a track or release, or send a gift, in one call |
-| `POST /v1/webhooks/mock-mobile-money` | Where a real aggregator will confirm payment |
+| `POST /v1/webhooks/dusupay` | Where DusuPay confirms a payment; signed, and the only thing that hands out a song |
+| `POST /v1/webhooks/mock-mobile-money` | The same, for development, where no money moves |
 | `GET /v1/tracks/{id}/play` | A signed link: the full song for owners, a preview for everyone |
 | `PATCH /v1/artist/profile` | An approved artist editing their page, without going back to review |
 | `GET /v1/artist/insights` | An artist's own numbers; takes no id, so it can only be theirs |
@@ -143,7 +144,7 @@ Three rules hold across all of them:
 - Admin is a role granted at sign-in to the phone numbers in `DEEGEE_ADMIN_PHONES`, so adding or
   removing an admin takes effect the next time they sign in, with no deploy.
 
-75 tests run against H2 in PostgreSQL mode, with the product's own Flyway migrations and the demo
+83 tests run against H2 in PostgreSQL mode, with the product's own Flyway migrations and the demo
 catalogue switched on. They load the same script a demo does rather than keeping a private copy of
 the rows, so the two cannot drift apart.
 
@@ -224,6 +225,7 @@ The decisions that moved the architecture, newest first. Cosmetic work is left o
 
 | Date | Change | Why it matters |
 | --- | --- | --- |
+| 23 Nov 2026 | DusuPay mobile money, behind the existing gateway interface | One integration reaches MTN and Airtel; the app and the ledger did not change, only what sits behind them |
 | 23 Nov 2026 | Demo catalogue became a switch | `DEEGEE_DEMO_CATALOGUE=true` loads it into an empty database; off by default, so production ships empty |
 | 22 Nov 2026 | Demo catalogue removed from the migrations | It used to reach every database, including production, as the first thing a real visitor saw |
 | 22 Nov 2026 | Artists can edit their own profile, `PATCH /v1/artist/profile` | Closes the last thing only an admin could do; handles became a stored column, so a rename no longer moves a page |
@@ -261,9 +263,20 @@ and not switched on; it needs a bucket, an API token, and `DEEGEE_R2_ACCOUNT_ID`
 `DEEGEE_R2_ACCESS_KEY` and `DEEGEE_R2_SECRET_KEY` set in Render. This blocks artist photo uploads as
 well.
 
-**No payment aggregator.** Mobile money is simulated end to end. A real one has to be chosen,
-contracted and integrated at the webhook that already exists for it. Nothing else about the money
-path should need to change.
+**DusuPay is written but has never spoken to DusuPay.** The integration is built against their
+published contract and tested against a stub; no call has ever left for `sandboxapi.dusupay.com`,
+because this machine cannot reach it. Everything up to the first real sandbox call is done;
+whether the first real call works is unknown.
+
+Two specifics to settle with them before trusting it. Their documentation does not say how the
+webhook HMAC is encoded and their own samples disagree — hex in PHP, Node and Python, Base64 in
+Java, C# and Ruby — and they differ again on whether the signing key is used raw or Base64-decoded.
+Deegee accepts all four and logs which one matched, so the first real webhook answers the question;
+it can be narrowed afterwards. And their docs state the merchant-account prerequisite for the live
+platform without saying whether sandbox keys need a merchant application first.
+
+**No merchant account.** All three Ugandan aggregators require a registered business before live
+keys. Sandbox work needs none.
 
 **The database is on Neon's pooled endpoint.** That is PgBouncer in transaction mode in front of
 HikariCP, which already pools. pgjdbc moves to server-side prepared statements after a few

@@ -80,6 +80,14 @@ export default function Buy() {
             Mobile money can’t take less than {formatUGX(due.toPay)}. The extra {formatUGX(extra)} stays as Deegee credit for your next purchase.
           </Text>
         ) : null}
+        {/* The network's own charge sits on top of this and Deegee never sees it, so the PIN
+            prompt will read a little higher than the button. Saying so here costs a line; finding
+            out at the PIN prompt is where people decide they have been tricked. */}
+        {needsPhone ? (
+          <Text style={[type.small, styles.note]}>
+            Mobile money adds its own small charge. Your phone will show the exact total before you enter your PIN.
+          </Text>
+        ) : null}
       </Receipt>
 
       {checkout.error ? <Text accessibilityRole="alert" style={[type.body, styles.error]}>{checkout.error}</Text> : null}

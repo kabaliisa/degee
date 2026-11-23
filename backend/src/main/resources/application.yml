@@ -68,6 +68,22 @@ deegee:
     max-attempts: 5
     max-requests-per-hour: 5
   payments:
+    # Which mobile money provider actually moves money. "mock" prompts nobody and approves on a
+    # timer, which is what development and the tests want. "dusupay" reaches MTN and Airtel for
+    # real, and needs the four dusupay values below.
+    provider: ${DEEGEE_PAYMENTS_PROVIDER:mock}
+    dusupay:
+      # sandboxapi.dusupay.com until the merchant account is live.
+      base-url: ${DEEGEE_DUSUPAY_BASE_URL:https://sandboxapi.dusupay.com}
+      public-key: ${DEEGEE_DUSUPAY_PUBLIC_KEY:}
+      secret-key: ${DEEGEE_DUSUPAY_SECRET_KEY:}
+      # From the merchant dashboard, and not the same as the two above: whoever holds this can
+      # tell Deegee that any payment succeeded.
+      signing-key: ${DEEGEE_DUSUPAY_SIGNING_KEY:}
+      # The buyer carries DusuPay's cut, which is the processing-fee model the prices assume.
+      # Turning this off means Deegee pays it out of its own share -- and means taking the
+      # matching warning off the checkout screen.
+      charge-customer: ${DEEGEE_DUSUPAY_CHARGE_CUSTOMER:true}
     # Mock mobile money: approves every top-up after a short delay, as if the user entered their PIN.
     mock-auto-approve: true
     mock-approve-delay: 2s

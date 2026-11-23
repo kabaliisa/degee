@@ -47,5 +47,18 @@ services:
       - key: DEEGEE_CORS_ORIGINS
         sync: false
       # Phone numbers that get admin rights on sign-in. Yours, so you can see the studio side.
+      # Mobile money. "mock" approves on a timer and prompts nobody; switch to "dusupay" with the
+      # four keys below once the merchant account is live. The signing key is the one that matters:
+      # whoever holds it can tell Deegee that any payment succeeded.
+      - key: DEEGEE_PAYMENTS_PROVIDER
+        sync: false
+      - key: DEEGEE_DUSUPAY_BASE_URL
+        sync: false
+      - key: DEEGEE_DUSUPAY_PUBLIC_KEY
+        sync: false
+      - key: DEEGEE_DUSUPAY_SECRET_KEY
+        sync: false
+      - key: DEEGEE_DUSUPAY_SIGNING_KEY
+        sync: false
       - key: DEEGEE_ADMIN_PHONES
         sync: false
