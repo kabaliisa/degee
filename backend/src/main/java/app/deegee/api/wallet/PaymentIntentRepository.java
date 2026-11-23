@@ -18,4 +18,7 @@ interface PaymentIntentRepository extends JpaRepository<PaymentIntent, UUID> {
     Optional<PaymentIntent> lockByProviderRef(String providerRef);
 
     List<PaymentIntent> findTop50ByUserIdOrderByCreatedAtDesc(UUID userId);
+    Optional<PaymentIntent> findByProviderRef(String providerRef);
+
+    Optional<PaymentIntent> findByProviderToken(String providerToken);
 }

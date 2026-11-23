@@ -125,7 +125,8 @@ The endpoints worth knowing:
 | `POST /v1/auth/otp`, `/verify`, `/refresh` | Sign in with a phone number and a code |
 | `GET /v1/catalog` | The whole catalogue in one response, cached in the app |
 | `POST /v1/checkout` | Buy a track or release, or send a gift, in one call |
-| `POST /v1/webhooks/dusupay` | Where DusuPay confirms a payment; signed, and the only thing that hands out a song |
+| `POST /v1/webhooks/dpo` | Where DPO says a payment finished. Unsigned, so it is a nudge to go and ask, never the answer |
+| `POST /v1/webhooks/dusupay` | The same for DusuPay, whose webhook is signed and can be believed |
 | `POST /v1/webhooks/mock-mobile-money` | The same, for development, where no money moves |
 | `GET /v1/tracks/{id}/play` | A signed link: the full song for owners, a preview for everyone |
 | `PATCH /v1/artist/profile` | An approved artist editing their page, without going back to review |
@@ -144,7 +145,7 @@ Three rules hold across all of them:
 - Admin is a role granted at sign-in to the phone numbers in `DEEGEE_ADMIN_PHONES`, so adding or
   removing an admin takes effect the next time they sign in, with no deploy.
 
-83 tests run against H2 in PostgreSQL mode, with the product's own Flyway migrations and the demo
+88 tests run against H2 in PostgreSQL mode, with the product's own Flyway migrations and the demo
 catalogue switched on. They load the same script a demo does rather than keeping a private copy of
 the rows, so the two cannot drift apart.
 
@@ -225,6 +226,7 @@ The decisions that moved the architecture, newest first. Cosmetic work is left o
 
 | Date | Change | Why it matters |
 | --- | --- | --- |
+| 23 Nov 2026 | DPO Pay added, and collections split from payouts | DPO collects but cannot pay out, so one provider setting became two |
 | 23 Nov 2026 | DusuPay mobile money, behind the existing gateway interface | One integration reaches MTN and Airtel; the app and the ledger did not change, only what sits behind them |
 | 23 Nov 2026 | Demo catalogue became a switch | `DEEGEE_DEMO_CATALOGUE=true` loads it into an empty database; off by default, so production ships empty |
 | 22 Nov 2026 | Demo catalogue removed from the migrations | It used to reach every database, including production, as the first thing a real visitor saw |
@@ -262,6 +264,16 @@ not survive one, and every byte a fan streams is billed as Render bandwidth. The
 and not switched on; it needs a bucket, an API token, and `DEEGEE_R2_ACCOUNT_ID`, `DEEGEE_R2_BUCKET`,
 `DEEGEE_R2_ACCESS_KEY` and `DEEGEE_R2_SECRET_KEY` set in Render. This blocks artist photo uploads as
 well.
+
+**Two providers, and neither has ever been spoken to.** DPO takes payments and DusuPay can also
+pay artists out; `deegee.payments.provider` and `payout-provider` choose, separately, because DPO
+publishes no payout API and Deegee needs both halves.
+
+The two are handled in opposite directions, which is about the providers rather than the care
+taken. DusuPay signs its webhook, so the webhook is checked and believed. DPO's callback carries no
+signature at all — anyone could send one — so it is treated as a nudge: it names a transaction, and
+Deegee then asks DPO over an authenticated connection what really happened. That answer moves the
+money. A forged DPO callback achieves nothing but a wasted question.
 
 **DusuPay is written but has never spoken to DusuPay.** The integration is built against their
 published contract and tested against a stub; no call has ever left for `sandboxapi.dusupay.com`,

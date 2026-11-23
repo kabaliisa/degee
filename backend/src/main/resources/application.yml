@@ -72,6 +72,22 @@ deegee:
     # timer, which is what development and the tests want. "dusupay" reaches MTN and Airtel for
     # real, and needs the four dusupay values below.
     provider: ${DEEGEE_PAYMENTS_PROVIDER:mock}
+    # Who sends money OUT. Defaults to the collections provider, which is right for anyone who
+    # does both. DPO collects but publishes no payout API, so with DPO this has to name someone
+    # else or artist withdrawals fail loudly -- which is the intended behaviour, not a bug.
+    payout-provider: ${DEEGEE_PAYOUT_PROVIDER:${DEEGEE_PAYMENTS_PROVIDER:mock}}
+    dpo:
+      base-url: ${DEEGEE_DPO_BASE_URL:https://secure.3gdirectpay.com/API/v6/}
+      company-token: ${DEEGEE_DPO_COMPANY_TOKEN:}
+      # All three are issued per merchant and depend on DPO's terminal settings for the account.
+      # Ask their team; a guess means every payment is refused.
+      service-type: ${DEEGEE_DPO_SERVICE_TYPE:}
+      mtn-mno: ${DEEGEE_DPO_MTN_MNO:MTN}
+      airtel-mno: ${DEEGEE_DPO_AIRTEL_MNO:Airtel}
+      mno-country: ${DEEGEE_DPO_MNO_COUNTRY:uganda}
+      back-url: ${DEEGEE_DPO_BACK_URL:}
+      redirect-url: ${DEEGEE_DPO_REDIRECT_URL:}
+      payment-time-limit-minutes: ${DEEGEE_DPO_PTL:15}
     dusupay:
       # sandboxapi.dusupay.com until the merchant account is live.
       base-url: ${DEEGEE_DUSUPAY_BASE_URL:https://sandboxapi.dusupay.com}

@@ -52,6 +52,22 @@ services:
       # whoever holds it can tell Deegee that any payment succeeded.
       - key: DEEGEE_PAYMENTS_PROVIDER
         sync: false
+      # DPO collects but publishes no payout API, so with DPO this must name someone who does,
+      # or artist withdrawals fail loudly. Left unset it follows the collections provider.
+      - key: DEEGEE_PAYOUT_PROVIDER
+        sync: false
+      - key: DEEGEE_DPO_COMPANY_TOKEN
+        sync: false
+      - key: DEEGEE_DPO_SERVICE_TYPE
+        sync: false
+      - key: DEEGEE_DPO_MTN_MNO
+        sync: false
+      - key: DEEGEE_DPO_AIRTEL_MNO
+        sync: false
+      - key: DEEGEE_DPO_BACK_URL
+        sync: false
+      - key: DEEGEE_DPO_REDIRECT_URL
+        sync: false
       - key: DEEGEE_DUSUPAY_BASE_URL
         sync: false
       - key: DEEGEE_DUSUPAY_PUBLIC_KEY

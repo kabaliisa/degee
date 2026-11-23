@@ -39,6 +39,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/v1/catalog/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/media/**").permitAll() // covers are public; other files need a signed link
                         .requestMatchers(HttpMethod.POST, "/v1/webhooks/**").permitAll() // verified by signature
+                        // DPO can also land the customer's own browser back here as a GET, which
+                        // would otherwise be refused before it reached the controller. Public costs
+                        // nothing: the handler believes none of it and asks DPO instead.
+                        .requestMatchers(HttpMethod.GET, "/v1/webhooks/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(o -> o.jwt(Customizer.withDefaults()))

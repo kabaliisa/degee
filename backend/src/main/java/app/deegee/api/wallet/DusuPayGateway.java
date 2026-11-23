@@ -6,7 +6,6 @@ import java.time.Duration;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -19,8 +18,7 @@ import org.springframework.web.client.RestClient;
  * split is the whole design: the app the customer is holding never tells the server it paid, so a
  * modified app cannot award itself a song.
  */
-@Component
-@ConditionalOnProperty(name = "deegee.payments.provider", havingValue = "dusupay")
+@Component("dusupay")
 class DusuPayGateway implements MobileMoneyGateway {
 
     private static final Logger log = LoggerFactory.getLogger(DusuPayGateway.class);

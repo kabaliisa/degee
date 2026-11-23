@@ -40,6 +40,10 @@ public class PaymentIntent {
     @Column(name = "provider_ref", nullable = false, unique = true, length = 64)
     private String providerRef;
 
+    /** The provider's own id for this payment, where it has one. DPO's verifyToken takes it. */
+    @Column(name = "provider_token", length = 80)
+    private String providerToken;
+
     @Column(name = "transaction_id")
     private UUID transactionId;
 
@@ -85,6 +89,9 @@ public class PaymentIntent {
     public long getAmountUgx() { return amountUgx; }
     public Status getStatus() { return status; }
     public String getProviderRef() { return providerRef; }
+    public String getProviderToken() { return providerToken; }
+
+    void rememberProviderToken(String token) { this.providerToken = token; }
     public UUID getTransactionId() { return transactionId; }
     public Instant getCreatedAt() { return createdAt; }
 }

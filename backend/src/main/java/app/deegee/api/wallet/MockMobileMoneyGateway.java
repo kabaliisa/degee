@@ -6,7 +6,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -17,8 +16,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * every top-up after a short delay, as if the user entered their PIN. Otherwise approve or decline a
  * top-up by calling the mock webhook (see WebhookController).
  */
-@Component
-@ConditionalOnProperty(name = "deegee.payments.provider", havingValue = "mock", matchIfMissing = true)
+@Component("mock")
 class MockMobileMoneyGateway implements MobileMoneyGateway {
 
     private static final Logger log = LoggerFactory.getLogger(MockMobileMoneyGateway.class);
