@@ -1,11 +1,12 @@
--- The catalogue the tests run against.
+-- The demo catalogue: five invented artists, six releases, sixteen songs.
 --
--- This used to be the same rows the product shipped with, which meant the test suite quietly
--- depended on demo data: deleting the demo catalogue from the product broke twenty tests that had
--- nothing to do with it. The fixture now belongs to the tests and lives only on the test
--- classpath, so what the product ships and what the tests assert can move apart.
+-- Not a migration. It used to be one (V4 and V8), which meant every database got it whether or not
+-- anybody wanted it, and a real visitor's first sight of Deegee was invented artists singing
+-- AI-generated songs. V10 took it out; this script puts it back only where it is asked for, by
+-- DemoCatalogue, when deegee.demo.catalogue is on and the catalogue is empty.
 --
--- Runs after V10 has removed the shipped copy, and uses the same ids the tests already name.
+-- It is on in the test suite, so the tests exercise the same script the demo does rather than
+-- keeping a private copy that can drift. It is off by default, so production ships empty.
 
 INSERT INTO artists (id, name, slug, city, bio, genres, verified, color_a, color_b) VALUES
     ('a1', 'Nalu Kizza', 'nalu-kizza', 'Kampala', 'Kampala singer blending Afrobeat grooves with Luganda love songs.', 'Afrobeat,Zouk', TRUE, '#2F7BFF', '#0A1A38'),

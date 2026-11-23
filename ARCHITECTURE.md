@@ -143,10 +143,9 @@ Three rules hold across all of them:
 - Admin is a role granted at sign-in to the phone numbers in `DEEGEE_ADMIN_PHONES`, so adding or
   removing an admin takes effect the next time they sign in, with no deploy.
 
-75 tests run against H2 in PostgreSQL mode, with the product's own Flyway migrations plus a
-fixture catalogue that exists only on the test classpath. The fixture is deliberately separate:
-the product ships with no catalogue at all, and tests that assert against shipped demo data break
-the moment that data is removed.
+75 tests run against H2 in PostgreSQL mode, with the product's own Flyway migrations and the demo
+catalogue switched on. They load the same script a demo does rather than keeping a private copy of
+the rows, so the two cannot drift apart.
 
 ## The app
 
@@ -225,7 +224,8 @@ The decisions that moved the architecture, newest first. Cosmetic work is left o
 
 | Date | Change | Why it matters |
 | --- | --- | --- |
-| 22 Nov 2026 | Demo catalogue removed | The five invented artists and their AI-generated songs are gone from the product; the tests keep their own fixture |
+| 23 Nov 2026 | Demo catalogue became a switch | `DEEGEE_DEMO_CATALOGUE=true` loads it into an empty database; off by default, so production ships empty |
+| 22 Nov 2026 | Demo catalogue removed from the migrations | It used to reach every database, including production, as the first thing a real visitor saw |
 | 22 Nov 2026 | Artists can edit their own profile, `PATCH /v1/artist/profile` | Closes the last thing only an admin could do; handles became a stored column, so a rename no longer moves a page |
 | 22 Nov 2026 | Both halves moved from Ohio to Frankfurt | Roughly halves the distance to Kampala; needed rebuilding both services, since neither region can be changed |
 | 22 Nov 2026 | Admin insights, `GET /v1/admin/insights` | Makes the float auditable: liabilities checked against cash in, and a gap shown |
@@ -243,6 +243,13 @@ viable without an app store.
 Deegee ships empty. Until the first artist publishes, the home screen is an empty state that says
 what Deegee is and offers an artist the way in — not a rare edge case but the only home screen
 anybody sees at launch, so it is a designed page rather than a guard.
+
+A demo catalogue — five invented artists, sixteen AI-generated songs — can be switched on with
+`DEEGEE_DEMO_CATALOGUE=true`. It loads at startup, only into a database with no artists in it, and
+brings its recordings with it. Off by default, and it should stay off anywhere a stranger can
+reach: the point of removing it from the migrations was that nobody arriving at Deegee should be
+shown music nobody made. The test suite switches it on, so the tests and the demo exercise the
+same script.
 
 ## Known gaps
 

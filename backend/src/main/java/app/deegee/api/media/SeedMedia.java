@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.Resource;
@@ -14,7 +15,8 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
 
 /**
- * Puts the demo catalogue's recordings on disk at startup.
+ * Puts the demo catalogue's recordings on disk at startup, when there is a demo catalogue to put
+ * them there for.
  *
  * The songs that come with the seeded catalogue are carried inside the jar rather than left in the
  * media folder, because the folder is not guaranteed to survive. Free hosting tiers hand a container
@@ -26,10 +28,15 @@ import org.springframework.stereotype.Component;
  * overwritten, and restarting is cheap.
  */
 @Component
+@ConditionalOnProperty(name = "deegee.demo.catalogue", havingValue = "true")
 class SeedMedia {
 
     private static final Logger log = LoggerFactory.getLogger(SeedMedia.class);
-    private static final String PATTERN = "classpath:seed-media/**/*.*";
+    // Gated on the same setting as the rows themselves: without the demo catalogue these files
+    // name nothing, and writing 15 MB of music onto a production disk for no reader is worse than
+    // pointless -- on a free tier it is most of the disk.
+    private static final String ROOT = "demo-media/";
+    private static final String PATTERN = "classpath:" + ROOT + "**/*.*";
 
     private final MediaProperties props;
 
@@ -43,9 +50,16 @@ class SeedMedia {
         int written = 0;
         try {
             Resource[] found = new PathMatchingResourcePatternResolver().getResources(PATTERN);
+            int unreadable = 0;
             for (Resource resource : found) {
                 String key = keyOf(resource);
-                if (key == null) continue;
+                // Renaming the folder without renaming it here made every key null, so every file
+                // was skipped and nothing was logged: the demo simply had no sound and no reason
+                // given. A packaging mistake should say so.
+                if (key == null) {
+                    unreadable++;
+                    continue;
+                }
                 Path target = root.resolve(key);
                 if (Files.exists(target)) continue;
                 Files.createDirectories(target.getParent());
@@ -54,7 +68,11 @@ class SeedMedia {
                 }
                 written++;
             }
-            if (written > 0) log.info("Restored {} seed recordings into {}", written, root);
+            if (unreadable > 0) {
+                log.warn("{} of {} packaged recordings are not under {} -- none of them will play",
+                        unreadable, found.length, ROOT);
+            }
+            if (written > 0) log.info("Restored {} demo recordings into {}", written, root);
         } catch (IOException e) {
             // The catalogue still loads and the app still runs; the songs just will not play. Worth a
             // loud line in the log, not worth refusing to start.
@@ -62,12 +80,12 @@ class SeedMedia {
         }
     }
 
-    /** The media key a packaged file belongs at: everything after seed-media/, e.g. audio/<uuid>.m4a */
+    /** The media key a packaged file belongs at: everything after the root, e.g. audio/<uuid>.m4a */
     private String keyOf(Resource resource) {
         try {
             String url = resource.getURL().toString();
-            int at = url.indexOf("seed-media/");
-            return at < 0 ? null : url.substring(at + "seed-media/".length());
+            int at = url.indexOf(ROOT);
+            return at < 0 ? null : url.substring(at + ROOT.length());
         } catch (IOException e) {
             return null;
         }

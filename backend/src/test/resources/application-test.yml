@@ -1,15 +1,14 @@
 spring:
-  flyway:
-    # The product's own migrations, then a fixture that belongs to the tests. The shipped
-    # migrations no longer leave a catalogue behind -- V10 takes the demo one out -- so the tests
-    # bring their own rather than asserting against data the product is meant to be rid of.
-    locations: classpath:db/migration,classpath:db/testdata
   datasource:
     url: jdbc:h2:mem:deegee;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
     username: sa
     password: ""
 
 deegee:
+  demo:
+    # The tests assert against the demo catalogue, so they switch it on and exercise the same
+    # script a laptop does, rather than keeping a private copy of the rows that can drift from it.
+    catalogue: true
   admin-phones: "+256700000001"
   media:
     dir: ${java.io.tmpdir}/deegee-test-media

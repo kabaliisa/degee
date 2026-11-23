@@ -28,6 +28,12 @@ management:
         include: health
 
 deegee:
+  demo:
+    # Five invented artists and sixteen AI-generated songs, loaded into an empty database at
+    # startup. Off unless asked for: it exists so a laptop or a demo has something to show, and a
+    # stranger arriving at Deegee should never be shown music nobody made. Set
+    # DEEGEE_DEMO_CATALOGUE=true where you want it; never set it in production.
+    catalogue: ${DEEGEE_DEMO_CATALOGUE:false}
   # Phone numbers that get admin rights when they sign in (comma-separated). Empty means no admins.
   admin-phones: ${DEEGEE_ADMIN_PHONES:}
   media:
