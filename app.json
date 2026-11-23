@@ -34,7 +34,14 @@
     "plugins": [
       "expo-router",
       "expo-audio",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "color": "#F0A519",
+          "defaultChannel": "deegee-money"
+        }
+      ]
     ],
     "scheme": "deegee",
     "backgroundColor": "#0A0A09"

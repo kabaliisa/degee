@@ -106,6 +106,13 @@ deegee:
     # Signs mock provider webhooks. MUST be overridden in every real environment.
     webhook-secret: ${DEEGEE_WEBHOOK_SECRET:dev-only-webhook-secret}
 
+  notify:
+    # "log" writes every notification to the log and sends nothing, which is what development and
+    # the tests want -- and what production wants until the app ships a build that can register a
+    # push token. "expo" sends them through Expo's push service, which costs nothing.
+    provider: ${DEEGEE_NOTIFY_PROVIDER:log}
+    expo-url: ${DEEGEE_EXPO_PUSH_URL:https://exp.host/--/api/v2/push/send}
+
 logging:
   level:
     app.deegee: INFO

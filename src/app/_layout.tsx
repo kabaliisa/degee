@@ -3,16 +3,18 @@ import { Poppins_400Regular } from '@expo-google-fonts/poppins/400Regular';
 import { Poppins_500Medium } from '@expo-google-fonts/poppins/500Medium';
 import { Poppins_600SemiBold } from '@expo-google-fonts/poppins/600SemiBold';
 import { Poppins_700Bold } from '@expo-google-fonts/poppins/700Bold';
-import { Stack } from 'expo-router';
+import * as Notifications from 'expo-notifications';
+import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, AppState, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, Platform, StyleSheet, Text, View } from 'react-native';
 import { useCatalog } from '../api/catalog';
 import { API_URL } from '../api/config';
 import { Sidebar, SIDEBAR_WIDTH } from '../components/nav/Sidebar';
 import { MiniPlayer, PLAYER_BAR_HEIGHT } from '../components/player/MiniPlayer';
 import { useLayout } from '../lib/breakpoints';
+import { configurePushHandler, destinationOf, registerThisPhone } from '../lib/push';
 import { PlayerEngine } from '../components/player/PlayerEngine';
 import { Button } from '../components/ui';
 import { colors, font, space, type } from '../lib/theme';
@@ -44,9 +46,29 @@ function AccountSync({ signedIn }: { signedIn: boolean }) {
       getMe().then(useSession.getState().setUser).catch(() => {});
     };
     load();
+    // Asked for on sign-in rather than at first launch: a stranger browsing the catalogue has no
+    // reason to be asked, and an artist who has just signed in has an obvious one.
+    void registerThisPhone();
     const sub = AppState.addEventListener('change', (state) => { if (state === 'active') load(); });
     return () => sub.remove();
   }, [signedIn]);
+  return null;
+}
+
+/**
+ * Tapping "Ekyo Omukwano just sold" should land on the Studio, not the home screen. The notification
+ * carries where it wants to go; anything else is ignored, so a malformed one can't send someone
+ * somewhere strange.
+ */
+function NotificationTaps() {
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      const to = destinationOf(response.notification);
+      if (to) router.push(to as never);
+    });
+    return () => sub.remove();
+  }, []);
   return null;
 }
 
@@ -83,6 +105,9 @@ function Splash({ error, onRetry }: { error?: string; onRetry?: () => void }) {
  */
 const PRERENDERING = typeof window === 'undefined';
 
+// Set before anything can arrive, so a notification that lands while Deegee is open is still shown.
+if (!PRERENDERING) configurePushHandler();
+
 export default function RootLayout() {
   const [loaded] = useFonts({
     Poppins_400Regular,
@@ -118,6 +143,7 @@ export default function RootLayout() {
       {/* Playback is a browser thing; there is no audio on the machine that renders these pages. */}
       {PRERENDERING ? null : <PlayerEngine />}
       <AccountSync signedIn={signedIn} />
+      {PRERENDERING ? null : <NotificationTaps />}
       {/* On a wide screen the chrome belongs to the app, not to the tabs: an artist page is not a
           tab, and the sidebar and the player have to stay put while you are on one. Laid over the
           content with matching padding on the stack, so nothing scrolls underneath and stays. */}

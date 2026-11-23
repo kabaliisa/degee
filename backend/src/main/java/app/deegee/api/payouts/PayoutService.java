@@ -57,15 +57,17 @@ public class PayoutService {
     private final Ledger ledger;
     private final MobileMoneyGateway gateway;
     private final PayoutsProperties props;
+    private final org.springframework.context.ApplicationEventPublisher events;
     private final Clock clock;
 
     PayoutService(ArtistRepository artists, WithdrawalRepository withdrawals, Ledger ledger, MobileMoneyGateway gateway,
-                  PayoutsProperties props, Clock clock) {
+                  PayoutsProperties props, org.springframework.context.ApplicationEventPublisher events, Clock clock) {
         this.artists = artists;
         this.withdrawals = withdrawals;
         this.ledger = ledger;
         this.gateway = gateway;
         this.props = props;
+        this.events = events;
         this.clock = clock;
     }
 
@@ -178,6 +180,7 @@ public class PayoutService {
         Instant now = clock.instant();
         w.reject(n.length() > 300 ? n.substring(0, 300) : n, now);
         giveBack(w);
+        events.publishEvent(new WithdrawalSettled(w.getId(), false));
     }
 
     /** The provider's answer. Safe to receive more than once: only a SENT withdrawal changes. */
@@ -200,6 +203,7 @@ public class PayoutService {
             w.move(Withdrawal.Status.FAILED, now);
             giveBack(w);
         }
+        events.publishEvent(new WithdrawalSettled(w.getId(), result.succeeded()));
     }
 
     private void send(Withdrawal w, Instant now) {

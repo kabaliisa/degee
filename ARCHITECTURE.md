@@ -259,6 +259,27 @@ same script.
 
 What is not built, not decided, or knowingly wrong. Roughly in the order they would hurt.
 
+**Notifications are built but send nothing yet.** The whole chain works — a sale fires an event, the
+event becomes words, and the words go to every phone the artist has registered — but two things are
+missing before anything reaches a handset. `deegee.notify.provider` is `log`, which writes each
+notification to the Render log instead of sending it; set `DEEGEE_NOTIFY_PROVIDER=expo` to send.
+And `app.json` has no `extra.eas.projectId`, which Expo needs to mint a push token: until
+`eas init` has run, `registerThisPhone` logs a warning and returns null, so no phone is ever
+registered. Push also needs a development or release build — Expo Go on Android has not carried
+remote push since SDK 53 — and the web build has no push at all.
+
+Expo's push service itself is free, with no per-message charge. The costs are the Apple Developer
+Program membership and the Play Console fee, both of which shipping the app needs anyway.
+
+**Artists with no smartphone hear nothing.** Push is the only channel. The event plumbing is
+channel-agnostic — `PushSender` is an interface with two implementations already — so SMS can be
+added as a second one, but it would mean a third provider account and a per-message cost.
+
+**New-release notifications can't be sent.** Following an artist is stored on the device
+(`src/store/likes.ts`, cleared on sign-out) and never reaches the server, so Deegee cannot tell who
+follows whom and cannot notify them. The fan-facing switch for it has been taken out of Settings
+rather than left there doing nothing. Making it real means moving follows to the server.
+
 **Media is on Render's disk.** That disk is wiped on every deploy, so uploaded audio and artwork do
 not survive one, and every byte a fan streams is billed as Render bandwidth. The R2 code is written
 and not switched on; it needs a bucket, an API token, and `DEEGEE_R2_ACCOUNT_ID`, `DEEGEE_R2_BUCKET`,

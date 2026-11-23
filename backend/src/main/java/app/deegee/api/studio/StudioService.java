@@ -178,7 +178,11 @@ public class StudioService {
                     .orElseThrow(() -> invalid("INVALID_PHONE", "Enter the MTN or Airtel number you want to be paid on, e.g. 0772 123456."));
             String provider = PhoneNumbers.provider(msisdn).map(Enum::name)
                     .orElseThrow(() -> invalid("INVALID_PHONE", "Payouts go to MTN MoMo or Airtel Money numbers."));
+            boolean moved = !msisdn.equals(artist.getPayoutMsisdn());
             artist.changePayout(msisdn, provider, clock.instant());
+            // Only when it actually moved: saving the profile without touching the number is not news,
+            // and a notification that cries wolf is one an artist learns to ignore.
+            if (moved) events.publishEvent(new PayoutNumberChanged(artist.getId(), msisdn));
         }
         return artist;
     }

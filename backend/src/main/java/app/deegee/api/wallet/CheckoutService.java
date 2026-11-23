@@ -9,6 +9,7 @@ import java.time.Clock;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -43,10 +44,11 @@ public class CheckoutService {
     private final GiftService gifts;
     private final Ledger ledger;
     private final Clock clock;
+    private final ApplicationEventPublisher events;
     private final TransactionTemplate newTx;
 
     CheckoutService(CheckoutOrderRepository orders, PaymentIntentRepository intents, TopUpService payments, PurchaseService purchases,
-                    GiftService gifts, Ledger ledger, Clock clock, PlatformTransactionManager txManager) {
+                    GiftService gifts, Ledger ledger, Clock clock, ApplicationEventPublisher events, PlatformTransactionManager txManager) {
         this.orders = orders;
         this.intents = intents;
         this.payments = payments;
@@ -54,6 +56,7 @@ public class CheckoutService {
         this.gifts = gifts;
         this.ledger = ledger;
         this.clock = clock;
+        this.events = events;
         this.newTx = new TransactionTemplate(txManager);
         // Completing an order runs just after the payment's own transaction commits, so it needs its own.
         this.newTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -97,7 +100,9 @@ public class CheckoutService {
             long collect = Math.max(price - credit, MIN_COLLECTION_UGX);
             order.waitingFor(payments.collect(userId, collect, provider, phone, "checkout-" + order.getId()));
         }
-        return orders.save(order);
+        CheckoutOrder saved = orders.save(order);
+        if (saved.getStatus() != Status.WAITING) events.publishEvent(new OrderSettled(saved.getId()));
+        return saved;
     }
 
     /** The order as it stands. Also finishes an order whose payment arrived but wasn't applied (say, a restart got in between). */
@@ -136,12 +141,17 @@ public class CheckoutService {
                         PaymentIntent.Status paid = intents.findById(paymentIntentId).orElseThrow().getStatus();
                         if (paid == PaymentIntent.Status.FAILED) order.declined(clock.instant());
                         else if (paid == PaymentIntent.Status.COMPLETED) order.completed(fulfil(order), clock.instant());
+                        else return;
+                        events.publishEvent(new OrderSettled(order.getId()));
                     }));
         } catch (ApiException e) {
             // Paid, but it can't be delivered (already owned, taken down, …). The money stays as their credit.
             newTx.executeWithoutResult(tx -> orders.lockByPaymentIntentId(paymentIntentId)
                     .filter(o -> o.getStatus() == Status.WAITING)
-                    .ifPresent(order -> order.credited(e.code(), e.getMessage(), clock.instant())));
+                    .ifPresent(order -> {
+                        order.credited(e.code(), e.getMessage(), clock.instant());
+                        events.publishEvent(new OrderSettled(order.getId()));
+                    }));
         }
     }
 

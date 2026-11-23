@@ -110,6 +110,15 @@ public class Ledger {
                 .sum();
     }
 
+    /** How much {@code transactionId} moved on one account. Used to tell an artist what a sale earned them. */
+    @Transactional(readOnly = true)
+    public long amountIn(UUID transactionId, UUID accountId) {
+        return entries.findByTransactionId(transactionId).stream()
+                .filter(e -> e.getAccountId().equals(accountId))
+                .mapToLong(LedgerEntry::getAmountUgx)
+                .sum();
+    }
+
     @Transactional(readOnly = true)
     public List<WalletLine> walletHistory(UUID userId, int limit) {
         return entries.history(walletId(userId), Limit.of(limit));

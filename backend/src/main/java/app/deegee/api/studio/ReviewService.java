@@ -32,15 +32,17 @@ public class ReviewService {
     private final RightsDeclarationRepository declarations;
     private final UserRepository users;
     private final StudioService studio;
+    private final org.springframework.context.ApplicationEventPublisher events;
     private final Clock clock;
 
     ReviewService(ArtistRepository artists, ReleaseRepository releases, RightsDeclarationRepository declarations,
-                  UserRepository users, StudioService studio, Clock clock) {
+                  UserRepository users, StudioService studio, org.springframework.context.ApplicationEventPublisher events, Clock clock) {
         this.artists = artists;
         this.releases = releases;
         this.declarations = declarations;
         this.users = users;
         this.studio = studio;
+        this.events = events;
         this.clock = clock;
     }
 
@@ -83,6 +85,7 @@ public class ReviewService {
         if (!artist.isActive()) throw new ApiException(HttpStatus.CONFLICT, "ARTIST_NOT_APPROVED", "Approve the artist first.");
         Instant now = clock.instant();
         release.publish(LocalDate.ofInstant(now, StudioService.UGANDA).getYear(), now);
+        events.publishEvent(new ReleasePublished(release.getId()));
     }
 
     @Transactional

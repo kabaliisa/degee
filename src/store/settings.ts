@@ -11,8 +11,6 @@ type SettingsState = {
   streamQuality: Quality;
   downloadOnWifiOnly: boolean;
   language: Language;
-  notifyNewReleases: boolean; // new music from artists you follow
-  notifyGiftsAndOffers: boolean;
   update: (patch: Partial<Omit<SettingsState, 'update'>>) => void;
 };
 
@@ -23,8 +21,6 @@ export const useSettings = create<SettingsState>()(
       streamQuality: 'Normal',
       downloadOnWifiOnly: true,
       language: 'English',
-      notifyNewReleases: true,
-      notifyGiftsAndOffers: false,
       update: (patch) => set(patch),
     }),
     { name: 'deegee-settings', storage: createJSONStorage(() => AsyncStorage) },
