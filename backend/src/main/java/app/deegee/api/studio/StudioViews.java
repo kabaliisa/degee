@@ -14,11 +14,19 @@ public final class StudioViews {
 
     private StudioViews() {}
 
-    public record ArtistProfile(String id, String name, String city, String bio, List<String> genres, List<String> colors,
-                                String status, String reviewNote, boolean verified, String payoutPhone, String payoutProvider) {
-        public static ArtistProfile of(Artist a) {
-            return new ArtistProfile(a.getId(), a.getName(), a.getCity(), a.getBio(), a.getGenres(), a.getColors(),
-                    a.getStatus().name(), a.getReviewNote(), a.isVerified(), a.getPayoutMsisdn(), a.getPayoutProvider());
+    /**
+     * {@code payoutHeldUntil}: when withdrawals start working again after the payout number moved,
+     * null when nothing is held. The artist sees the date rather than being told no at the moment
+     * they try to withdraw.
+     */
+    public record ArtistProfile(String id, String name, String slug, String city, String bio, List<String> genres,
+                                List<String> colors, String status, String reviewNote, boolean verified,
+                                String payoutPhone, String payoutProvider, Instant payoutHeldUntil) {
+        public static ArtistProfile of(Artist a, Instant now) {
+            Instant until = a.payoutHoldUntil();
+            return new ArtistProfile(a.getId(), a.getName(), a.getSlug(), a.getCity(), a.getBio(), a.getGenres(), a.getColors(),
+                    a.getStatus().name(), a.getReviewNote(), a.isVerified(), a.getPayoutMsisdn(), a.getPayoutProvider(),
+                    until != null && until.isAfter(now) ? until : null);
         }
     }
 

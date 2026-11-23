@@ -25,5 +25,9 @@ public interface ArtistRepository extends JpaRepository<Artist, String> {
 
     boolean existsByNameIgnoreCase(String name);
 
+    boolean existsBySlug(String slug);
+
+    boolean existsBySlugAndIdNot(String slug, String id);
+
     List<Artist> findByStatusOrderByCreatedAt(Artist.Status status);
 }

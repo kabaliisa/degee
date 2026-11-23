@@ -120,6 +120,17 @@ public class PayoutService {
         Artist artist = ownArtist(userId);
         if (!artist.isActive()) throw new ApiException(HttpStatus.CONFLICT, "ARTIST_NOT_APPROVED", "You can withdraw once your artist profile is approved.");
         if (artist.getPayoutMsisdn() == null) throw new ApiException(HttpStatus.CONFLICT, "NO_PAYOUT_NUMBER", "Add a mobile money number to your artist profile.");
+        // The payout number is how money leaves Deegee, so whoever takes over an artist's account
+        // changes it first and withdraws immediately. A day's wait costs that attack the only thing
+        // it depends on, and costs an artist who has genuinely changed SIM a day. Earnings keep
+        // accruing throughout; this only stops them moving out.
+        Instant payoutHold = artist.payoutHoldUntil();
+        if (payoutHold != null && payoutHold.isAfter(clock.instant())) {
+            throw new ApiException(HttpStatus.CONFLICT, "PAYOUT_NUMBER_JUST_CHANGED",
+                    "You changed your payout number recently, so withdrawals are paused until %s. Your earnings are safe in the meantime."
+                            .formatted(java.time.format.DateTimeFormatter.ofPattern("d MMM 'at' HH:mm")
+                                    .withZone(java.time.ZoneId.of("Africa/Kampala")).format(payoutHold)));
+        }
         if (amountUgx < props.minWithdrawalUgx()) {
             throw new ApiException(HttpStatus.UNPROCESSABLE_CONTENT, "WITHDRAWAL_TOO_SMALL",
                     "The smallest withdrawal is UGX %,d.".formatted(props.minWithdrawalUgx()));

@@ -19,13 +19,10 @@ const SITE = (process.env.EXPO_PUBLIC_SITE_URL ?? 'https://deegee.ug').replace(/
 const MEDIA = (process.env.EXPO_PUBLIC_API_URL ?? SITE).replace(/\/$/, '');
 const seed = JSON.parse(readFileSync('src/api/catalog.seed.json', 'utf8'));
 
-// Keep in step with src/lib/slug.ts -- this script is plain JavaScript and can't import it, and the
-// verification suite checks that the pages written here are the ones the app links to.
-const HANDLES = { a5: 'mukasa' };
-const slugify = (name) =>
-  name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-const artistSlug = (a) => HANDLES[a.id] ?? slugify(a.name);
+// An artist's handle is stored on the artist and travels in the catalogue snapshot, so this script
+// reads it rather than working it out. It used to reimplement the app's slug rule, which meant two
+// copies of one rule drifting apart and a rename quietly moving a page nobody had rebuilt.
+const artistSlug = (a) => a.slug;
 
 const ugx = (n) => `UGX ${n.toLocaleString('en-US')}`;
 const songsOf = (releaseId) => seed.tracks.filter((t) => t.releaseId === releaseId);

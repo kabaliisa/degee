@@ -24,6 +24,13 @@ public class Artist {
     @Column(nullable = false)
     private String name;
 
+    /**
+     * The artist's address: deegee.ug/{slug}. Stored rather than worked out from the name, so a
+     * rename does not silently move the page out from under every link already shared.
+     */
+    @Column(nullable = false, length = 60)
+    private String slug;
+
     @Column(nullable = false)
     private String city;
 
@@ -55,6 +62,10 @@ public class Artist {
     @Column(name = "payout_provider", length = 20)
     private String payoutProvider;
 
+    /** When the payout number last moved. Withdrawals are held for a day after it does. */
+    @Column(name = "payout_changed_at")
+    private Instant payoutChangedAt;
+
     @Column(name = "review_note", length = 300)
     private String reviewNote;
 
@@ -67,10 +78,11 @@ public class Artist {
     protected Artist() {}
 
     /** A new artist application from a signed-in user. */
-    public Artist(String id, UUID ownerUserId, String name, String city, String bio, List<String> genres,
+    public Artist(String id, UUID ownerUserId, String name, String slug, String city, String bio, List<String> genres,
                   String payoutMsisdn, String payoutProvider, List<String> colors, Instant now) {
         this.id = id;
         this.ownerUserId = ownerUserId;
+        this.slug = slug;
         this.colorA = colors.get(0);
         this.colorB = colors.get(1);
         this.createdAt = now;
@@ -89,6 +101,41 @@ public class Artist {
         this.reviewNote = null;
     }
 
+    /**
+     * An approved artist changing what their page says. Deliberately not {@link #reapply}: that
+     * sends the application back to PENDING, which would pull a live catalogue down and drop the
+     * verified badge because somebody fixed a typo in their bio. Nothing here is identity, so
+     * nothing here needs re-checking.
+     */
+    public void editProfile(String name, String city, String bio, List<String> genres) {
+        this.name = name;
+        this.city = city;
+        this.bio = bio;
+        this.genres = String.join(",", genres);
+    }
+
+    /**
+     * Moving the page itself. Separate from {@link #editProfile} because it is the one edit with a
+     * cost outside Deegee: every poster, bio and shared link pointing at the old address stops
+     * working, and only the artist can judge whether that is worth it.
+     */
+    public void changeHandle(String slug) {
+        this.slug = slug;
+    }
+
+    /**
+     * Where withdrawals are sent. Stamped with the time because the payout number is how money
+     * leaves the platform: whoever takes over an account changes this first, and holding
+     * withdrawals for a day afterwards costs them the speed the attack depends on. An artist who
+     * has genuinely changed SIM keeps earning throughout and waits a day to move it.
+     */
+    public void changePayout(String msisdn, String provider, Instant now) {
+        boolean moved = !java.util.Objects.equals(this.payoutMsisdn, msisdn);
+        this.payoutMsisdn = msisdn;
+        this.payoutProvider = provider;
+        if (moved) this.payoutChangedAt = now;
+    }
+
     /** Approved by an admin: identity checked, so the artist also gets the verified badge. */
     public void activate(Instant now) {
         this.status = Status.ACTIVE;
@@ -104,6 +151,7 @@ public class Artist {
 
     public String getId() { return id; }
     public String getName() { return name; }
+    public String getSlug() { return slug; }
     public String getCity() { return city; }
     public String getBio() { return bio; }
     public boolean isVerified() { return verified; }
@@ -114,6 +162,15 @@ public class Artist {
     public UUID getOwnerUserId() { return ownerUserId; }
     public String getPayoutMsisdn() { return payoutMsisdn; }
     public String getPayoutProvider() { return payoutProvider; }
+    public Instant getPayoutChangedAt() { return payoutChangedAt; }
+
+    /** How long a withdrawal is held after the payout number moves. */
+    public static final java.time.Duration PAYOUT_HOLD = java.time.Duration.ofHours(24);
+
+    /** When withdrawals work again, or null if the number has never moved. */
+    public Instant payoutHoldUntil() {
+        return payoutChangedAt == null ? null : payoutChangedAt.plus(PAYOUT_HOLD);
+    }
     public String getReviewNote() { return reviewNote; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getActivatedAt() { return activatedAt; }

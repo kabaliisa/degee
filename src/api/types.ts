@@ -7,6 +7,8 @@ export type Genre = 'Afrobeat' | 'Kadongo Kamu' | 'Dancehall' | 'Gospel' | 'Zouk
 export type Artist = {
   id: string;
   name: string;
+  /** The artist's address: deegee.ug/{slug}. Stored on the server, so a rename never moves it. */
+  slug: string;
   city: string;
   bio: string;
   genres: Genre[];

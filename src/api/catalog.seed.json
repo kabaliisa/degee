@@ -3,6 +3,7 @@
     {
       "id": "a4",
       "name": "Grace Atim",
+      "slug": "grace-atim",
       "city": "Gulu",
       "bio": "Gospel voice from the north, singing in Acholi and English.",
       "genres": [
@@ -17,6 +18,7 @@
     {
       "id": "a3",
       "name": "Kiwa Rebel",
+      "slug": "kiwa-rebel",
       "city": "Jinja",
       "bio": "Riverside dancehall energy from the source of the Nile.",
       "genres": [
@@ -31,6 +33,7 @@
     {
       "id": "a5",
       "name": "Mukasa the MC",
+      "slug": "mukasa",
       "city": "Entebbe",
       "bio": "Lugaflow rapper with sharp stories about city life.",
       "genres": [
@@ -45,6 +48,7 @@
     {
       "id": "a1",
       "name": "Nalu Kizza",
+      "slug": "nalu-kizza",
       "city": "Kampala",
       "bio": "Kampala singer blending Afrobeat grooves with Luganda love songs.",
       "genres": [
@@ -60,6 +64,7 @@
     {
       "id": "a2",
       "name": "Ssalongo Beats",
+      "slug": "ssalongo-beats",
       "city": "Masaka",
       "bio": "Guitar storyteller keeping Kadongo Kamu alive for a new generation.",
       "genres": [

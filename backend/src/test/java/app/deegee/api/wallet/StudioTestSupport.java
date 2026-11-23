@@ -78,6 +78,20 @@ abstract class StudioTestSupport extends ApiTestSupport {
         return token;
     }
 
+    /** Signs up an artist and leaves them waiting for review. Returns the artist's token. */
+    String pendingArtist(String phone, String name) throws Exception {
+        String token = signIn(phone);
+        call(post("/v1/artist/application").content(json(
+                "{'name':'%s','city':'Kampala','bio':'Test artist','genres':['Afrobeat'],'payoutPhone':'%s'}", name, phone)), token)
+                .andExpect(status().isOk());
+        return token;
+    }
+
+    /** One field out of a response body, by JSON path. */
+    String field(ResultActions r, String path) throws Exception {
+        return JsonPath.read(r.andReturn().getResponse().getContentAsString(), path);
+    }
+
     /** A single with one song by the artist (no society, so the song share is paid to them directly). Returns the release JSON. */
     String draftSingle(String token, String title, long price) throws Exception {
         String release = call(post("/v1/artist/releases").content(json("{'title':'%s','type':'SINGLE','priceUgx':%d}", title, price)), token)

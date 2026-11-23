@@ -7,9 +7,10 @@ import { getEarnings, getMyArtist, listMyReleases, type ArtistProfile, type Earn
 import { Art } from '../../components/Art';
 import { SectionTitle } from '../../components/studio/Form';
 import { StatusPill } from '../../components/studio/StatusPill';
-import { Button, EmptyState } from '../../components/ui';
+import { Button, EmptyState, IconButton } from '../../components/ui';
 import { useLoad } from '../../hooks/useLoad';
 import { formatUGX } from '../../lib/money';
+import { artistHref } from '../../lib/slug';
 import { colors, font, onDark, radius, space, type } from '../../lib/theme';
 
 type Studio = { artist: ArtistProfile | null; releases: StudioRelease[]; earnings: Earnings | null };
@@ -56,7 +57,17 @@ export default function StudioHome() {
           <Text style={type.title}>{artist.name}</Text>
           <StatusPill status={artist.status} />
         </View>
+        {artist.status === 'ACTIVE' ? (
+          <IconButton name="create-outline" label="Edit your profile"
+            onPress={() => router.push('/studio/profile')} />
+        ) : null}
       </View>
+      {artist.status === 'ACTIVE' ? (
+        <Pressable style={styles.address} onPress={() => router.push(artistHref(artist))}>
+          <Ionicons name="link-outline" size={14} color={colors.textFaint} />
+          <Text style={styles.addressText} numberOfLines={1}>deegee.ug/{artist.slug}</Text>
+        </Pressable>
+      ) : null}
 
       {artist.status !== 'ACTIVE' ? (
         <View style={styles.notice}>
@@ -133,6 +144,8 @@ export default function StudioHome() {
 }
 
 const styles = StyleSheet.create({
+  address: { flexDirection: 'row', alignItems: 'center', gap: space.xs, marginTop: -space.sm },
+  addressText: { ...type.small, color: colors.textFaint, flexShrink: 1 },
   content: { padding: space.lg, gap: space.md, paddingBottom: space.xxl * 3 },
   introBadge: { width: 88, height: 88, borderRadius: 44, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.accentSoft },
   intro: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xl, gap: space.md },

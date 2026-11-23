@@ -35,6 +35,8 @@ class StudioController {
 
     record ApplicationRequest(String name, String city, String bio, List<String> genres, String payoutPhone) {}
 
+    record ProfileRequest(String name, String city, String bio, List<String> genres, String slug, String payoutPhone) {}
+
     record ReleaseRequest(String title, Release.Type type, long priceUgx) {}
 
     record TrackRequest(String title, long priceUgx, List<WriterInput> writers) {}
@@ -43,20 +45,32 @@ class StudioController {
                               boolean coverOrSamples, boolean confirmOwnership) {}
 
     private final StudioService studio;
+    private final java.time.Clock clock;
 
-    StudioController(StudioService studio) {
+    StudioController(StudioService studio, java.time.Clock clock) {
+        this.clock = clock;
         this.studio = studio;
     }
 
     @GetMapping("/me")
     ArtistProfile me(@AuthenticationPrincipal Jwt jwt) {
-        return ArtistProfile.of(studio.myArtist(CurrentUser.id(jwt)));
+        return ArtistProfile.of(studio.myArtist(CurrentUser.id(jwt)), clock.instant());
     }
 
     /** Apply to sell on Deegee, or update a pending or rejected application. */
     @PostMapping("/application")
     ArtistProfile apply(@AuthenticationPrincipal Jwt jwt, @RequestBody ApplicationRequest r) {
-        return ArtistProfile.of(studio.apply(CurrentUser.id(jwt), new Application(r.name(), r.city(), r.bio(), r.genres(), r.payoutPhone())));
+        return ArtistProfile.of(studio.apply(CurrentUser.id(jwt), new Application(r.name(), r.city(), r.bio(), r.genres(), r.payoutPhone())), clock.instant());
+    }
+
+    /**
+     * An approved artist editing their own page. Separate from /application, which is for an
+     * artist who has not been approved yet and sends the whole thing back to review.
+     */
+    @PatchMapping("/profile")
+    ArtistProfile editProfile(@AuthenticationPrincipal Jwt jwt, @RequestBody ProfileRequest r) {
+        return ArtistProfile.of(studio.editProfile(CurrentUser.id(jwt),
+                new StudioService.ProfileEdit(r.name(), r.city(), r.bio(), r.genres(), r.slug(), r.payoutPhone())), clock.instant());
     }
 
     @GetMapping("/releases")

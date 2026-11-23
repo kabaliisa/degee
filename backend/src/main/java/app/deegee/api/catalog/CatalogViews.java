@@ -10,9 +10,11 @@ public final class CatalogViews {
 
     private CatalogViews() {}
 
-    public record ArtistView(String id, String name, String city, String bio, List<String> genres, boolean verified, List<String> colors) {
+    /** {@code slug}: the artist's address, deegee.ug/{slug}. Stored, so a rename never moves it. */
+    public record ArtistView(String id, String name, String slug, String city, String bio, List<String> genres,
+                             boolean verified, List<String> colors) {
         public static ArtistView of(Artist a) {
-            return new ArtistView(a.getId(), a.getName(), a.getCity(), a.getBio(), a.getGenres(), a.isVerified(), a.getColors());
+            return new ArtistView(a.getId(), a.getName(), a.getSlug(), a.getCity(), a.getBio(), a.getGenres(), a.isVerified(), a.getColors());
         }
     }
 

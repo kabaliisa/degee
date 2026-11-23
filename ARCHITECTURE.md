@@ -110,7 +110,7 @@ one directory.
 | `auth` | Phone sign-in by one-time code, JWT access and refresh tokens, roles |
 | `catalog` | Artists, releases, tracks, and what the public may see |
 | `wallet` | The ledger, checkout, purchases, gifts, top-ups |
-| `studio` | Artist mode: applications, uploads, earnings, their own insights |
+| `studio` | Artist mode: applications, profile edits, uploads, earnings, their own insights |
 | `payouts` | Withdrawals to mobile money, and the hold before one is allowed |
 | `admin` | The review queue, the decisions, and Deegee's own insights |
 | `audio` | Loudness analysis, transcoding, the 30-second preview cut |
@@ -127,6 +127,7 @@ The endpoints worth knowing:
 | `POST /v1/checkout` | Buy a track or release, or send a gift, in one call |
 | `POST /v1/webhooks/mock-mobile-money` | Where a real aggregator will confirm payment |
 | `GET /v1/tracks/{id}/play` | A signed link: the full song for owners, a preview for everyone |
+| `PATCH /v1/artist/profile` | An approved artist editing their page, without going back to review |
 | `GET /v1/artist/insights` | An artist's own numbers; takes no id, so it can only be theirs |
 | `GET /v1/admin/insights` | Deegee's numbers across every artist; admins only |
 
@@ -136,10 +137,13 @@ Three rules hold across all of them:
   twice.
 - An artist cannot buy from or gift to their own catalogue, which would move money in a circle and
   inflate their sales.
+- Changing the payout number pauses withdrawals for 24 hours. It is where money leaves Deegee, so
+  it is the first thing someone who has taken over an account changes; a day's wait costs that
+  attack the speed it depends on and costs an artist who has changed SIM a day.
 - Admin is a role granted at sign-in to the phone numbers in `DEEGEE_ADMIN_PHONES`, so adding or
   removing an admin takes effect the next time they sign in, with no deploy.
 
-69 tests run against a real Postgres, not an in-memory stand-in.
+75 tests run against a real Postgres, not an in-memory stand-in.
 
 ## The app
 
@@ -152,10 +156,11 @@ The layout is decided at runtime rather than in CSS, because React Native has no
 tab bar for a sidebar and docks the player along the bottom, which is why the desktop site looks
 like Spotify rather than a stretched phone.
 
-Artists sit at the top level of the routing table, so an artist's name is their whole address:
-`deegee.ug/apass`. `src/app/[slug].tsx` resolves it, `src/lib/slug.ts` derives the slug and holds
-the reserved words a handle may not take, and the old `/artist/{id}` paths 301 to the new ones
-through a `_redirects` file written at build time.
+Artists sit at the top level of the routing table, so an artist's handle is their whole address:
+`deegee.ug/apass`. The handle is a column on the artist, not worked out from their name, so a
+rename never moves the page out from under a link someone has already shared. `src/app/[slug].tsx`
+resolves it, `src/lib/slug.ts` holds the rule for judging a handle somebody is typing, and the old
+`/artist/{id}` paths 301 to the new ones through a `_redirects` file written at build time.
 
 State is split by how long it needs to live:
 
@@ -217,6 +222,7 @@ The decisions that moved the architecture, newest first. Cosmetic work is left o
 
 | Date | Change | Why it matters |
 | --- | --- | --- |
+| 22 Nov 2026 | Artists can edit their own profile, `PATCH /v1/artist/profile` | Closes the last thing only an admin could do; handles became a stored column, so a rename no longer moves a page |
 | 22 Nov 2026 | Both halves moved from Ohio to Frankfurt | Roughly halves the distance to Kampala; needed rebuilding both services, since neither region can be changed |
 | 22 Nov 2026 | Admin insights, `GET /v1/admin/insights` | Makes the float auditable: liabilities checked against cash in, and a gap shown |
 | 22 Nov 2026 | Artist insights, `GET /v1/artist/insights` | Earnings read from the ledger, not counted from orders, so wallet-paid and directly-paid sales agree |
@@ -249,13 +255,7 @@ HikariCP, which already pools. pgjdbc moves to server-side prepared statements a
 executions and transaction pooling breaks them, so this surfaces under load rather than at
 startup. Switch `DEEGEE_DB_URL` to the direct endpoint.
 
-**Artists cannot edit their own profile.** There is no endpoint and no screen. Name, bio, city and
-genres are fixed at application.
-
 **There is no artist photo field.** Photos are placeholder portraits shipped in the repo.
-
-**Slugs are derived, not stored.** An artist's address comes from their name, so a rename silently
-breaks every link anyone has shared. Storing a chosen handle fixes it.
 
 **`deegee.ug` is not registered.** It is referenced in the build and in CORS but does not resolve.
 

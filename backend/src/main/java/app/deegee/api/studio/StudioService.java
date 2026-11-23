@@ -6,6 +6,7 @@ import app.deegee.api.catalog.Artist;
 import app.deegee.api.catalog.ArtistRepository;
 import app.deegee.api.catalog.Release;
 import app.deegee.api.catalog.ReleaseRepository;
+import app.deegee.api.catalog.Slugs;
 import app.deegee.api.catalog.Track;
 import app.deegee.api.catalog.TrackRepository;
 import app.deegee.api.common.ApiException;
@@ -37,6 +38,13 @@ import org.springframework.web.multipart.MultipartFile;
 public class StudioService {
 
     public record Application(String name, String city, String bio, List<String> genres, String payoutPhone) {}
+
+    /**
+     * What an approved artist may change about themselves. Name, city, bio and genres are always
+     * sent; slug and payoutPhone are null unless the artist is actually moving them, because each
+     * has a consequence the other fields do not.
+     */
+    public record ProfileEdit(String name, String city, String bio, List<String> genres, String slug, String payoutPhone) {}
 
     public record ReleaseInput(String title, Release.Type type, long priceUgx) {}
 
@@ -115,9 +123,75 @@ public class StudioService {
             return existing;
         }
         String id = Hashing.randomId("ar");
-        Artist artist = artists.save(new Artist(id, userId, name, city, bio, genres, msisdn, provider, colorsFor(id), clock.instant()));
+        Artist artist = artists.save(new Artist(id, userId, name, freeHandleFor(name), city, bio, genres, msisdn, provider,
+                colorsFor(id), clock.instant()));
         ledger.ensureAccount(Kind.ARTIST_EARNINGS, id);
         return artist;
+    }
+
+    /**
+     * An approved artist changing what their page says. Separate from {@link #apply} on purpose:
+     * apply sends the application back to review, which for an active artist would take their
+     * catalogue off sale and drop their verified badge over a corrected typo.
+     *
+     * <p>The handle and the payout number are optional here and each carries its own cost, so each
+     * is only touched when the request actually asks for it. A request that repeats the current
+     * value is not a change.
+     */
+    @Transactional
+    public Artist editProfile(UUID userId, ProfileEdit edit) {
+        Artist artist = myArtist(userId);
+        if (!artist.isActive()) {
+            throw new ApiException(HttpStatus.CONFLICT, "NOT_APPROVED_YET",
+                    "Your application is still being reviewed. Update it there instead.");
+        }
+
+        String name = required(edit.name(), 2, 60, "Artist name");
+        String city = required(edit.city(), 2, 60, "City");
+        String bio = edit.bio() == null ? "" : edit.bio().strip();
+        if (bio.length() > 500) throw invalid("BIO_TOO_LONG", "Keep the bio under 500 characters.");
+        List<String> genres = edit.genres() == null ? List.of() : edit.genres().stream().distinct().toList();
+        if (genres.isEmpty() || genres.size() > 3 || !StudioRules.GENRES.containsAll(genres)) {
+            throw invalid("GENRES", "Pick one to three genres.");
+        }
+        if (!artist.getName().equalsIgnoreCase(name) && artists.existsByNameIgnoreCase(name)) {
+            throw new ApiException(HttpStatus.CONFLICT, "NAME_TAKEN",
+                    "An artist called %s is already on Deegee.".formatted(name));
+        }
+        artist.editProfile(name, city, bio, genres);
+
+        if (edit.slug() != null && !edit.slug().equals(artist.getSlug())) {
+            String slug = edit.slug().strip().toLowerCase(java.util.Locale.ROOT);
+            if (!Slugs.isWellFormed(slug)) {
+                throw invalid("BAD_HANDLE",
+                        "A handle is %d to %d characters, lowercase letters, numbers and hyphens, and can't be one of Deegee's own pages."
+                                .formatted(Slugs.MIN, Slugs.MAX));
+            }
+            if (artists.existsBySlugAndIdNot(slug, artist.getId())) {
+                throw new ApiException(HttpStatus.CONFLICT, "HANDLE_TAKEN", "deegee.ug/%s is already somebody's page.".formatted(slug));
+            }
+            artist.changeHandle(slug);
+        }
+
+        if (edit.payoutPhone() != null && !edit.payoutPhone().isBlank()) {
+            String msisdn = PhoneNumbers.normalize(edit.payoutPhone())
+                    .orElseThrow(() -> invalid("INVALID_PHONE", "Enter the MTN or Airtel number you want to be paid on, e.g. 0772 123456."));
+            String provider = PhoneNumbers.provider(msisdn).map(Enum::name)
+                    .orElseThrow(() -> invalid("INVALID_PHONE", "Payouts go to MTN MoMo or Airtel Money numbers."));
+            artist.changePayout(msisdn, provider, clock.instant());
+        }
+        return artist;
+    }
+
+    /** A handle nobody has yet: the name's own, then the name with a number after it. */
+    private String freeHandleFor(String name) {
+        String base = Slugs.suggest(name);
+        if (!artists.existsBySlug(base)) return base;
+        for (int n = 2; n < 100; n++) {
+            String candidate = base + "-" + n;
+            if (!artists.existsBySlug(candidate)) return candidate;
+        }
+        return base + "-" + java.util.UUID.randomUUID().toString().substring(0, 6);
     }
 
     // ---- releases -----------------------------------------------------------------------------

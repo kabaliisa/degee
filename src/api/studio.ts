@@ -12,6 +12,20 @@ export type Society = 'UPRS' | 'FOREIGN' | null;
 export type ArtistProfile = {
   id: string; name: string; city: string; bio: string; genres: Genre[]; colors: [string, string];
   status: ArtistStatus; reviewNote: string | null; verified: boolean; payoutPhone: string | null; payoutProvider: string | null;
+  /** The artist's address: deegee.ug/{slug}. Only moves when the artist deliberately moves it. */
+  slug: string;
+  /** When withdrawals work again after the payout number moved, or null when nothing is held. */
+  payoutHeldUntil: string | null;
+};
+
+/**
+ * What an approved artist may change. `slug` and `payoutPhone` are left out unless the artist is
+ * actually moving them: the server treats a value that arrives as an intent to change it, because
+ * each has a cost the other fields do not.
+ */
+export type ProfileEdit = {
+  name: string; city: string; bio: string; genres: Genre[];
+  slug?: string; payoutPhone?: string;
 };
 
 export type WriterInput = { name: string; sharePct: number; society: Society };
@@ -64,6 +78,7 @@ const r = (id: string) => `/v1/artist/releases/${encodeURIComponent(id)}`;
 
 export const getMyArtist = () => api<ArtistProfile>('GET', '/v1/artist/me');
 export const applyAsArtist = (a: Application) => api<ArtistProfile>('POST', '/v1/artist/application', { body: a });
+export const editMyProfile = (e: ProfileEdit) => api<ArtistProfile>('PATCH', '/v1/artist/profile', { body: e });
 
 export const listMyReleases = () => api<StudioRelease[]>('GET', '/v1/artist/releases');
 export const getMyRelease = (id: string) => api<StudioRelease>('GET', r(id));
